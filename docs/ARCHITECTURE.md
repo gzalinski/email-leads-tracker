@@ -1,6 +1,6 @@
-# Location Lead Tracker — Architecture
+# Email Leads Tracker — Architecture
 
-Architecture document for the "Location Lead Tracker" WordPress plugin.
+Architecture document for the "Email Leads Tracker" WordPress plugin.
 Final version: **Postmark only**, asynchronous sending, recipient taken from the `email` post meta, administrator alerts, WP-CLI, optional captcha, GDPR consent, real IP detection, and a failed-leads list in the admin. Delivery is split into **v1**, **v2** and **v3**.
 
 ---
@@ -66,7 +66,7 @@ The database schema includes the v2 and v3 columns from v1 onwards, so no migrat
 The implemented structure (repo `gzalinski/email-leads-tracker`):
 
 ```
-location-lead-tracker.php              # Bootstrap: header, PSR-4 autoload, activation/deactivation
+email-leads-tracker.php              # Bootstrap: header, PSR-4 autoload, activation/deactivation
 uninstall.php                          # Data removal (if enabled in the settings)
 includes/
 ├── Plugin.php                         # Registers all components
@@ -77,7 +77,7 @@ includes/
 ├── Settings/
 │   ├── Settings.php                   # Reading settings + defaults
 │   ├── SettingsFields.php             # Tabs and fields (extensible via the llt_settings_tabs filter)
-│   ├── SettingsPage.php               # The Settings → Location Lead Tracker page
+│   ├── SettingsPage.php               # The Settings → Email Leads Tracker page
 │   ├── SettingsSanitizer.php          # Validation on save (current tab only)
 │   ├── SecretStore.php                # libsodium encryption
 │   ├── TestActions.php                # Test email, test alert, IP diagnostics
@@ -135,7 +135,7 @@ assets/      form.js, form.css, admin.js, admin.css
 tests/       run.php, check-calls.php, cases/ (no WordPress: stubs + SQLite)
 ```
 
-Namespace: `LocationLeadTracker\`. PSR-4 autoload.
+Namespace: `EmailLeadsTracker\`. PSR-4 autoload.
 
 ---
 
@@ -557,12 +557,12 @@ Example:
 Subject: [Site] 3 leads could not be sent
 
 Postmark rejected the send: the API token is invalid (ErrorCode 10).
-Check the token in Settings → Location Lead Tracker → Postmark.
+Check the token in Settings → Email Leads Tracker → Postmark.
 Affected leads: #812, #813, #814 (first failure: 2026-10-20 14:02 UTC).
 
 The content of these messages is kept for 14 days.
 After fixing the problem, resend them from:
-https://example.com/wp-admin/options-general.php?page=location-lead-tracker&tab=failed
+https://example.com/wp-admin/options-general.php?page=email-leads-tracker&tab=failed
 or run:  wp llt retry --failed
 ```
 
@@ -810,7 +810,7 @@ The index on `sender_email` serves GDPR export/erasure.
 
 ## 15. Settings page
 
-**Settings → Location Lead Tracker**, capability `manage_options`, Settings API.
+**Settings → Email Leads Tracker**, capability `manage_options`, Settings API.
 
 | Tab | Fields | Stage |
 | --- | --- | --- |
@@ -870,10 +870,10 @@ The CLI commands and the admin page (v3) use the same `LeadActions` class, so th
 
 ### 17.1. Access
 
-- The **"Failed leads"** tab in **Settings → Location Lead Tracker**:
-  `options-general.php?page=location-lead-tracker&tab=failed`
+- The **"Failed leads"** tab in **Settings → Email Leads Tracker**:
+  `options-general.php?page=email-leads-tracker&tab=failed`
 - Capability: `manage_options` (administrators only), checked on display, on every action and on every AJAX request. Editors and other roles see neither the tab nor the counter.
-- Menu counter: **"Location Lead Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
+- Menu counter: **"Email Leads Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
 
 ### 17.2. Configuration banner
 

@@ -5,19 +5,19 @@
  * Postmark retries a failed webhook for only ~50 minutes and pauses the event type
  * after repeated failures, so confirmations can be lost. Reconciliation recovers them.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Webhook;
+namespace EmailLeadsTracker\Webhook;
 
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Lead\LeadStatus;
-use LocationLeadTracker\Postmark\PostmarkClient;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Lead\LeadStatus;
+use EmailLeadsTracker\Postmark\PostmarkClient;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,7 +69,7 @@ final class Reconciler {
 	 */
 	public static function cli(): void {
 		if ( ! Settings::tracking_enabled() ) {
-			\WP_CLI::warning( 'Delivery confirmation is not enabled (Settings → Location Lead Tracker → Webhook).' );
+			\WP_CLI::warning( 'Delivery confirmation is not enabled (Settings → Email Leads Tracker → Webhook).' );
 			return;
 		}
 		$stats = self::run();

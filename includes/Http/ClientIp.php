@@ -5,12 +5,12 @@
  * Proxy headers are read only when the connection comes from a known proxy;
  * otherwise anyone sending requests directly to the server could forge them.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Http;
+namespace EmailLeadsTracker\Http;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,13 +2,13 @@
 /**
  * "View message" (v3): the visitor's data is loaded only on request, only for administrators.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Admin;
+namespace EmailLeadsTracker\Admin;
 
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,12 +2,12 @@
 /**
  * Classification of Postmark responses (checked against the official Postmark documentation, October 2026).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Postmark;
+namespace EmailLeadsTracker\Postmark;
 
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

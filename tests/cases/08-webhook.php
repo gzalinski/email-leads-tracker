@@ -5,19 +5,19 @@
 // phpcs:ignoreFile
 require_once dirname( __DIR__ ) . '/wpdb-sqlite.php';
 
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Http\ClientIp;
-use LocationLeadTracker\Lead\LeadService;
-use LocationLeadTracker\Retention\RetentionService;
-use LocationLeadTracker\Settings\SecretStore;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
-use LocationLeadTracker\Webhook\EventProcessor;
-use LocationLeadTracker\Webhook\Reconciler;
-use LocationLeadTracker\Webhook\WebhookAuth;
-use LocationLeadTracker\Webhook\WebhookController;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Http\ClientIp;
+use EmailLeadsTracker\Lead\LeadService;
+use EmailLeadsTracker\Retention\RetentionService;
+use EmailLeadsTracker\Settings\SecretStore;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
+use EmailLeadsTracker\Webhook\EventProcessor;
+use EmailLeadsTracker\Webhook\Reconciler;
+use EmailLeadsTracker\Webhook\WebhookAuth;
+use EmailLeadsTracker\Webhook\WebhookController;
 
 global $wpdb;
 $wpdb = new LLT_Test_WPDB();

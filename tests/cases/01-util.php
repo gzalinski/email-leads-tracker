@@ -1,6 +1,6 @@
 <?php
 // phpcs:ignoreFile
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Util;
 
 same( 'iso with 7 decimals', '2026-11-05 16:33:54', Util::iso_to_mysql( '2026-11-05T16:33:54.9070259Z' ) );
 same( 'iso with time zone', '2014-02-14 16:13:10', Util::iso_to_mysql( '2014-02-14T11:13:10.8054242-05:00' ) );

@@ -2,15 +2,15 @@
 /**
  * Deletes the temporary content (ARCHITECTURE.md §12). The minimal lead is never deleted automatically.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Retention;
+namespace EmailLeadsTracker\Retention;
 
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

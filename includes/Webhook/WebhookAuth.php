@@ -2,13 +2,13 @@
 /**
  * Postmark webhook authentication: Basic Auth (Postmark does not sign webhooks) and an optional IP filter.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Webhook;
+namespace EmailLeadsTracker\Webhook;
 
-use LocationLeadTracker\Http\ClientIp;
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Http\ClientIp;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

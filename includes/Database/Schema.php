@@ -2,10 +2,10 @@
 /**
  * Plugin table definitions.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Database;
+namespace EmailLeadsTracker\Database;
 
 defined( 'ABSPATH' ) || exit;
 

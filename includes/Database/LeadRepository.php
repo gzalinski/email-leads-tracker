@@ -2,12 +2,12 @@
 /**
  * Access to the `location_leads` table.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Database;
+namespace EmailLeadsTracker\Database;
 
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

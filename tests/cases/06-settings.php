@@ -1,11 +1,11 @@
 <?php
 // phpcs:ignoreFile
-use LocationLeadTracker\Lead\LeadStatus;
-use LocationLeadTracker\Postmark\EmailBuilder;
-use LocationLeadTracker\Queue\BackoffPolicy;
-use LocationLeadTracker\Settings\SecretStore;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Settings\SettingsSanitizer;
+use EmailLeadsTracker\Lead\LeadStatus;
+use EmailLeadsTracker\Postmark\EmailBuilder;
+use EmailLeadsTracker\Queue\BackoffPolicy;
+use EmailLeadsTracker\Settings\SecretStore;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\SettingsSanitizer;
 
 same( 'default schedule', array( 1, 5, 15, 60, 360 ), Settings::retry_schedule() );
 same( 'parsed schedule', array( 2, 10 ), Settings::parse_schedule( '2, 10' ) );

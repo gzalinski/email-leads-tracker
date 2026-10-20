@@ -2,12 +2,12 @@
 /**
  * Server-side verification of the Cloudflare Turnstile token.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Form\Captcha;
+namespace EmailLeadsTracker\Form\Captcha;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

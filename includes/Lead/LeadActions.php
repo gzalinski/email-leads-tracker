@@ -2,14 +2,14 @@
 /**
  * Manual lead actions, shared by WP-CLI and the admin page (v3).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Lead;
+namespace EmailLeadsTracker\Lead;
 
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

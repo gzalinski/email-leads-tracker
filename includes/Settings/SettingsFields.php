@@ -5,10 +5,10 @@
  * Each field: type, label, desc (optional), plus type-specific attributes.
  * Types: text, email, number, select, checkbox, secret, textarea, html, cidr_list, schedule.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

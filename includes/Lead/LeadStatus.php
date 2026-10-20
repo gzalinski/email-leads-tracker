@@ -2,10 +2,10 @@
 /**
  * Lead statuses and delivery transition rules.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Lead;
+namespace EmailLeadsTracker\Lead;
 
 defined( 'ABSPATH' ) || exit;
 

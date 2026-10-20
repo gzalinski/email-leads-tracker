@@ -5,13 +5,13 @@
 // phpcs:ignoreFile
 require_once dirname( __DIR__ ) . '/wpdb-sqlite.php';
 
-use LocationLeadTracker\Admin\BulkActionHandler;
-use LocationLeadTracker\Admin\FailedLeadsQuery;
-use LocationLeadTracker\Admin\MenuBadge;
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Lead\LeadService;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Admin\BulkActionHandler;
+use EmailLeadsTracker\Admin\FailedLeadsQuery;
+use EmailLeadsTracker\Admin\MenuBadge;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Lead\LeadService;
+use EmailLeadsTracker\Util;
 
 global $wpdb;
 $wpdb = new LLT_Test_WPDB();
@@ -142,7 +142,7 @@ function admin_url( $p = '' ) { return 'https://example.test/wp-admin/' . $p; }
 function add_query_arg( $args, $url ) { return $url . '?' . http_build_query( $args ); }
 function wp_nonce_url( $url, $action ) { return $url . '&_wpnonce=' . md5( $action ); }
 
-$table = new LocationLeadTracker\Admin\FailedLeadsTable( 'failed', array( 'error' => '', 's' => '', 'from' => '', 'to' => '' ) );
+$table = new EmailLeadsTracker\Admin\FailedLeadsTable( 'failed', array( 'error' => '', 's' => '', 'from' => '', 'to' => '' ) );
 $table->prepare_items();
 same( 'table: total (only f4 is still failed)', 1, $table->get_pagination_arg( 'total_items' ) );
 $item    = $table->items[0];
@@ -155,6 +155,6 @@ check( 'table: error explained', '' !== strip_tags( $table->column_error( $item 
 check( 'table: attempts', false !== strpos( $table->column_attempts( $item ), 'automatic' ) );
 check( 'table: content', '' !== $table->column_content( $item ) );
 check( 'table: checkbox', false !== strpos( $table->column_cb( $item ), 'name="ids[]"' ) );
-$stuck_table = new LocationLeadTracker\Admin\FailedLeadsTable( 'stuck', array( 'error' => '', 's' => '', 'from' => '', 'to' => '' ) );
+$stuck_table = new EmailLeadsTracker\Admin\FailedLeadsTable( 'stuck', array( 'error' => '', 's' => '', 'from' => '', 'to' => '' ) );
 same( 'stuck table: no checkbox', '', $stuck_table->column_cb( $item ) );
 check( 'table: warning for 406', false !== strpos( $table->column_error( (object) array( 'last_error_code' => 'pm_406' ) ), 'dashicons-warning' ) );

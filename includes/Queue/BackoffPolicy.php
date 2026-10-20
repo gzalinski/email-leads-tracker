@@ -2,12 +2,12 @@
 /**
  * Computes the delay until the next retry: interval from the settings, ±20% jitter, Retry-After.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Queue;
+namespace EmailLeadsTracker\Queue;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

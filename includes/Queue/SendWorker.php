@@ -2,22 +2,22 @@
 /**
  * Sends leads: right after the submission and periodically from the queue (ARCHITECTURE.md §7, §9).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Queue;
+namespace EmailLeadsTracker\Queue;
 
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Lead\LeadStatus;
-use LocationLeadTracker\Postmark\EmailBuilder;
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\PostmarkClient;
-use LocationLeadTracker\Postmark\SendResult;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Lead\LeadStatus;
+use EmailLeadsTracker\Postmark\EmailBuilder;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\PostmarkClient;
+use EmailLeadsTracker\Postmark\SendResult;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -96,7 +96,7 @@ final class SendWorker {
 
 	private static function mark_accepted( object $lead, string $message_id ): void {
 		global $wpdb;
-		$table = \LocationLeadTracker\Database\Schema::leads();
+		$table = \EmailLeadsTracker\Database\Schema::leads();
 		$now   = Util::now();
 
 		// The webhook (v2) may have arrived first and set postmark_message_id; COALESCE keeps it.

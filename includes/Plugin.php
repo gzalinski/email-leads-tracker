@@ -2,28 +2,28 @@
 /**
  * Registers all plugin components.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker;
+namespace EmailLeadsTracker;
 
-use LocationLeadTracker\Admin\FailedLeadsTab;
-use LocationLeadTracker\Admin\MenuBadge;
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Alerts\HealthCheck;
-use LocationLeadTracker\Cli\Commands;
-use LocationLeadTracker\Form\SubmissionHandler;
-use LocationLeadTracker\Http\ProxyRanges;
-use LocationLeadTracker\Privacy\PersonalDataEraser;
-use LocationLeadTracker\Privacy\PersonalDataExporter;
-use LocationLeadTracker\Privacy\PolicyContent;
-use LocationLeadTracker\Queue\SendWorker;
-use LocationLeadTracker\Retention\RetentionService;
-use LocationLeadTracker\Settings\SettingsPage;
-use LocationLeadTracker\Shortcode\ContactShortcode;
-use LocationLeadTracker\Webhook\Reconciler;
-use LocationLeadTracker\Webhook\WebhookController;
-use LocationLeadTracker\Webhook\WebhookSettings;
+use EmailLeadsTracker\Admin\FailedLeadsTab;
+use EmailLeadsTracker\Admin\MenuBadge;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Alerts\HealthCheck;
+use EmailLeadsTracker\Cli\Commands;
+use EmailLeadsTracker\Form\SubmissionHandler;
+use EmailLeadsTracker\Http\ProxyRanges;
+use EmailLeadsTracker\Privacy\PersonalDataEraser;
+use EmailLeadsTracker\Privacy\PersonalDataExporter;
+use EmailLeadsTracker\Privacy\PolicyContent;
+use EmailLeadsTracker\Queue\SendWorker;
+use EmailLeadsTracker\Retention\RetentionService;
+use EmailLeadsTracker\Settings\SettingsPage;
+use EmailLeadsTracker\Shortcode\ContactShortcode;
+use EmailLeadsTracker\Webhook\Reconciler;
+use EmailLeadsTracker\Webhook\WebhookController;
+use EmailLeadsTracker\Webhook\WebhookSettings;
 
 defined( 'ABSPATH' ) || exit;
 

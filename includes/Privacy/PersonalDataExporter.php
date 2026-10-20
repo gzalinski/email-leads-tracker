@@ -2,14 +2,14 @@
 /**
  * Integration with Tools → Export Personal Data.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Privacy;
+namespace EmailLeadsTracker\Privacy;
 
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,8 +22,8 @@ final class PersonalDataExporter {
 	 */
 	public static function register( $exporters ): array {
 		$exporters                          = is_array( $exporters ) ? $exporters : array();
-		$exporters['location-lead-tracker'] = array(
-			'exporter_friendly_name' => 'Location Lead Tracker',
+		$exporters['email-leads-tracker'] = array(
+			'exporter_friendly_name' => 'Email Leads Tracker',
 			'callback'               => array( self::class, 'export' ),
 		);
 		return $exporters;
@@ -43,7 +43,7 @@ final class PersonalDataExporter {
 			$title = $lead ? get_the_title( (int) $lead->object_id ) : '';
 
 			$items[] = array(
-				'group_id'    => 'location-lead-tracker',
+				'group_id'    => 'email-leads-tracker',
 				'group_label' => 'Messages sent through the contact form',
 				'item_id'     => 'llt-lead-' . (int) $row->lead_id,
 				'data'        => array(

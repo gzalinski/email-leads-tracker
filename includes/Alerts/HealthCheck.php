@@ -2,13 +2,13 @@
 /**
  * Hourly check: leads stuck in the queue.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Alerts;
+namespace EmailLeadsTracker\Alerts;
 
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,10 +2,10 @@
 /**
  * Checks whether an IP belongs to a CIDR network (IPv4 and IPv6).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Http;
+namespace EmailLeadsTracker\Http;
 
 defined( 'ABSPATH' ) || exit;
 

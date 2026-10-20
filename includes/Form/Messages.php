@@ -2,12 +2,12 @@
 /**
  * Messages shown to the visitor after submitting the form.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Form;
+namespace EmailLeadsTracker\Form;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

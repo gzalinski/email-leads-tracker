@@ -2,14 +2,14 @@
 /**
  * Lead creation: the minimal lead and the temporary content are saved together, before sending.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Lead;
+namespace EmailLeadsTracker\Lead;
 
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

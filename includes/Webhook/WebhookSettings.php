@@ -2,17 +2,17 @@
 /**
  * v2 settings: the Webhook tab, the extra fields in Alerts and Retention, rows in Status and WP-CLI.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Webhook;
+namespace EmailLeadsTracker\Webhook;
 
-use LocationLeadTracker\Settings\AdminNotice;
-use LocationLeadTracker\Settings\SecretStore;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Settings\SettingsPage;
-use LocationLeadTracker\Settings\StatusTab;
-use LocationLeadTracker\State;
+use EmailLeadsTracker\Settings\AdminNotice;
+use EmailLeadsTracker\Settings\SecretStore;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\SettingsPage;
+use EmailLeadsTracker\Settings\StatusTab;
+use EmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -180,7 +180,7 @@ final class WebhookSettings {
 			$rows['Delivery confirmation'] = 'disabled';
 			return $rows;
 		}
-		$counts                        = \LocationLeadTracker\Database\LeadRepository::counts();
+		$counts                        = \EmailLeadsTracker\Database\LeadRepository::counts();
 		$rows['Delivery confirmation'] = 'enabled';
 		$rows['Delivered']             = (string) $counts['delivery']['delivered'];
 		$rows['Bounced']               = (string) $counts['delivery']['bounced'];

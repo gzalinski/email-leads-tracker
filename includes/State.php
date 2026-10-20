@@ -2,10 +2,10 @@
 /**
  * Internal plugin state (heartbeat, counters, recent alerts), stored in the `llt_state` option.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker;
+namespace EmailLeadsTracker;
 
 defined( 'ABSPATH' ) || exit;
 

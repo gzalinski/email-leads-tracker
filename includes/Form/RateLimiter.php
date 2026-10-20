@@ -4,12 +4,12 @@
  *
  * The IP is not stored: the key is an HMAC hash of the IP.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Form;
+namespace EmailLeadsTracker\Form;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

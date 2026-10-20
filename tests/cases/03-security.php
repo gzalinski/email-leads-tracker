@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile
-use LocationLeadTracker\Settings\SecretStore;
-use LocationLeadTracker\Shortcode\ContextSigner;
+use EmailLeadsTracker\Settings\SecretStore;
+use EmailLeadsTracker\Shortcode\ContextSigner;
 
 // Signed context.
 $signed   = ContextSigner::sign( 245, 1700000000 );

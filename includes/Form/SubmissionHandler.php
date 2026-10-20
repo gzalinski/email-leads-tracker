@@ -4,20 +4,20 @@
  *
  * The lead is saved, the visitor gets an immediate response, and the email is sent after the response.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Form;
+namespace EmailLeadsTracker\Form;
 
-use LocationLeadTracker\Form\Captcha\TurnstileVerifier;
-use LocationLeadTracker\Http\ClientIp;
-use LocationLeadTracker\Lead\LeadService;
-use LocationLeadTracker\Queue\SendWorker;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Shortcode\ContactShortcode;
-use LocationLeadTracker\Shortcode\ContextSigner;
-use LocationLeadTracker\Shortcode\RecipientResolver;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Form\Captcha\TurnstileVerifier;
+use EmailLeadsTracker\Http\ClientIp;
+use EmailLeadsTracker\Lead\LeadService;
+use EmailLeadsTracker\Queue\SendWorker;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Shortcode\ContactShortcode;
+use EmailLeadsTracker\Shortcode\ContextSigner;
+use EmailLeadsTracker\Shortcode\RecipientResolver;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

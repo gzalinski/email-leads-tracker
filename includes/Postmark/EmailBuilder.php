@@ -2,14 +2,14 @@
 /**
  * Builds the Postmark request for a lead.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Postmark;
+namespace EmailLeadsTracker\Postmark;
 
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Template;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Template;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

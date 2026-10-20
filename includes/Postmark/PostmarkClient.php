@@ -2,13 +2,13 @@
 /**
  * Minimal Postmark API client.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Postmark;
+namespace EmailLeadsTracker\Postmark;
 
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

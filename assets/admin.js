@@ -1,5 +1,5 @@
 /**
- * Location Lead Tracker — settings page and failed leads list.
+ * Email Leads Tracker — settings page and failed leads list.
  */
 ( function () {
 	'use strict';

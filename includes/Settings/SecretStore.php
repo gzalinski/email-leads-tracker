@@ -4,10 +4,10 @@
  *
  * Key: `LLT_ENCRYPTION_KEY` from wp-config.php if defined, otherwise derived from the WordPress salts.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

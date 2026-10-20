@@ -7,14 +7,14 @@
  * - 200: event processed, duplicate, uncorrelated, ignored or invalid payload;
  * - 500: internal error, so Postmark retries.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Webhook;
+namespace EmailLeadsTracker\Webhook;
 
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

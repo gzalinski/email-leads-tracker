@@ -4,25 +4,25 @@
  *
  * Visitors' personal data is shown only on explicit request (--with-content).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Cli;
+namespace EmailLeadsTracker\Cli;
 
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Http\ProxyRanges;
-use LocationLeadTracker\Lead\LeadActions;
-use LocationLeadTracker\Postmark\EmailBuilder;
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\PostmarkClient;
-use LocationLeadTracker\Postmark\SendResult;
-use LocationLeadTracker\Queue\SendWorker;
-use LocationLeadTracker\Retention\RetentionService;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Http\ProxyRanges;
+use EmailLeadsTracker\Lead\LeadActions;
+use EmailLeadsTracker\Postmark\EmailBuilder;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\PostmarkClient;
+use EmailLeadsTracker\Postmark\SendResult;
+use EmailLeadsTracker\Queue\SendWorker;
+use EmailLeadsTracker\Retention\RetentionService;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -235,7 +235,7 @@ final class Commands {
 			array(
 				'From'          => EmailBuilder::from(),
 				'To'            => $to,
-				'Subject'       => '[' . EmailBuilder::site_name() . '] Location Lead Tracker test email',
+				'Subject'       => '[' . EmailBuilder::site_name() . '] Email Leads Tracker test email',
 				'TextBody'      => 'The Postmark configuration works (sent from WP-CLI).',
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 				'Tag'           => 'llt-test',

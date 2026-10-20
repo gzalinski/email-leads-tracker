@@ -5,18 +5,18 @@
  * Alerts go through wp_mail(), not Postmark, so they still arrive when Postmark itself is the problem.
  * They contain no personal data of the visitors.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Alerts;
+namespace EmailLeadsTracker\Alerts;
 
-use LocationLeadTracker\Postmark\EmailBuilder;
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\PostmarkClient;
-use LocationLeadTracker\Postmark\SendResult;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\State;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Postmark\EmailBuilder;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\PostmarkClient;
+use EmailLeadsTracker\Postmark\SendResult;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\State;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,7 +67,7 @@ final class AdminNotifier {
 		if ( $was_alerting ) {
 			self::deliver(
 				'Sending works again',
-				"Location Lead Tracker successfully sent a lead after the failures reported earlier.\n\n"
+				"Email Leads Tracker successfully sent a lead after the failures reported earlier.\n\n"
 				. "Leads that failed in the meantime are not resent automatically. Review them:\n"
 				. self::resolution_hint()
 			);
@@ -83,7 +83,7 @@ final class AdminNotifier {
 			sprintf( '%d leads were not sent on time', $count ),
 			sprintf( "%d leads were due more than an hour ago and are still in the queue.\n\n", $count )
 			. "Possible causes: the server cron is not running or Postmark is not responding.\n"
-			. "Check the Status tab in Settings → Location Lead Tracker or run: wp llt status\n"
+			. "Check the Status tab in Settings → Email Leads Tracker or run: wp llt status\n"
 		);
 	}
 
@@ -166,7 +166,7 @@ final class AdminNotifier {
 	public static function test(): array {
 		$ok = self::deliver(
 			'Test alert',
-			"This is a test email sent from Settings → Location Lead Tracker → Alerts.\n\n"
+			"This is a test email sent from Settings → Email Leads Tracker → Alerts.\n\n"
 			. "If you received it, alerts about failed leads will reach this address.\n"
 		);
 		return array(
@@ -209,7 +209,7 @@ final class AdminNotifier {
 			$lines[] = 'Details: ' . $error['message'];
 		}
 		if ( 'config' === $type ) {
-			$lines[] = 'Check the settings in Settings → Location Lead Tracker → Postmark and send a test email.';
+			$lines[] = 'Check the settings in Settings → Email Leads Tracker → Postmark and send a test email.';
 		}
 		$lines[] = '';
 		if ( $ids ) {
@@ -242,7 +242,7 @@ final class AdminNotifier {
 	private static function deliver( string $subject, string $body ): bool {
 		$to      = self::recipient();
 		$subject = '[' . EmailBuilder::site_name() . '] ' . $subject;
-		$body   .= "\n—\nLocation Lead Tracker · " . home_url( '/' ) . "\n";
+		$body   .= "\n—\nEmail Leads Tracker · " . home_url( '/' ) . "\n";
 
 		self::$mail_error = null;
 		$sent             = (bool) wp_mail( $to, $subject, $body );

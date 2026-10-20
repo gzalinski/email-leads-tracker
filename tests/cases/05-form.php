@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile
-use LocationLeadTracker\Form\Validator;
-use LocationLeadTracker\Shortcode\RecipientResolver;
+use EmailLeadsTracker\Form\Validator;
+use EmailLeadsTracker\Shortcode\RecipientResolver;
 
 $valid = array(
 	'llt_name'    => 'John Smith',

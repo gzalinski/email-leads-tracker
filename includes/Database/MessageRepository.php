@@ -2,12 +2,12 @@
 /**
  * Access to the temporary `location_lead_messages` table (the visitor's personal data).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Database;
+namespace EmailLeadsTracker\Database;
 
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

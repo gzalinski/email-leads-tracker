@@ -4,15 +4,15 @@
  *
  * Accepts checked IDs or "all matching the filter"; the logic is the same as in WP-CLI (LeadActions).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Admin;
+namespace EmailLeadsTracker\Admin;
 
-use LocationLeadTracker\Lead\LeadActions;
-use LocationLeadTracker\Settings\AdminNotice;
-use LocationLeadTracker\Settings\SettingsPage;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Lead\LeadActions;
+use EmailLeadsTracker\Settings\AdminNotice;
+use EmailLeadsTracker\Settings\SettingsPage;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

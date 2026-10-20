@@ -2,15 +2,15 @@
 /**
  * Test runner. Usage: php tests/run.php
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
 // phpcs:ignoreFile
 
 require __DIR__ . '/bootstrap.php';
 
-use LocationLeadTracker\Http\ClientIp;
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Http\ClientIp;
+use EmailLeadsTracker\Settings\Settings;
 
 $GLOBALS['llt_passed'] = 0;
 $GLOBALS['llt_failed'] = array();

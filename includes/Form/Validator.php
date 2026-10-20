@@ -2,12 +2,12 @@
 /**
  * Validation and sanitization of the form fields.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Form;
+namespace EmailLeadsTracker\Form;
 
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

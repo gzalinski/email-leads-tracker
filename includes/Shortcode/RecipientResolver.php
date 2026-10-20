@@ -4,10 +4,10 @@
  *
  * The meta key is fixed and there is no restriction by post type.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Shortcode;
+namespace EmailLeadsTracker\Shortcode;
 
 defined( 'ABSPATH' ) || exit;
 

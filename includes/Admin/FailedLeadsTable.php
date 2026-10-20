@@ -4,14 +4,14 @@
  *
  * Visitors' data does not appear in the list; it is loaded on request ("View message").
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Admin;
+namespace EmailLeadsTracker\Admin;
 
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -3,7 +3,7 @@
  * A minimal $wpdb on in-memory SQLite, for the queue integration tests.
  * Implements only the methods used by the plugin.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
 // phpcs:ignoreFile

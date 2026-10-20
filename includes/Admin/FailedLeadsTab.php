@@ -1,16 +1,16 @@
 <?php
 /**
- * The "Failed leads" tab in Settings → Location Lead Tracker (v3). Administrators only.
+ * The "Failed leads" tab in Settings → Email Leads Tracker (v3). Administrators only.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Admin;
+namespace EmailLeadsTracker\Admin;
 
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\SendResult;
-use LocationLeadTracker\Settings\SettingsPage;
-use LocationLeadTracker\State;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\SendResult;
+use EmailLeadsTracker\Settings\SettingsPage;
+use EmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 

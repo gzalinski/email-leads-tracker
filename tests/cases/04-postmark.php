@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\SendResult;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\SendResult;
 
 $r = ErrorClassifier::from_response( 200, '{"ErrorCode":0,"Message":"OK","MessageID":"abc-123"}' );
 same( '200 accepted', SendResult::ACCEPTED, $r->category );

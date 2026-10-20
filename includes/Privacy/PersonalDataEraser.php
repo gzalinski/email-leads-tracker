@@ -4,12 +4,12 @@
  *
  * The content is deleted (name, email, phone, message). The minimal lead stays: it contains no visitor data.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Privacy;
+namespace EmailLeadsTracker\Privacy;
 
-use LocationLeadTracker\Database\MessageRepository;
+use EmailLeadsTracker\Database\MessageRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,8 +22,8 @@ final class PersonalDataEraser {
 	 */
 	public static function register( $erasers ): array {
 		$erasers                          = is_array( $erasers ) ? $erasers : array();
-		$erasers['location-lead-tracker'] = array(
-			'eraser_friendly_name' => 'Location Lead Tracker',
+		$erasers['email-leads-tracker'] = array(
+			'eraser_friendly_name' => 'Email Leads Tracker',
 			'callback'             => array( self::class, 'erase' ),
 		);
 		return $erasers;

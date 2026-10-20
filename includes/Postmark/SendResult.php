@@ -9,10 +9,10 @@
  * - permanent — the problem concerns only this lead;
  * - config    — the problem affects all leads (immediate alert).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Postmark;
+namespace EmailLeadsTracker\Postmark;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,13 +2,13 @@
 /**
  * Activation, deactivation, migrations and cron scheduling.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker;
+namespace EmailLeadsTracker;
 
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,7 +48,7 @@ final class Installer {
 		if ( ! isset( $schedules['llt_every_minute'] ) ) {
 			$schedules['llt_every_minute'] = array(
 				'interval' => MINUTE_IN_SECONDS,
-				'display'  => 'Location Lead Tracker: every minute',
+				'display'  => 'Email Leads Tracker: every minute',
 			);
 		}
 		if ( ! isset( $schedules['weekly'] ) ) {

@@ -2,17 +2,17 @@
 /**
  * The test buttons and diagnostics on the settings page.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Http\ClientIp;
-use LocationLeadTracker\Postmark\EmailBuilder;
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\Postmark\PostmarkClient;
-use LocationLeadTracker\Postmark\SendResult;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Http\ClientIp;
+use EmailLeadsTracker\Postmark\EmailBuilder;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\Postmark\PostmarkClient;
+use EmailLeadsTracker\Postmark\SendResult;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -78,8 +78,8 @@ final class TestActions {
 			array(
 				'From'          => EmailBuilder::from(),
 				'To'            => $to,
-				'Subject'       => '[' . EmailBuilder::site_name() . '] Location Lead Tracker test email',
-				'TextBody'      => "The Postmark configuration works.\n\nThis email was sent from Settings → Location Lead Tracker → Postmark.",
+				'Subject'       => '[' . EmailBuilder::site_name() . '] Email Leads Tracker test email',
+				'TextBody'      => "The Postmark configuration works.\n\nThis email was sent from Settings → Email Leads Tracker → Postmark.",
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 				'Tag'           => 'llt-test',
 				'TrackOpens'    => false,

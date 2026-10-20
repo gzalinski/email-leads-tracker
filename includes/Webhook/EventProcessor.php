@@ -7,17 +7,17 @@
  * - `delivered` and `bounced` are final (monotonic rule);
  * - on `delivered`, the temporary content is deleted immediately.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Webhook;
+namespace EmailLeadsTracker\Webhook;
 
-use LocationLeadTracker\Alerts\AdminNotifier;
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Database\MessageRepository;
-use LocationLeadTracker\Database\Schema;
-use LocationLeadTracker\Lead\LeadStatus;
-use LocationLeadTracker\Util;
+use EmailLeadsTracker\Alerts\AdminNotifier;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Database\MessageRepository;
+use EmailLeadsTracker\Database\Schema;
+use EmailLeadsTracker\Lead\LeadStatus;
+use EmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

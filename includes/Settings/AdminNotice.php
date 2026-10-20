@@ -2,10 +2,10 @@
 /**
  * Messages shown after admin actions (test email, test alert, lead actions).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

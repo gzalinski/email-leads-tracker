@@ -1,4 +1,4 @@
-# Location Lead Tracker
+# Email Leads Tracker
 
 A WordPress plugin for location contact forms. Emails are sent through [Postmark](https://postmarkapp.com), every lead is recorded in the database, failed sends are retried automatically, and visitors' personal data is deleted after a configurable period.
 
@@ -14,7 +14,7 @@ Full architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 ## Installation
 
 1. Copy the folder into `wp-content/plugins/` and activate the plugin.
-2. **Settings → Location Lead Tracker → Postmark**: enter the Server API Token and click "Send test email".
+2. **Settings → Email Leads Tracker → Postmark**: enter the Server API Token and click "Send test email".
 3. **General**: the sender email and name (on the domain verified in Postmark).
 4. **Form**: the GDPR consent text, with a link to the privacy page.
 5. **Alerts**: the alert address, then "Send test alert".
@@ -56,7 +56,7 @@ define( 'LLT_ENCRYPTION_KEY', 'a-random-value-of-at-least-32-characters' );
 - The recipient is read from the post's `email` meta and **never appears in the HTML**.
 - The post must be published and have a valid `email`; otherwise editors see an explanatory message and visitors see no form.
 
-Templates can be overridden from the theme, in `location-lead-tracker/form.php` and `location-lead-tracker/email.php`.
+Templates can be overridden from the theme, in `email-leads-tracker/form.php` and `email-leads-tracker/email.php`.
 
 ## How it works
 
@@ -69,7 +69,7 @@ Templates can be overridden from the theme, in `location-lead-tracker/form.php` 
 
 ## Delivery confirmation (v2)
 
-1. **Settings → Location Lead Tracker → Webhook**: click "Generate credentials" and copy the full URL (the password is shown only once).
+1. **Settings → Email Leads Tracker → Webhook**: click "Generate credentials" and copy the full URL (the password is shown only once).
 2. In Postmark: Server → Message Stream `outbound` → Webhooks → Add webhook. Paste the URL, tick **Delivery** and **Bounce**, click **Verify**.
 3. Tick "Delivery confirmation" and save.
 
@@ -88,7 +88,7 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
 ## Failed leads in the admin (v3)
 
-**Settings → Location Lead Tracker → Failed leads**, administrators only (`manage_options`). The number of leads that need attention appears next to the plugin name in the menu.
+**Settings → Email Leads Tracker → Failed leads**, administrators only (`manage_options`). The number of leads that need attention appears next to the plugin name in the menu.
 
 - Views: Failed, Stuck (overdue in the queue by more than an hour), Bounced (v2), Dismissed.
 - Filters: error code, date range, search by location.
@@ -128,6 +128,7 @@ Note: some security plugins block visitor access to `wp-admin/admin-post.php`. T
 
 ## Versions
 
+- **1.3.0** — renamed to "Email Leads Tracker": main file `email-leads-tracker.php`, folder and text domain `email-leads-tracker`, PHP namespace `EmailLeadsTracker`, settings page `?page=email-leads-tracker`, theme override folder `email-leads-tracker/`. Data identifiers are unchanged (tables, options, the `llt_` prefix, the `[location_contact]` shortcode, the webhook route `llt/v1/postmark`, `wp llt`), so existing data and the Postmark webhook URL keep working. On an existing install: first make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, then deactivate and delete the old plugin, upload the new one and activate it.
 - **1.2.2** — all code comments, UI strings, tests and documentation translated to English. No functional changes.
 - **1.2.1** — fixes: the return URL on subdirectory installs, the definition of stuck leads (overdue, not just old), webhook compatibility with Application Passwords.
 - **1.2.0 (v3)** — the "Failed leads" tab: views, filters, select by filter, bulk resend and dismiss, "View message", menu counter.

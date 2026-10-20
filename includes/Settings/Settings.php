@@ -2,10 +2,10 @@
 /**
  * Reading settings. All settings live in the `llt_settings` option; secrets are encrypted.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

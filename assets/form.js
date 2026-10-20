@@ -1,5 +1,5 @@
 /**
- * Location Lead Tracker — submits the form via AJAX.
+ * Email Leads Tracker — submits the form via AJAX.
  * Without JavaScript the form still works (redirect back to the page with the message).
  */
 ( function () {

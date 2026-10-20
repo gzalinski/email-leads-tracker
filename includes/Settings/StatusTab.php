@@ -2,15 +2,15 @@
 /**
  * The "Status" tab: cron, leads per status, alerts (read-only).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
-use LocationLeadTracker\Database\LeadRepository;
-use LocationLeadTracker\Http\ProxyRanges;
-use LocationLeadTracker\Postmark\ErrorClassifier;
-use LocationLeadTracker\State;
+use EmailLeadsTracker\Database\LeadRepository;
+use EmailLeadsTracker\Http\ProxyRanges;
+use EmailLeadsTracker\Postmark\ErrorClassifier;
+use EmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 

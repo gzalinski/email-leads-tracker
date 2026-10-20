@@ -2,14 +2,14 @@
 /**
  * The [location_contact object_id="245"] shortcode.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Shortcode;
+namespace EmailLeadsTracker\Shortcode;
 
-use LocationLeadTracker\Form\Messages;
-use LocationLeadTracker\Settings\Settings;
-use LocationLeadTracker\Template;
+use EmailLeadsTracker\Form\Messages;
+use EmailLeadsTracker\Settings\Settings;
+use EmailLeadsTracker\Template;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ final class ContactShortcode {
 		$resolved = RecipientResolver::resolve( $object_id );
 		if ( is_wp_error( $resolved ) ) {
 			if ( current_user_can( 'edit_posts' ) ) {
-				return '<div class="llt-notice llt-notice--error"><strong>Location Lead Tracker:</strong> '
+				return '<div class="llt-notice llt-notice--error"><strong>Email Leads Tracker:</strong> '
 					. esc_html( $resolved->get_error_message() )
 					. ' The form is not shown to visitors.</div>';
 			}

@@ -2,13 +2,13 @@
 /**
  * Validation of the settings on save. Only the current tab's fields are saved; the rest stay unchanged.
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Settings;
+namespace EmailLeadsTracker\Settings;
 
-use LocationLeadTracker\Http\Cidr;
-use LocationLeadTracker\Shortcode\ContactShortcode;
+use EmailLeadsTracker\Http\Cidr;
+use EmailLeadsTracker\Shortcode\ContactShortcode;
 
 defined( 'ABSPATH' ) || exit;
 

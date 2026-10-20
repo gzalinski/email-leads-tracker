@@ -3,8 +3,8 @@
  * Environment-dependent behavior: subdirectory installs, Application Passwords.
  */
 // phpcs:ignoreFile
-use LocationLeadTracker\Shortcode\ContactShortcode;
-use LocationLeadTracker\Webhook\WebhookController;
+use EmailLeadsTracker\Shortcode\ContactShortcode;
+use EmailLeadsTracker\Webhook\WebhookController;
 
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	function esc_url_raw( $url ) {

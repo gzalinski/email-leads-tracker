@@ -2,12 +2,12 @@
 /**
  * Suggested privacy policy text (Settings → Privacy).
  *
- * @package LocationLeadTracker
+ * @package EmailLeadsTracker
  */
 
-namespace LocationLeadTracker\Privacy;
+namespace EmailLeadsTracker\Privacy;
 
-use LocationLeadTracker\Settings\Settings;
+use EmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,6 +36,6 @@ final class PolicyContent {
 		$html .= '<p>If sending fails, the data is kept for at most ' . $failed_days . ' days so that it can be resent. We only keep a minimal record of the request (the location, the date and the sending status), without your personal data.</p>';
 		$html .= '<p>Your IP address is not stored; we only use a cryptographic value derived from it, for one hour, to limit abuse.</p>';
 
-		wp_add_privacy_policy_content( 'Location Lead Tracker', wp_kses_post( $html ) );
+		wp_add_privacy_policy_content( 'Email Leads Tracker', wp_kses_post( $html ) );
 	}
 }
