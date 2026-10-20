@@ -1,6 +1,6 @@
 <?php
 /**
- * Finds the recipient email: the `email` post meta of the given post.
+ * Finds the recipient email: the `_directory_email` post meta of the given post.
  *
  * The meta key is fixed and there is no restriction by post type.
  *
@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class RecipientResolver {
 
-	const META_KEY = 'email';
+	const META_KEY = '_directory_email';
 
 	/**
 	 * @return array{post:\WP_Post,email:string}|\WP_Error
@@ -36,7 +36,7 @@ final class RecipientResolver {
 		$email = (string) apply_filters( 'eelt_recipient_email', $email, $post );
 
 		if ( ! is_email( $email ) ) {
-			return new \WP_Error( 'eelt_no_email', sprintf( 'Post #%d does not have a valid "email" field.', $object_id ) );
+			return new \WP_Error( 'eelt_no_email', sprintf( 'Post #%d does not have a valid email in the "%s" field.', $object_id, self::META_KEY ) );
 		}
 
 		return array(

@@ -18,7 +18,7 @@ Full architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 3. **General**: the sender email and name (on the domain verified in Postmark).
 4. **Form**: the GDPR consent text, with a link to the privacy page.
 5. **Alerts**: the alert address, then "Send test alert".
-6. On each location, fill in the `email` meta field (an ACF field named `email` works too).
+6. Each location post must have a valid address in the `_directory_email` post meta (the field your directory already uses).
 7. Add the shortcode to the page or template.
 
 ### Server cron (recommended)
@@ -64,8 +64,8 @@ The settings page shows these steps for 30 days after the migration.
 ```
 
 - `object_id` — the location post; if missing, the current post is used.
-- The recipient is read from the post's `email` meta and **never appears in the HTML**.
-- The post must be published and have a valid `email`; otherwise editors see an explanatory message and visitors see no form.
+- The recipient is read from the post's `_directory_email` meta and **never appears in the HTML**.
+- The post must be published and have a valid `_directory_email`; otherwise editors see an explanatory message and visitors see no form.
 
 Templates can be overridden from the theme, in `enspire-email-leads-tracker/form.php` and `enspire-email-leads-tracker/email.php`.
 
@@ -139,6 +139,7 @@ Note: some security plugins block visitor access to `wp-admin/admin-post.php`. T
 
 ## Versions
 
+- **1.5.1** — the recipient is read from the `_directory_email` post meta (was `email`).
 - **1.5.0** — all identifiers renamed to the `eelt` prefix: Postmark tag `eelt-lead`, shortcode `[enspire_contact_form]`, tables `eelt_leads` / `eelt_lead_messages`, options `eelt_*`, webhook route `eelt/v1/postmark`, WP-CLI `wp eelt`, constants `EELT_*`. Automatic migration of existing data (see "Upgrading from a version before 1.5.0").
 - **1.4.0** — slug changed to `enspire-email-leads-tracker`: main file `enspire-email-leads-tracker.php`, folder and text domain, settings page `?page=enspire-email-leads-tracker`, theme override folder `enspire-email-leads-tracker/`, PHP namespace `EnspireEmailLeadsTracker`. Data identifiers were unchanged in this version. On an existing install, WordPress sees it as a new plugin: make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, deactivate and delete the old plugin, then upload and activate the new one.
 - **1.3.1** — the display name is now "Enspire Email Leads Tracker". Slug, folder, namespace and data identifiers are unchanged from 1.3.0, so updating from 1.3.0 is a plain file replacement.

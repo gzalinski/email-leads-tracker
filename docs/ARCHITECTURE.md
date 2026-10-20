@@ -1,7 +1,7 @@
 # Enspire Email Leads Tracker — Architecture
 
 Architecture document for the "Enspire Email Leads Tracker" WordPress plugin.
-Final version: **Postmark only**, asynchronous sending, recipient taken from the `email` post meta, administrator alerts, WP-CLI, optional captcha, GDPR consent, real IP detection, and a failed-leads list in the admin. Delivery is split into **v1**, **v2** and **v3**.
+Final version: **Postmark only**, asynchronous sending, recipient taken from the `_directory_email` post meta, administrator alerts, WP-CLI, optional captcha, GDPR consent, real IP detection, and a failed-leads list in the admin. Delivery is split into **v1**, **v2** and **v3**.
 
 ---
 
@@ -12,7 +12,7 @@ Final version: **Postmark only**, asynchronous sending, recipient taken from the
 | 1 | There is no `manual_review`. Failures are reported by **email to the administrator**, and are handled through **WP-CLI** (v1) and the **failed-leads list** on the plugin page (v3). |
 | 2 | Sending is **asynchronous**: the form saves the lead and responds immediately; the email is sent right after. |
 | 3 | A single provider: **Postmark** (API for sending, webhook for real delivery). No generic SMTP and no other providers. |
-| 4 | The recipient email **never appears in the HTML**. It is read on the server from the post meta with the fixed key **`email`**. The key is not configurable and there is no restriction by post type. |
+| 4 | The recipient email **never appears in the HTML**. It is read on the server from the post meta with the fixed key **`_directory_email`**. The key is not configurable and there is no restriction by post type. |
 | 5 | The public form **does not use a nonce** (incompatible with page caching). Protection: signed context, honeypot, time-trap, rate limiting and an **optional captcha** (Cloudflare Turnstile). |
 | 6 | A GDPR consent checkbox with text editable in the settings; integration with the WordPress personal-data export/erase tools. |
 | 7 | **v1** = sending, retry, retention, settings, alerts, CLI, GDPR, captcha, IP detection. **v2** = Postmark delivery webhook + reconciliation. **v3** = failed-leads list in the admin, with selection and bulk resend, administrators only. Postmark only. |
@@ -85,7 +85,7 @@ includes/
 │   └── AdminNotice.php                # Messages after actions
 ├── Shortcode/
 │   ├── ContactShortcode.php           # [enspire_contact_form]
-│   ├── RecipientResolver.php          # object_id → "email" post meta
+│   ├── RecipientResolver.php          # object_id → "_directory_email" post meta
 │   └── ContextSigner.php              # HMAC for object_id + render time
 ├── Form/
 │   ├── SubmissionHandler.php          # admin-post.php?action=eelt_submit
@@ -186,7 +186,7 @@ flowchart LR
 
 ```php
 $post  = get_post( $object_id );
-$email = trim( (string) get_post_meta( $object_id, 'email', true ) );   // fixed key
+$email = trim( (string) get_post_meta( $object_id, '_directory_email', true ) );   // fixed key
 ```
 
 Validity conditions:
@@ -195,14 +195,14 @@ Validity conditions:
 2. The post exists and has the `publish` status.
 3. `is_email( $email )` is true.
 
-The meta key is fixed (`email`) and does not appear in the settings. There is no restriction by post type: any published post with a valid `email` field can be a recipient. It also works if the field was created with ACF, because ACF saves the value in post meta under the same key.
+The meta key is fixed (`_directory_email`) and does not appear in the settings. There is no restriction by post type: any published post with a valid `_directory_email` value can be a recipient. The leading underscore makes it a protected meta key, so WordPress hides it from the Custom Fields box; the value is managed by the directory that owns the location posts. A plain `email` meta key is ignored.
 
 The conditions are checked **twice**: at render time and on submit (the post may be unpublished or the email deleted in between).
 
-- **At render time**, if a condition fails: editors (`edit_posts`) see an explanatory message, for example "Post #312 does not have a valid "email" field."; visitors see no form.
+- **At render time**, if a condition fails: editors (`edit_posts`) see an explanatory message, for example "Post #312 does not have a valid email in the "_directory_email" field."; visitors see no form.
 - **On submit**, if a condition fails: no lead is created, and the visitor gets "The form is not available right now. Please try again later." The event is logged without personal data.
 
-Note: since there is no type restriction, the `object_id` in the shortcode must point to the right post. A wrong ID that points to another post with a valid `email` field will send messages there. Visitors cannot change the ID (it is signed, §5.3); the risk is only in how editors configure the shortcode.
+Note: since there is no type restriction, the `object_id` in the shortcode must point to the right post. A wrong ID that points to another post with a valid `_directory_email` value will send messages there. Visitors cannot change the ID (it is signed, §5.3); the risk is only in how editors configure the shortcode.
 
 ### 5.3. What ends up in the HTML
 
@@ -1026,7 +1026,7 @@ Filters: `eelt_email_subject`, `eelt_email_body`, `eelt_form_template`, `eelt_re
 | Level | v1 | v2 |
 | --- | --- | --- |
 | Unit | `ErrorClassifier`, `BackoffPolicy`, `ContextSigner`, `SecretStore`, `RecipientResolver`, `ClientIp` (direct, Cloudflare, local proxy, forged header) | Event mapping (including `Inactive`), monotonicity |
-| Recipient | Post without `email`, with an invalid `email`, unpublished between render and submit, shortcode without `object_id` outside the loop | — |
+| Recipient | Post without `_directory_email`, with an invalid `_directory_email`, a plain `email` meta ignored, unpublished between render and submit, shortcode without `object_id` outside the loop | — |
 | Reconciliation | — | Stopped webhook → leads become `delivered` / `bounced` through the Messages API; 429 stops the run |
 | Integration | Full submit with a mocked Postmark (`pre_http_request`); Postmark test token (`POSTMARK_API_TEST`) | Real Delivery / Bounce payloads |
 | Async | Fast response to the visitor; sending after the response; cron fallback | — |
@@ -1058,7 +1058,7 @@ The automated suite (`php tests/run.php`) runs without WordPress: WordPress func
 ### v1
 
 - The shortcode shows the form; the recipient email does not appear in the HTML.
-- The recipient is read from the `email` post meta of the specified or current post, at render time and again on submit.
+- The recipient is read from the `_directory_email` post meta of the specified or current post, at render time and again on submit.
 - Rate limiting works per visitor, also behind Cloudflare or a proxy; forged headers are ignored.
 - The lead and message are saved before sending; the visitor gets a response without waiting for Postmark.
 - The email is sent through the Postmark API, and the `MessageID` is attached to the lead.
@@ -1126,7 +1126,7 @@ If `EELT_ENCRYPTION_KEY` is added after the secrets were saved, they need to be 
 
 ### 22.4. Post-installation check
 
-1. Each location's post has the `email` meta field filled in with a valid address.
+1. Each location's post has a valid address in the `_directory_email` post meta.
 2. **Postmark** tab → "Send test email".
 3. **Alerts** tab → "Send test alert" (confirms that `wp_mail()` works).
 4. **Anti-spam** tab → the IP diagnostics show the administrator's real IP.

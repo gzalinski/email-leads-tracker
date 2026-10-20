@@ -34,11 +34,13 @@ $GLOBALS['eelt_test_posts'] = array(
 	246 => new WP_Post( array( 'ID' => 246, 'post_status' => 'draft' ) ),
 	247 => new WP_Post( array( 'ID' => 247 ) ),
 	248 => new WP_Post( array( 'ID' => 248 ) ),
+	249 => new WP_Post( array( 'ID' => 249 ) ),
 );
 $GLOBALS['eelt_test_meta'] = array(
-	245 => array( 'email' => ' downtown@example.com ' ),
-	246 => array( 'email' => 'draft@example.com' ),
-	247 => array( 'email' => 'not-an-email' ),
+	245 => array( '_directory_email' => ' downtown@example.com ' ),
+	246 => array( '_directory_email' => 'draft@example.com' ),
+	247 => array( '_directory_email' => 'not-an-email' ),
+	249 => array( 'email' => 'plain@example.com' ),
 );
 
 $resolved = RecipientResolver::resolve( 245 );
@@ -47,4 +49,6 @@ same( 'post does not exist', 'eelt_no_post', RecipientResolver::resolve( 999 )->
 same( 'post not published', 'eelt_not_published', RecipientResolver::resolve( 246 )->get_error_code() );
 same( 'invalid email', 'eelt_no_email', RecipientResolver::resolve( 247 )->get_error_code() );
 same( 'no email field', 'eelt_no_email', RecipientResolver::resolve( 248 )->get_error_code() );
+same( 'plain "email" meta is ignored', 'eelt_no_email', RecipientResolver::resolve( 249 )->get_error_code() );
+same( 'meta key', '_directory_email', RecipientResolver::META_KEY );
 same( 'object_id zero', 'eelt_no_post', RecipientResolver::resolve( 0 )->get_error_code() );
