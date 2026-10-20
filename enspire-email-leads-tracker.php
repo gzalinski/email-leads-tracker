@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Enspire Email Leads Tracker
  * Description:       Contact form for locations: sending through Postmark, lead tracking, automatic retries, alerts and controlled retention of personal data.
- * Version:           1.5.1
+ * Version:           1.6.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'EELT_VERSION', '1.5.1' );
+define( 'EELT_VERSION', '1.6.0' );
 define( 'EELT_DB_VERSION', '1' );
 define( 'EELT_FILE', __FILE__ );
 define( 'EELT_DIR', plugin_dir_path( __FILE__ ) );

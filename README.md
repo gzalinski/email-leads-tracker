@@ -58,16 +58,52 @@ The settings page shows these steps for 30 days after the migration.
 
 ## Usage
 
+There are two shortcodes:
+
+| Shortcode | Shows |
+| --- | --- |
+| `[enspire_contact_form]` | The form directly in the page. |
+| `[enspire_contact_popup]` | A button. Clicking it opens the form in a [SweetAlert2](https://sweetalert2.github.io/) popup; success and error messages are shown in the popup too. |
+
 ```
-[enspire_contact_form object_id="245"]
 [enspire_contact_form]
+[enspire_contact_form object_id="245" class="my-form" submit_text="Send message"]
+
+[enspire_contact_popup]
+[enspire_contact_popup object_id="245" button_text="Write to us" button_class="btn btn-primary" title="Contact this location" submit_text="Send message" popup_class="my-popup"]
 ```
 
-- `object_id` — the location post; if missing, the current post is used.
+Attributes of `[enspire_contact_form]`:
+
+| Attribute | Default | Description |
+| --- | --- | --- |
+| `object_id` | the current post | The location post. |
+| `class` | — | Extra CSS classes on the form wrapper (`.eelt-form-wrap`). |
+| `submit_text` | `Send` | Text of the submit button. |
+
+Attributes of `[enspire_contact_popup]`:
+
+| Attribute | Default | Description |
+| --- | --- | --- |
+| `object_id` | the current post | The location post. |
+| `button_text` | `Contact us` | Text of the button that opens the popup. |
+| `button_class` | — | Extra CSS classes on the button (it always keeps `eelt-popup-button`), e.g. your theme's `btn btn-primary`. |
+| `class` | — | Extra CSS classes on the wrapper (`.eelt-popup`). |
+| `title` | `Send us a message` | Popup title. |
+| `submit_text` | `Send` | Text of the popup's send button. |
+| `popup_class` | — | Extra CSS classes on the SweetAlert2 popup (it always keeps `eelt-swal`). |
+| `error_title` | `Message not sent` | Title of the error message (e.g. too many messages, expired form). |
+
+In the popup, field errors and errors the visitor can fix (anti-spam check, sent too fast, connection problem) stay in the open popup, next to the fields. After a successful send, or an error that a retry would not fix, the form is replaced by a SweetAlert2 success or error message. Without JavaScript the button is hidden and the form is shown inline instead.
+
+SweetAlert2 (MIT) is bundled in `assets/vendor/sweetalert2/` and loaded only on pages with the popup shortcode, so visitors' browsers do not contact a third-party CDN. If your theme already registers a script with the handle `sweetalert2`, that one is reused. If the theme loads SweetAlert2 under another handle, disable the bundled copy with `add_filter( 'eelt_enqueue_sweetalert2', '__return_false' );`.
+
+General:
+
 - The recipient is read from the post's `_directory_email` meta and **never appears in the HTML**.
 - The post must be published and have a valid `_directory_email`; otherwise editors see an explanatory message and visitors see no form.
 
-Templates can be overridden from the theme, in `enspire-email-leads-tracker/form.php` and `enspire-email-leads-tracker/email.php`.
+Templates can be overridden from the theme, in `enspire-email-leads-tracker/form.php`, `enspire-email-leads-tracker/popup.php` and `enspire-email-leads-tracker/email.php`.
 
 ## How it works
 
@@ -139,6 +175,7 @@ Note: some security plugins block visitor access to `wp-admin/admin-post.php`. T
 
 ## Versions
 
+- **1.6.0** — new `[enspire_contact_popup]` shortcode: a button that opens the form in a SweetAlert2 popup (bundled), with attributes for the button text and CSS classes, the popup title, the send button text and the popup classes. `[enspire_contact_form]` gained `class` and `submit_text`. Fix: the AJAX submit sent the request to a wrong URL (the hidden `action` field shadowed `form.action`), so JavaScript submissions failed with a connection error.
 - **1.5.1** — the recipient is read from the `_directory_email` post meta (was `email`).
 - **1.5.0** — all identifiers renamed to the `eelt` prefix: Postmark tag `eelt-lead`, shortcode `[enspire_contact_form]`, tables `eelt_leads` / `eelt_lead_messages`, options `eelt_*`, webhook route `eelt/v1/postmark`, WP-CLI `wp eelt`, constants `EELT_*`. Automatic migration of existing data (see "Upgrading from a version before 1.5.0").
 - **1.4.0** — slug changed to `enspire-email-leads-tracker`: main file `enspire-email-leads-tracker.php`, folder and text domain, settings page `?page=enspire-email-leads-tracker`, theme override folder `enspire-email-leads-tracker/`, PHP namespace `EnspireEmailLeadsTracker`. Data identifiers were unchanged in this version. On an existing install, WordPress sees it as a new plugin: make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, deactivate and delete the old plugin, then upload and activate the new one.

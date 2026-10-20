@@ -6,16 +6,21 @@
  * The hidden fields and the field names (eelt_*) must be kept.
  *
  * Variables: $eelt — form_id, action, ctx, sig, return_url, status, status_ok, status_message,
- * consent_html, turnstile_key, post.
+ * consent_html, turnstile_key, post, mode ('inline' or 'popup'), class, submit_text.
+ *
+ * In popup mode the form has no status box and no submit button: the SweetAlert2 popup shows
+ * the messages and its confirm button submits the form.
  *
  * @package EnspireEmailLeadsTracker
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$eelt_id = $eelt['form_id'];
+$eelt_id    = $eelt['form_id'];
+$eelt_popup = 'popup' === ( $eelt['mode'] ?? 'inline' );
+$eelt_class = trim( 'eelt-form-wrap ' . ( $eelt['class'] ?? '' ) );
 ?>
-<div class="eelt-form-wrap" id="<?php echo esc_attr( $eelt_id ); ?>">
+<div class="<?php echo esc_attr( $eelt_class ); ?>" id="<?php echo esc_attr( $eelt_id ); ?>">
 	<form class="eelt-form" method="post" action="<?php echo esc_url( $eelt['action'] ); ?>" novalidate>
 		<input type="hidden" name="action" value="eelt_submit">
 		<input type="hidden" name="eelt_ctx" value="<?php echo esc_attr( $eelt['ctx'] ); ?>">
@@ -28,7 +33,9 @@ $eelt_id = $eelt['form_id'];
 			<input type="text" id="<?php echo esc_attr( $eelt_id ); ?>-hp" name="eelt_hp" value="" tabindex="-1" autocomplete="off">
 		</div>
 
-		<div class="eelt-status<?php echo $eelt['status'] ? ( $eelt['status_ok'] ? ' eelt-status--ok' : ' eelt-status--error' ) : ''; ?>" role="status" aria-live="polite"><?php echo esc_html( $eelt['status_message'] ); ?></div>
+		<?php if ( ! $eelt_popup ) : ?>
+			<div class="eelt-status<?php echo $eelt['status'] ? ( $eelt['status_ok'] ? ' eelt-status--ok' : ' eelt-status--error' ) : ''; ?>" role="status" aria-live="polite"><?php echo esc_html( $eelt['status_message'] ); ?></div>
+		<?php endif; ?>
 
 		<p class="eelt-field">
 			<label for="<?php echo esc_attr( $eelt_id ); ?>-name">Full name <span class="eelt-required" aria-hidden="true">*</span></label>
@@ -63,11 +70,14 @@ $eelt_id = $eelt['form_id'];
 		</p>
 
 		<?php if ( '' !== $eelt['turnstile_key'] ) : ?>
-			<div class="cf-turnstile" data-sitekey="<?php echo esc_attr( $eelt['turnstile_key'] ); ?>"></div>
+			<?php // In the popup the widget is rendered explicitly when the popup opens. ?>
+			<div class="<?php echo $eelt_popup ? 'eelt-turnstile' : 'cf-turnstile'; ?>" data-sitekey="<?php echo esc_attr( $eelt['turnstile_key'] ); ?>"></div>
 		<?php endif; ?>
 
-		<p class="eelt-actions">
-			<button type="submit" class="eelt-submit">Send</button>
-		</p>
+		<?php if ( ! $eelt_popup ) : ?>
+			<p class="eelt-actions">
+				<button type="submit" class="eelt-submit"><?php echo esc_html( $eelt['submit_text'] ?? 'Send' ); ?></button>
+			</p>
+		<?php endif; ?>
 	</form>
 </div>

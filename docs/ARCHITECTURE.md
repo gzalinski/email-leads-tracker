@@ -84,7 +84,7 @@ includes/
 │   ├── StatusTab.php                  # The Status tab
 │   └── AdminNotice.php                # Messages after actions
 ├── Shortcode/
-│   ├── ContactShortcode.php           # [enspire_contact_form]
+│   ├── ContactShortcode.php           # [enspire_contact_form] and [enspire_contact_popup]
 │   ├── RecipientResolver.php          # object_id → "_directory_email" post meta
 │   └── ContextSigner.php              # HMAC for object_id + render time
 ├── Form/
@@ -130,8 +130,8 @@ includes/
     ├── BulkActionHandler.php          # Row and bulk actions
     ├── LeadDetailsAjax.php            # "View message"
     └── MenuBadge.php                  # Menu counter
-templates/   form.php, email.php
-assets/      form.js, form.css, admin.js, admin.css
+templates/   form.php, popup.php, email.php
+assets/      form.js, popup.js, form.css, admin.js, admin.css, vendor/sweetalert2/ (bundled, MIT)
 tests/       run.php, check-calls.php, cases/ (no WordPress: stubs + SQLite)
 ```
 
@@ -174,13 +174,30 @@ flowchart LR
 
 ### 5.1. Usage
 
+There are two shortcodes, both rendered by `ContactShortcode` from the same form template:
+
 ```
-[enspire_contact_form object_id="245"]
+[enspire_contact_form object_id="245" class="…" submit_text="Send"]
 [enspire_contact_form]                    ← uses the current post
+
+[enspire_contact_popup object_id="245" button_text="Contact us" button_class="btn btn-primary"
+                       title="Send us a message" submit_text="Send" popup_class="…" class="…" error_title="Message not sent"]
 ```
 
 - `object_id` is optional; if missing, `get_the_ID()` is used.
 - The `email` attribute **no longer exists**.
+- Class attributes are split on spaces and each class goes through `sanitize_html_class()`; text attributes through `sanitize_text_field()`.
+
+#### 5.1.1. The popup (`[enspire_contact_popup]`)
+
+- `templates/popup.php` outputs a `<button class="eelt-popup-button …" hidden>` with `data-eelt-*` attributes (title, send text, popup class, error title), a `<template>` holding the form and a `<noscript>` holding the same form inline. `popup.js` un-hides the button, so visitors without JavaScript see only the inline form.
+- The popup form is rendered by `form.php` in `popup` mode: no status box and no submit button (the SweetAlert2 confirm button submits it); a Turnstile widget uses the `eelt-turnstile` class and is rendered explicitly when the popup opens.
+- On click, `popup.js` clones the template (adding a suffix to the IDs, so each opening has unique IDs) and opens `Swal.fire()` with the form as `html`. `preConfirm` submits through `window.eeltForm.submit()` (the same AJAX request as the inline form):
+  - `validation`, `captcha`, `too_fast` or a connection error → the popup stays open with `Swal.showValidationMessage()` and the field errors next to the fields; the Turnstile widget is reset;
+  - success → a SweetAlert2 success message (title = the confirmation message from the settings);
+  - `invalid`, `rate_limited`, `unavailable`, `error` → a SweetAlert2 error message (`error_title` + the message).
+- Enter in a single-line field clicks the confirm button; the first visible field gets the focus (never the honeypot).
+- SweetAlert2 11.26.25 (MIT) is bundled in `assets/vendor/sweetalert2/sweetalert2.all.min.js` (CSS included) and registered as `sweetalert2` only if no script with that handle is registered; the `eelt_enqueue_sweetalert2` filter disables it. If `window.Swal` is missing at click time, the form is shown inline under the button.
 
 ### 5.2. Resolving the recipient (`RecipientResolver`)
 
@@ -997,7 +1014,7 @@ The result of each action is kept in a per-user transient and shown as an admin 
 | Hook | Component |
 | --- | --- |
 | `init` | Shortcode |
-| `wp_enqueue_scripts` | `form.js` + Turnstile only on pages with the shortcode |
+| `wp_enqueue_scripts` | `form.js` + Turnstile only on pages with a shortcode; `popup.js` + SweetAlert2 only with `[enspire_contact_popup]` |
 | `admin_menu`, `admin_init` | Settings page |
 | `admin_post_eelt_test_email` | Test email |
 | `admin_post_eelt_test_alert` | Test alert |
@@ -1017,7 +1034,7 @@ The result of each action is kept in a per-user transient and shown as an admin 
 | `set-screen-option` | Rows per page (v3) |
 | activation / deactivation | `Installer` |
 
-Filters: `eelt_email_subject`, `eelt_email_body`, `eelt_form_template`, `eelt_recipient_email`.
+Filters: `eelt_email_subject`, `eelt_email_body`, `eelt_form_template`, `eelt_recipient_email`, `eelt_enqueue_sweetalert2`, `shortcode_atts_enspire_contact_form`, `shortcode_atts_enspire_contact_popup`.
 
 ---
 

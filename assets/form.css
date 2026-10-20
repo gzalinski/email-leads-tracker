@@ -20,3 +20,21 @@
 .eelt-form .cf-turnstile { margin: 0 0 1em; }
 .eelt-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
 .eelt-notice { padding: .75em 1em; border-left: 4px solid #b91c1c; background: #fef2f2; color: #1c1917; }
+
+/* [enspire_contact_popup]: the button and the SweetAlert2 popup. */
+.eelt-popup-button[hidden] { display: none; }
+.eelt-swal.swal2-popup { width: min( 40em, 100% - 2em ); }
+.eelt-swal .swal2-html-container { margin: 0; padding: 1em 1.5em 0; text-align: left; font-size: 1rem; }
+@media (max-width: 480px) {
+	.eelt-swal.swal2-popup { padding-left: 0; padding-right: 0; }
+	.eelt-swal .swal2-html-container { padding: 1em 1em 0; }
+}
+.eelt-swal .eelt-form-wrap { margin: 0; }
+.eelt-swal .eelt-form input[type="text"],
+.eelt-swal .eelt-form input[type="email"],
+.eelt-swal .eelt-form input[type="tel"],
+.eelt-swal .eelt-form textarea { padding: .5em .65em; border: 1px solid #d1d5db; border-radius: 4px; font: inherit; }
+.eelt-swal .eelt-form .eelt-actions,
+.eelt-swal .eelt-form .eelt-status { display: none; }
+.eelt-swal .eelt-form .eelt-turnstile { margin: 0 0 1em; }
+.eelt-popup-inline { margin-top: 1em; }
