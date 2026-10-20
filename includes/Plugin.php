@@ -54,6 +54,7 @@ final class Plugin {
 
 		// Confirmarea livrării (v2).
 		add_action( 'rest_api_init', array( WebhookController::class, 'register' ) );
+		add_filter( 'application_password_is_api_request', array( WebhookController::class, 'skip_application_passwords' ) );
 		add_action( 'llt_reconcile_delivery', array( Reconciler::class, 'run' ) );
 		WebhookSettings::register();
 

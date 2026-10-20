@@ -63,77 +63,76 @@ Schema bazei de date include coloanele pentru v2 și v3 încă din v1, ca să nu
 
 ## 3. Structura fișierelor
 
+Structura implementată (repo `gzalinski/email-leads-tracker`):
+
 ```
-location-lead-tracker/
-├── location-lead-tracker.php          # Bootstrap: header, autoload, hooks
-├── uninstall.php                      # Ștergere date (dacă e bifat în setări)
-├── includes/
-│   ├── Plugin.php                     # Înregistrează componentele
-│   ├── Installer.php                  # dbDelta, versiune schemă, cron
-│   ├── Settings/
-│   │   ├── Settings.php               # Citire setări + valori implicite
-│   │   ├── SettingsPage.php           # Pagina din wp-admin (Settings API)
-│   │   ├── SettingsSanitizer.php      # Validare la salvare
-│   │   ├── SecretStore.php            # Criptare token Postmark, chei captcha, parolă webhook
-│   │   └── TestEmailAction.php        # „Trimite email de test”
-│   ├── Shortcode/
-│   │   ├── ContactShortcode.php       # [location_contact]
-│   │   ├── RecipientResolver.php      # object_id → post meta „email”
-│   │   └── ContextSigner.php          # Semnare HMAC pentru object_id
-│   ├── Form/
-│   │   ├── SubmissionHandler.php      # Endpoint submit
-│   │   ├── Validator.php              # Câmpuri + consimțământ
-│   │   ├── SpamGuard.php              # Honeypot + time-trap
-│   │   ├── RateLimiter.php            # Limită pe IP (hash)
-│   │   └── Captcha/
-│   │       └── TurnstileVerifier.php  # Verificare server-side
-│   ├── Http/
-│   │   ├── ClientIp.php               # Detectarea IP-ului real (direct / Cloudflare / proxy)
-│   │   └── ProxyRanges.php            # Lista IP-urilor Cloudflare, actualizată săptămânal
-│   ├── Lead/
-│   │   ├── LeadService.php            # Creare lead, trimitere, tranziții
-│   │   └── LeadStatus.php             # Stări + reguli de tranziție
-│   ├── Postmark/
-│   │   ├── PostmarkClient.php         # POST /email, GET /messages/outbound
-│   │   ├── EmailBuilder.php           # Construiește payload-ul din lead + setări
-│   │   ├── SendResult.php             # accepted / temporary / ambiguous / permanent / config
-│   │   └── ErrorClassifier.php        # HTTP + ErrorCode → categorie
-│   ├── Webhook/                       # v2
-│   │   ├── WebhookController.php      # /wp-json/llt/v1/postmark
-│   │   ├── WebhookAuth.php            # Basic Auth
-│   │   ├── EventProcessor.php         # Delivery / Bounce → lead
-│   │   └── Reconciler.php             # Recuperează evenimentele ratate prin Messages API
-│   ├── Queue/
-│   │   ├── SendWorker.php             # Trimite leadurile scadente
-│   │   ├── BackoffPolicy.php          # Program retry + jitter + Retry-After
-│   │   └── Lock.php                   # Claim atomic pe rând
-│   ├── Alerts/
-│   │   ├── AdminNotifier.php          # Email către administrator, cu limitare
-│   │   └── HealthCheck.php            # Verificare orară: leaduri blocate, webhook oprit
-│   ├── Privacy/
-│   │   ├── PersonalDataExporter.php   # Unelte → Exportă date personale
-│   │   ├── PersonalDataEraser.php     # Unelte → Șterge date personale
-│   │   └── PolicyContent.php          # Text sugerat pentru politica de confidențialitate
-│   ├── Retention/
-│   │   └── RetentionService.php       # Ștergere conținut
-│   ├── Cli/
-│   │   └── Commands.php               # wp llt ...
-│   ├── Admin/                         # v3
-│   │   ├── FailedLeadsTab.php         # Tab „Leaduri eșuate” + notice-uri
-│   │   ├── FailedLeadsTable.php       # WP_List_Table: coloane, filtre, bulk actions
-│   │   ├── LeadActions.php            # Retrimite / Ignoră / Șterge conținut
-│   │   ├── LeadDetailsAjax.php        # „Vezi mesajul” la cerere
-│   │   └── MenuBadge.php              # Contor în meniul admin
-│   └── Database/
-│       ├── Schema.php
-│       ├── LeadRepository.php
-│       └── MessageRepository.php
-├── templates/
-│   ├── form.php                       # Override posibil din temă
-│   └── email.php
-└── assets/
-    ├── form.js                        # Submit AJAX, Turnstile
-    └── admin.js                       # Buton „Generează”, „Copiază”
+location-lead-tracker.php              # Bootstrap: header, autoload PSR-4, activare/dezactivare
+uninstall.php                          # Ștergere date (dacă e bifat în setări)
+includes/
+├── Plugin.php                         # Înregistrează toate componentele
+├── Installer.php                      # dbDelta, versiune schemă, evenimente cron
+├── State.php                          # Starea internă (opțiunea llt_state)
+├── Template.php                       # Randare template-uri, override din temă
+├── Util.php                           # Date UTC, mascare emailuri, ID-uri
+├── Settings/
+│   ├── Settings.php                   # Citire setări + valori implicite
+│   ├── SettingsFields.php             # Taburi și câmpuri (extensibile prin filtrul llt_settings_tabs)
+│   ├── SettingsPage.php               # Pagina Setări → Location Lead Tracker
+│   ├── SettingsSanitizer.php          # Validare la salvare (doar tabul curent)
+│   ├── SecretStore.php                # Criptare libsodium
+│   ├── TestActions.php                # Email de test, alertă de test, diagnostic IP
+│   ├── StatusTab.php                  # Tabul Stare
+│   └── AdminNotice.php                # Mesaje după acțiuni
+├── Shortcode/
+│   ├── ContactShortcode.php           # [location_contact]
+│   ├── RecipientResolver.php          # object_id → post meta „email”
+│   └── ContextSigner.php              # HMAC pentru object_id + momentul randării
+├── Form/
+│   ├── SubmissionHandler.php          # admin-post.php?action=llt_submit
+│   ├── Validator.php                  # Câmpuri + consimțământ
+│   ├── RateLimiter.php                # Limită pe IP (hash HMAC)
+│   ├── Messages.php                   # Mesajele pentru vizitator
+│   └── Captcha/TurnstileVerifier.php  # Verificare server-side
+├── Http/
+│   ├── ClientIp.php                   # IP-ul real (direct / Cloudflare / proxy)
+│   ├── ProxyRanges.php                # Lista Cloudflare, actualizată săptămânal
+│   └── Cidr.php                       # Apartenența IP ↔ rețea (IPv4/IPv6)
+├── Lead/
+│   ├── LeadService.php                # Creare lead + conținut (tranzacție)
+│   ├── LeadStatus.php                 # Stări + regula de monotonie
+│   └── LeadActions.php                # Retrimite / Ignoră / Restaurează / Șterge conținut (CLI și admin)
+├── Postmark/
+│   ├── PostmarkClient.php             # POST /email, căutare după metadata, detalii mesaj, bounce
+│   ├── EmailBuilder.php               # Payload-ul emailului
+│   ├── SendResult.php                 # accepted / temporary / ambiguous / permanent / config
+│   └── ErrorClassifier.php            # HTTP + ErrorCode + erori cURL → categorie
+├── Queue/
+│   ├── SendWorker.php                 # Trimitere imediată și din coadă
+│   ├── BackoffPolicy.php              # Intervale + jitter + Retry-After
+│   └── Lock.php                       # Lock pe rând și lock global de worker
+├── Alerts/
+│   ├── AdminNotifier.php              # Alerte prin wp_mail(), limitare, revenire, bounce, webhook oprit
+│   └── HealthCheck.php                # Verificare orară
+├── Retention/RetentionService.php      # Ștergerea conținutului
+├── Privacy/                           # Export, ștergere, text pentru politica de confidențialitate
+├── Database/                          # Schema, LeadRepository, MessageRepository
+├── Cli/Commands.php                   # wp llt ...
+├── Webhook/                           # v2
+│   ├── WebhookController.php          # POST /wp-json/llt/v1/postmark
+│   ├── WebhookAuth.php                # Basic Auth + filtru IP
+│   ├── EventProcessor.php             # Delivery / Bounce → lead
+│   ├── Reconciler.php                 # Reconciliere orară prin Messages API
+│   └── WebhookSettings.php            # Tabul Webhook, câmpurile v2, rânduri în Stare/CLI
+└── Admin/                             # v3
+    ├── FailedLeadsTab.php             # Tabul „Leaduri eșuate”
+    ├── FailedLeadsTable.php           # WP_List_Table
+    ├── FailedLeadsQuery.php           # Vizualizări, filtre, „toate după filtru”
+    ├── BulkActionHandler.php          # Acțiuni pe rând și în masă
+    ├── LeadDetailsAjax.php            # „Vezi mesajul”
+    └── MenuBadge.php                  # Contor în meniu
+templates/   form.php, email.php
+assets/      form.js, form.css, admin.js, admin.css
+tests/       run.php, check-calls.php, cases/ (fără WordPress: stub-uri + SQLite)
 ```
 
 Namespace: `LocationLeadTracker\`. Autoload PSR-4.
@@ -533,7 +532,7 @@ WHERE id = %d
 | --- | --- |
 | Eroare de configurare (categoria `config`, §7.3) | imediat |
 | N leaduri `failed` consecutive (setare, implicit 3) | la atingerea pragului |
-| Leaduri `pending` mai vechi de 1 oră (cron oprit sau Postmark indisponibil) | la verificarea orară (`HealthCheck`) |
+| Leaduri `pending` scadente de peste 1 oră, dar netrimise (cron oprit sau Postmark indisponibil); leadurile care așteaptă un retry programat nu se numără | la verificarea orară (`HealthCheck`) |
 | v2: bounce | opțional (setare), grupat |
 | v2: webhook aparent oprit (§13.5) | la verificarea orară |
 | Revenire la normal după o alertă | o singură notificare „Trimiterea funcționează din nou” |
@@ -643,6 +642,8 @@ Utilizatorul și parola se generează din pagina de setări; URL-ul complet se c
 - Postmark **nu semnează** webhookurile (fără HMAC). Metodele recomandate sunt exact Basic Auth + HTTPS + opțional filtrarea după IP.
 - La crearea sau editarea webhookului, Postmark trimite câte o cerere de test pentru fiecare tip de eveniment și așteaptă `200`. Endpointul trebuie deci să răspundă `200` și la payload-urile de test (evenimente necorelate → `200`).
 - Delivery și Bounce se activează separat, pe același URL.
+
+**Application Passwords:** pe site-urile care folosesc parole de aplicație, WordPress ar încerca să autentifice credențialele Basic Auth ale Postmark ca utilizator WordPress și ar respinge cererea cu 401 înainte să ajungă la plugin. Pluginul exclude doar ruta webhookului din această verificare (filtrul `application_password_is_api_request`).
 
 **Filtru opțional de IP** (setare, dezactivat implicit): acceptă cereri doar de la IP-urile de webhook publicate de Postmark (`3.134.147.250`, `50.31.156.6`, `50.31.156.77`, `18.217.206.57` la data verificării). IP-ul sursă se determină cu `ClientIp` (§6.5), deci funcționează și în spatele Cloudflare. Este dezactivat implicit pentru că Postmark poate schimba IP-urile, iar Basic Auth este suficient.
 
@@ -885,7 +886,7 @@ Bannerul conține linkul către tabul Postmark și butonul „Trimite email de t
 
 | Coloană | Conținut |
 | --- | --- |
-| ☐ | Checkbox (dezactivat dacă leadul nu poate fi retrimis) |
+| ☐ | Checkbox (activ pentru toate rândurile, ca leadurile fără conținut să poată fi ignorate în masă; la retrimitere sunt sărite și raportate) |
 | ID | `#812` |
 | Data | `created_at`, în fusul orar al site-ului |
 | Locație | Titlul postării, cu link spre editare |
@@ -900,7 +901,7 @@ Bannerul conține linkul către tabul Postmark și butonul „Trimite email de t
 | Vizualizare | Criteriu |
 | --- | --- |
 | Eșuate (implicit) | `send_status = failed`, `dismissed_at IS NULL` |
-| Blocate | `send_status = pending` de peste 1 oră |
+| Blocate | `send_status = pending` și `next_retry_at` depășit cu peste 1 oră |
 | Respinse (v2) | `delivery_status = bounced`, `dismissed_at IS NULL` |
 | Ignorate | `dismissed_at IS NOT NULL` |
 
@@ -962,7 +963,7 @@ Reguli:
 
 ### 17.7. Notice-uri după acțiuni
 
-Rezultatul fiecărei acțiuni se transmite prin redirect cu parametri (`?llt_done=resend&count=12&skipped=2`) și se afișează ca admin notice standard. Lista arată starea actualizată la reîncărcare; leadurile retrimise apar în vizualizarea „Blocate” doar dacă rămân `pending` peste 1 oră.
+Rezultatul fiecărei acțiuni se păstrează într-un transient per utilizator și se afișează ca admin notice după redirect, cu filtrele curente păstrate. Leadurile retrimise apar în vizualizarea „Blocate” doar dacă nu sunt trimise la peste o oră după ce au devenit scadente.
 
 ---
 

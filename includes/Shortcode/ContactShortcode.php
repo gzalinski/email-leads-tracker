@@ -55,8 +55,7 @@ final class ContactShortcode {
 		}
 		// phpcs:enable
 
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '/';
-		$return_url  = remove_query_arg( array( 'llt_status', 'llt_form' ), home_url( $request_uri ) );
+		$return_url = remove_query_arg( array( 'llt_status', 'llt_form' ), self::current_url() );
 
 		return Template::render(
 			'form.php',
@@ -102,6 +101,20 @@ final class ContactShortcode {
 			'em'     => array(),
 			'br'     => array(),
 		);
+	}
+
+	/**
+	 * URL-ul paginii curente. Domeniul se ia din home_url() (nu din headerul Host), iar calea din REQUEST_URI,
+	 * care include deja subdirectorul unei instalări de tip example.com/blog/.
+	 */
+	public static function current_url(): string {
+		$home = wp_parse_url( home_url() );
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( '' === $uri || '/' !== $uri[0] ) {
+			$uri = '/';
+		}
+		$origin = ( $home['scheme'] ?? 'https' ) . '://' . ( $home['host'] ?? '' ) . ( isset( $home['port'] ) ? ':' . $home['port'] : '' );
+		return esc_url_raw( $origin . $uri );
 	}
 
 	public static function turnstile_enabled(): bool {

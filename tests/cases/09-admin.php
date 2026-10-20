@@ -38,14 +38,18 @@ MessageRepository::delete( $f4 );
 
 // Lead blocat în coadă și lead respins.
 $stuck = LeadService::create( $data, 245, 'x@example.md' );
-$wpdb->query( "UPDATE wp_location_leads SET created_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "' WHERE id = {$stuck}" );
+$wpdb->query( "UPDATE wp_location_leads SET created_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "' WHERE id = {$stuck}" );
 $fresh = LeadService::create( $data, 245, 'x@example.md' );
+// Lead vechi care așteaptă un retry programat peste câteva ore: nu este blocat.
+$waiting = LeadService::create( $data, 245, 'x@example.md' );
+$wpdb->query( "UPDATE wp_location_leads SET created_at = '" . Util::now( -7 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( 3 * HOUR_IN_SECONDS ) . "' WHERE id = {$waiting}" );
 $bounced = LeadService::create( $data, 300, 'x@example.md' );
 $wpdb->query( "UPDATE wp_location_leads SET send_status = 'accepted', delivery_status = 'bounced', last_error_code = 'bounce:HardBounce' WHERE id = {$bounced}" );
 
 // Vizualizări.
 same( 'vizualizare eșuate', 4, FailedLeadsQuery::count( 'failed', array() ) );
-same( 'vizualizare blocate (doar > 1 h)', 1, FailedLeadsQuery::count( 'stuck', array() ) );
+same( 'vizualizare blocate (scadente de > 1 h)', array( $stuck ), FailedLeadsQuery::ids( 'stuck', array() ) );
+same( 'HealthCheck numără doar leadurile întârziate', 1, LeadRepository::count_stuck( Util::now( -HOUR_IN_SECONDS ) ) );
 same( 'vizualizare respinse', 1, FailedLeadsQuery::count( 'bounced', array() ) );
 same( 'vizualizare ignorate', 0, FailedLeadsQuery::count( 'dismissed', array() ) );
 same( 'vizualizare necunoscută → eșuate', 'failed', FailedLeadsQuery::sanitize_view( 'orice' ) );

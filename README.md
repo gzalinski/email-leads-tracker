@@ -128,6 +128,7 @@ Notă: unele pluginuri de securitate blochează accesul vizitatorilor la `wp-adm
 
 ## Versiuni
 
+- **1.2.1** — corecturi: URL-ul de întoarcere pentru instalări în subdirector, definiția leadurilor blocate (scadente, nu doar vechi), compatibilitatea webhookului cu Application Passwords.
 - **1.2.0 (v3)** — tabul „Leaduri eșuate”: vizualizări, filtre, selecție după filtru, retrimitere și ignorare în masă, „Vezi mesajul”, contor în meniu.
 - **1.1.0 (v2)** — webhook Postmark (Delivery, Bounce) cu Basic Auth, stările `delivered` / `bounced` / `deferred`, ștergerea datelor la livrare, reconciliere orară, alerte pentru bounce și webhook oprit.
 - **1.0.0 (v1)** — trimitere prin Postmark, coadă cu retry, verificare anti-duplicat, pagină de setări cu secrete criptate, alerte, WP-CLI, GDPR, Turnstile, detectarea IP-ului real, retenție.

@@ -80,8 +80,8 @@ final class AdminNotifier {
 	public static function stuck_leads( int $count ): void {
 		self::alert(
 			'stuck',
-			sprintf( '%d leaduri așteaptă trimiterea de peste o oră', $count ),
-			sprintf( "%d leaduri sunt în coadă de peste o oră.\n\n", $count )
+			sprintf( '%d leaduri nu au fost trimise la timp', $count ),
+			sprintf( "%d leaduri trebuiau trimise acum mai mult de o oră și sunt încă în coadă.\n\n", $count )
 			. "Cauze posibile: cronul serverului nu rulează sau Postmark nu răspunde.\n"
 			. "Verifică tabul Stare din Setări → Location Lead Tracker sau rulează: wp llt status\n"
 		);

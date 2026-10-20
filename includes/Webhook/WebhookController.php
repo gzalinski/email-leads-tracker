@@ -36,6 +36,21 @@ final class WebhookController {
 		);
 	}
 
+	/**
+	 * Credențialele Basic Auth trimise de Postmark nu sunt ale unui utilizator WordPress.
+	 * Pe site-urile care folosesc Application Passwords, WordPress ar încerca să le autentifice
+	 * și ar respinge cererea cu 401 înainte să ajungă la handler. Excludem doar ruta webhookului.
+	 *
+	 * @param bool $is_api_request Valoarea curentă.
+	 */
+	public static function skip_application_passwords( $is_api_request ): bool {
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( false !== strpos( $uri, self::NAMESPACE . self::ROUTE ) || false !== strpos( rawurldecode( $uri ), self::NAMESPACE . self::ROUTE ) ) {
+			return false;
+		}
+		return (bool) $is_api_request;
+	}
+
 	public static function url(): string {
 		return rest_url( self::NAMESPACE . self::ROUTE );
 	}

@@ -111,12 +111,13 @@ final class LeadRepository {
 	}
 
 	/**
-	 * Numărul de leaduri `pending` create înainte de un moment dat (leaduri blocate).
+	 * Leaduri blocate: `pending` și scadente înainte de momentul dat, dar neprocesate.
+	 * Leadurile care așteaptă un retry programat (ex.: peste 6 ore) nu sunt blocate.
 	 */
-	public static function count_stuck( string $before ): int {
+	public static function count_stuck( string $due_before ): int {
 		global $wpdb;
 		$table = Schema::leads();
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE send_status = 'pending' AND created_at < %s", $before ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE send_status = 'pending' AND next_retry_at < %s", $due_before ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**

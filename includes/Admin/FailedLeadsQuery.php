@@ -73,7 +73,8 @@ final class FailedLeadsQuery {
 
 		switch ( self::sanitize_view( $view ) ) {
 			case 'stuck':
-				$where[]  = "l.send_status = 'pending' AND l.created_at < %s";
+				// Scadente de peste o oră, dar neprocesate (cron oprit sau Postmark indisponibil).
+				$where[]  = "l.send_status = 'pending' AND l.next_retry_at < %s";
 				$params[] = Util::now( -HOUR_IN_SECONDS );
 				break;
 			case 'bounced':
