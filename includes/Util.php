@@ -2,10 +2,10 @@
 /**
  * Stateless helpers.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker;
+namespace EnspireEmailLeadsTracker;
 
 defined( 'ABSPATH' ) || exit;
 

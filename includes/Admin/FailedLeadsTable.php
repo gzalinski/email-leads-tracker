@@ -4,14 +4,14 @@
  *
  * Visitors' data does not appear in the list; it is loaded on request ("View message").
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -3,7 +3,7 @@
  * Minimal test environment: stubs for the WordPress functions used by the tested logic.
  * It does not replace testing in a real WordPress install (see README → Testing).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 // phpcs:ignoreFile
@@ -259,7 +259,7 @@ function wp_mail( $to, $subject, $body ) {
 
 spl_autoload_register(
 	static function ( $class ) {
-		$prefix = 'EmailLeadsTracker\\';
+		$prefix = 'EnspireEmailLeadsTracker\\';
 		if ( 0 !== strncmp( $class, $prefix, strlen( $prefix ) ) ) {
 			return;
 		}

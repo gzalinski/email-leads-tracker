@@ -2,17 +2,17 @@
 /**
  * The test buttons and diagnostics on the settings page.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Settings;
+namespace EnspireEmailLeadsTracker\Settings;
 
-use EmailLeadsTracker\Alerts\AdminNotifier;
-use EmailLeadsTracker\Http\ClientIp;
-use EmailLeadsTracker\Postmark\EmailBuilder;
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Postmark\PostmarkClient;
-use EmailLeadsTracker\Postmark\SendResult;
+use EnspireEmailLeadsTracker\Alerts\AdminNotifier;
+use EnspireEmailLeadsTracker\Http\ClientIp;
+use EnspireEmailLeadsTracker\Postmark\EmailBuilder;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Postmark\PostmarkClient;
+use EnspireEmailLeadsTracker\Postmark\SendResult;
 
 defined( 'ABSPATH' ) || exit;
 

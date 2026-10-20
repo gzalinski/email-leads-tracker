@@ -4,25 +4,25 @@
  *
  * Visitors' personal data is shown only on explicit request (--with-content).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Cli;
+namespace EnspireEmailLeadsTracker\Cli;
 
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Http\ProxyRanges;
-use EmailLeadsTracker\Lead\LeadActions;
-use EmailLeadsTracker\Postmark\EmailBuilder;
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Postmark\PostmarkClient;
-use EmailLeadsTracker\Postmark\SendResult;
-use EmailLeadsTracker\Queue\SendWorker;
-use EmailLeadsTracker\Retention\RetentionService;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Http\ProxyRanges;
+use EnspireEmailLeadsTracker\Lead\LeadActions;
+use EnspireEmailLeadsTracker\Postmark\EmailBuilder;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Postmark\PostmarkClient;
+use EnspireEmailLeadsTracker\Postmark\SendResult;
+use EnspireEmailLeadsTracker\Queue\SendWorker;
+use EnspireEmailLeadsTracker\Retention\RetentionService;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

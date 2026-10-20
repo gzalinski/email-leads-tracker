@@ -2,12 +2,12 @@
 /**
  * Messages shown to the visitor after submitting the form.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Form;
+namespace EnspireEmailLeadsTracker\Form;
 
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

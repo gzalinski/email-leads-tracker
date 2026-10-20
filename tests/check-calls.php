@@ -3,7 +3,7 @@
  * Static check: every `Class::method(` call and `array( Class::class, 'method' )` callback in the plugin
  * must point to a class and a method that exist. Usage: php tests/check-calls.php
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 // phpcs:ignoreFile
@@ -11,7 +11,7 @@
 require __DIR__ . '/bootstrap.php';
 
 $root   = dirname( __DIR__ );
-$files  = array_merge( array( $root . '/email-leads-tracker.php' ), glob_recursive( $root . '/includes' ) );
+$files  = array_merge( array( $root . '/enspire-email-leads-tracker.php' ), glob_recursive( $root . '/includes' ) );
 $errors = array();
 $checks = 0;
 
@@ -51,7 +51,7 @@ foreach ( $files as $file ) {
 			continue;
 		}
 		++$checks;
-		if ( 0 !== strpos( $class, 'EmailLeadsTracker\\' ) ) {
+		if ( 0 !== strpos( $class, 'EnspireEmailLeadsTracker\\' ) ) {
 			continue; // WordPress or PHP classes.
 		}
 		if ( ! class_exists( $class ) ) {

@@ -2,11 +2,11 @@
 /**
  * The HTML body of the email sent to the location (used when the email format setting is HTML).
  *
- * Can be overridden from the theme: `email-leads-tracker/email.php`.
+ * Can be overridden from the theme: `enspire-email-leads-tracker/email.php`.
  *
  * Variables: $llt — site_name, post_title, name, email, phone, message, date, lead_id.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 defined( 'ABSPATH' ) || exit;

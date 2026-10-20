@@ -7,17 +7,17 @@
  * - `delivered` and `bounced` are final (monotonic rule);
  * - on `delivered`, the temporary content is deleted immediately.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Webhook;
+namespace EnspireEmailLeadsTracker\Webhook;
 
-use EmailLeadsTracker\Alerts\AdminNotifier;
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Lead\LeadStatus;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Alerts\AdminNotifier;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Lead\LeadStatus;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

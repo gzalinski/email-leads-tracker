@@ -1,11 +1,11 @@
 <?php
 // phpcs:ignoreFile
-use EmailLeadsTracker\Lead\LeadStatus;
-use EmailLeadsTracker\Postmark\EmailBuilder;
-use EmailLeadsTracker\Queue\BackoffPolicy;
-use EmailLeadsTracker\Settings\SecretStore;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Settings\SettingsSanitizer;
+use EnspireEmailLeadsTracker\Lead\LeadStatus;
+use EnspireEmailLeadsTracker\Postmark\EmailBuilder;
+use EnspireEmailLeadsTracker\Queue\BackoffPolicy;
+use EnspireEmailLeadsTracker\Settings\SecretStore;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\SettingsSanitizer;
 
 same( 'default schedule', array( 1, 5, 15, 60, 360 ), Settings::retry_schedule() );
 same( 'parsed schedule', array( 2, 10 ), Settings::parse_schedule( '2, 10' ) );

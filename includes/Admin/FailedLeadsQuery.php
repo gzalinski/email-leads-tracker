@@ -5,14 +5,14 @@
  * The same condition is used for the list, the counts and "select all matching the filter",
  * so a bulk action applies exactly to the leads shown by the filter.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

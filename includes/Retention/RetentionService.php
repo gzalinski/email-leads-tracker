@@ -2,15 +2,15 @@
 /**
  * Deletes the temporary content (ARCHITECTURE.md §12). The minimal lead is never deleted automatically.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Retention;
+namespace EnspireEmailLeadsTracker\Retention;
 
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

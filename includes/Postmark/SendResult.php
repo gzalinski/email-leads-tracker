@@ -9,10 +9,10 @@
  * - permanent — the problem concerns only this lead;
  * - config    — the problem affects all leads (immediate alert).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Postmark;
+namespace EnspireEmailLeadsTracker\Postmark;
 
 defined( 'ABSPATH' ) || exit;
 

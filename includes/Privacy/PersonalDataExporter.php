@@ -2,14 +2,14 @@
 /**
  * Integration with Tools → Export Personal Data.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Privacy;
+namespace EnspireEmailLeadsTracker\Privacy;
 
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,7 +22,7 @@ final class PersonalDataExporter {
 	 */
 	public static function register( $exporters ): array {
 		$exporters                          = is_array( $exporters ) ? $exporters : array();
-		$exporters['email-leads-tracker'] = array(
+		$exporters['enspire-email-leads-tracker'] = array(
 			'exporter_friendly_name' => 'Enspire Email Leads Tracker',
 			'callback'               => array( self::class, 'export' ),
 		);
@@ -43,7 +43,7 @@ final class PersonalDataExporter {
 			$title = $lead ? get_the_title( (int) $lead->object_id ) : '';
 
 			$items[] = array(
-				'group_id'    => 'email-leads-tracker',
+				'group_id'    => 'enspire-email-leads-tracker',
 				'group_label' => 'Messages sent through the contact form',
 				'item_id'     => 'llt-lead-' . (int) $row->lead_id,
 				'data'        => array(

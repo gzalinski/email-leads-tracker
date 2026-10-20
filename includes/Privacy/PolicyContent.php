@@ -2,12 +2,12 @@
 /**
  * Suggested privacy policy text (Settings → Privacy).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Privacy;
+namespace EnspireEmailLeadsTracker\Privacy;
 
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

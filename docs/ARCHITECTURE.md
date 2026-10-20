@@ -66,7 +66,7 @@ The database schema includes the v2 and v3 columns from v1 onwards, so no migrat
 The implemented structure (repo `gzalinski/email-leads-tracker`):
 
 ```
-email-leads-tracker.php              # Bootstrap: header, PSR-4 autoload, activation/deactivation
+enspire-email-leads-tracker.php              # Bootstrap: header, PSR-4 autoload, activation/deactivation
 uninstall.php                          # Data removal (if enabled in the settings)
 includes/
 ├── Plugin.php                         # Registers all components
@@ -135,7 +135,7 @@ assets/      form.js, form.css, admin.js, admin.css
 tests/       run.php, check-calls.php, cases/ (no WordPress: stubs + SQLite)
 ```
 
-Namespace: `EmailLeadsTracker\`. PSR-4 autoload.
+Namespace: `EnspireEmailLeadsTracker\`. PSR-4 autoload.
 
 ---
 
@@ -562,7 +562,7 @@ Affected leads: #812, #813, #814 (first failure: 2026-10-20 14:02 UTC).
 
 The content of these messages is kept for 14 days.
 After fixing the problem, resend them from:
-https://example.com/wp-admin/options-general.php?page=email-leads-tracker&tab=failed
+https://example.com/wp-admin/options-general.php?page=enspire-email-leads-tracker&tab=failed
 or run:  wp llt retry --failed
 ```
 
@@ -871,7 +871,7 @@ The CLI commands and the admin page (v3) use the same `LeadActions` class, so th
 ### 17.1. Access
 
 - The **"Failed leads"** tab in **Settings → Enspire Email Leads Tracker**:
-  `options-general.php?page=email-leads-tracker&tab=failed`
+  `options-general.php?page=enspire-email-leads-tracker&tab=failed`
 - Capability: `manage_options` (administrators only), checked on display, on every action and on every AJAX request. Editors and other roles see neither the tab nor the counter.
 - Menu counter: **"Enspire Email Leads Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
 

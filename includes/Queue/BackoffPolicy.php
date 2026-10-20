@@ -2,12 +2,12 @@
 /**
  * Computes the delay until the next retry: interval from the settings, ±20% jitter, Retry-After.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Queue;
+namespace EnspireEmailLeadsTracker\Queue;
 
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

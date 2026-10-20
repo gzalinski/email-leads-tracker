@@ -4,20 +4,20 @@
  *
  * The lead is saved, the visitor gets an immediate response, and the email is sent after the response.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Form;
+namespace EnspireEmailLeadsTracker\Form;
 
-use EmailLeadsTracker\Form\Captcha\TurnstileVerifier;
-use EmailLeadsTracker\Http\ClientIp;
-use EmailLeadsTracker\Lead\LeadService;
-use EmailLeadsTracker\Queue\SendWorker;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Shortcode\ContactShortcode;
-use EmailLeadsTracker\Shortcode\ContextSigner;
-use EmailLeadsTracker\Shortcode\RecipientResolver;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Form\Captcha\TurnstileVerifier;
+use EnspireEmailLeadsTracker\Http\ClientIp;
+use EnspireEmailLeadsTracker\Lead\LeadService;
+use EnspireEmailLeadsTracker\Queue\SendWorker;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Shortcode\ContactShortcode;
+use EnspireEmailLeadsTracker\Shortcode\ContextSigner;
+use EnspireEmailLeadsTracker\Shortcode\RecipientResolver;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

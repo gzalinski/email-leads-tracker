@@ -4,10 +4,10 @@
  *
  * The meta key is fixed and there is no restriction by post type.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Shortcode;
+namespace EnspireEmailLeadsTracker\Shortcode;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,16 +2,16 @@
 /**
  * The Settings → Enspire Email Leads Tracker page.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Settings;
+namespace EnspireEmailLeadsTracker\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
 final class SettingsPage {
 
-	const SLUG  = 'email-leads-tracker';
+	const SLUG  = 'enspire-email-leads-tracker';
 	const GROUP = 'llt_settings_group';
 
 	/** @var string */

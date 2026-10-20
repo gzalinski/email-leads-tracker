@@ -4,15 +4,15 @@
  *
  * Accepts checked IDs or "all matching the filter"; the logic is the same as in WP-CLI (LeadActions).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
-use EmailLeadsTracker\Lead\LeadActions;
-use EmailLeadsTracker\Settings\AdminNotice;
-use EmailLeadsTracker\Settings\SettingsPage;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Lead\LeadActions;
+use EnspireEmailLeadsTracker\Settings\AdminNotice;
+use EnspireEmailLeadsTracker\Settings\SettingsPage;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

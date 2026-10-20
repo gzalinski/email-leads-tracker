@@ -2,17 +2,17 @@
 /**
  * v2 settings: the Webhook tab, the extra fields in Alerts and Retention, rows in Status and WP-CLI.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Webhook;
+namespace EnspireEmailLeadsTracker\Webhook;
 
-use EmailLeadsTracker\Settings\AdminNotice;
-use EmailLeadsTracker\Settings\SecretStore;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Settings\SettingsPage;
-use EmailLeadsTracker\Settings\StatusTab;
-use EmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Settings\AdminNotice;
+use EnspireEmailLeadsTracker\Settings\SecretStore;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\SettingsPage;
+use EnspireEmailLeadsTracker\Settings\StatusTab;
+use EnspireEmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -180,7 +180,7 @@ final class WebhookSettings {
 			$rows['Delivery confirmation'] = 'disabled';
 			return $rows;
 		}
-		$counts                        = \EmailLeadsTracker\Database\LeadRepository::counts();
+		$counts                        = \EnspireEmailLeadsTracker\Database\LeadRepository::counts();
 		$rows['Delivery confirmation'] = 'enabled';
 		$rows['Delivered']             = (string) $counts['delivery']['delivered'];
 		$rows['Bounced']               = (string) $counts['delivery']['bounced'];

@@ -2,13 +2,13 @@
 /**
  * Row-level locking: a lead is processed by one worker at a time (ARCHITECTURE.md §9.3).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Queue;
+namespace EnspireEmailLeadsTracker\Queue;
 
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

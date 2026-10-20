@@ -7,14 +7,14 @@
  * - 200: event processed, duplicate, uncorrelated, ignored or invalid payload;
  * - 500: internal error, so Postmark retries.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Webhook;
+namespace EnspireEmailLeadsTracker\Webhook;
 
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

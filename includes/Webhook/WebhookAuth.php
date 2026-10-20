@@ -2,13 +2,13 @@
 /**
  * Postmark webhook authentication: Basic Auth (Postmark does not sign webhooks) and an optional IP filter.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Webhook;
+namespace EnspireEmailLeadsTracker\Webhook;
 
-use EmailLeadsTracker\Http\ClientIp;
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Http\ClientIp;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

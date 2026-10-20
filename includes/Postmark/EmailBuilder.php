@@ -2,14 +2,14 @@
 /**
  * Builds the Postmark request for a lead.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Postmark;
+namespace EnspireEmailLeadsTracker\Postmark;
 
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Template;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Template;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

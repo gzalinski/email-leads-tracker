@@ -2,10 +2,10 @@
 /**
  * Checks whether an IP belongs to a CIDR network (IPv4 and IPv6).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Http;
+namespace EnspireEmailLeadsTracker\Http;
 
 defined( 'ABSPATH' ) || exit;
 

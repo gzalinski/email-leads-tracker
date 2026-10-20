@@ -2,15 +2,15 @@
 /**
  * The "Failed leads" tab in Settings → Enspire Email Leads Tracker (v3). Administrators only.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Postmark\SendResult;
-use EmailLeadsTracker\Settings\SettingsPage;
-use EmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Postmark\SendResult;
+use EnspireEmailLeadsTracker\Settings\SettingsPage;
+use EnspireEmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 

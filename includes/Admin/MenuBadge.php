@@ -2,10 +2,10 @@
 /**
  * The number of failed leads shown next to "Enspire Email Leads Tracker" in the Settings menu (v3).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
 defined( 'ABSPATH' ) || exit;
 

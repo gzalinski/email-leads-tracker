@@ -2,7 +2,7 @@
 /**
  * Uninstall: the data is deleted only if "Delete the tables and settings when the plugin is uninstalled" is checked.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;

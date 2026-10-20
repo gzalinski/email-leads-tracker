@@ -2,12 +2,12 @@
 /**
  * Access to the `location_leads` table.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Database;
+namespace EnspireEmailLeadsTracker\Database;
 
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

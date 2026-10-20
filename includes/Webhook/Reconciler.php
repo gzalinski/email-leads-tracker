@@ -5,19 +5,19 @@
  * Postmark retries a failed webhook for only ~50 minutes and pauses the event type
  * after repeated failures, so confirmations can be lost. Reconciliation recovers them.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Webhook;
+namespace EnspireEmailLeadsTracker\Webhook;
 
-use EmailLeadsTracker\Alerts\AdminNotifier;
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Lead\LeadStatus;
-use EmailLeadsTracker\Postmark\PostmarkClient;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Alerts\AdminNotifier;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Lead\LeadStatus;
+use EnspireEmailLeadsTracker\Postmark\PostmarkClient;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

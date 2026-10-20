@@ -2,14 +2,14 @@
 /**
  * Manual lead actions, shared by WP-CLI and the admin page (v3).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Lead;
+namespace EnspireEmailLeadsTracker\Lead;
 
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

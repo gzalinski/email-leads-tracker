@@ -5,12 +5,12 @@
  * Proxy headers are read only when the connection comes from a known proxy;
  * otherwise anyone sending requests directly to the server could forge them.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Http;
+namespace EnspireEmailLeadsTracker\Http;
 
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

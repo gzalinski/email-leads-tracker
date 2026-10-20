@@ -4,10 +4,10 @@
  *
  * Source: https://www.cloudflare.com/ips/
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Http;
+namespace EnspireEmailLeadsTracker\Http;
 
 defined( 'ABSPATH' ) || exit;
 

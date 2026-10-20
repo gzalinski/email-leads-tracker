@@ -2,28 +2,28 @@
 /**
  * Registers all plugin components.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker;
+namespace EnspireEmailLeadsTracker;
 
-use EmailLeadsTracker\Admin\FailedLeadsTab;
-use EmailLeadsTracker\Admin\MenuBadge;
-use EmailLeadsTracker\Alerts\AdminNotifier;
-use EmailLeadsTracker\Alerts\HealthCheck;
-use EmailLeadsTracker\Cli\Commands;
-use EmailLeadsTracker\Form\SubmissionHandler;
-use EmailLeadsTracker\Http\ProxyRanges;
-use EmailLeadsTracker\Privacy\PersonalDataEraser;
-use EmailLeadsTracker\Privacy\PersonalDataExporter;
-use EmailLeadsTracker\Privacy\PolicyContent;
-use EmailLeadsTracker\Queue\SendWorker;
-use EmailLeadsTracker\Retention\RetentionService;
-use EmailLeadsTracker\Settings\SettingsPage;
-use EmailLeadsTracker\Shortcode\ContactShortcode;
-use EmailLeadsTracker\Webhook\Reconciler;
-use EmailLeadsTracker\Webhook\WebhookController;
-use EmailLeadsTracker\Webhook\WebhookSettings;
+use EnspireEmailLeadsTracker\Admin\FailedLeadsTab;
+use EnspireEmailLeadsTracker\Admin\MenuBadge;
+use EnspireEmailLeadsTracker\Alerts\AdminNotifier;
+use EnspireEmailLeadsTracker\Alerts\HealthCheck;
+use EnspireEmailLeadsTracker\Cli\Commands;
+use EnspireEmailLeadsTracker\Form\SubmissionHandler;
+use EnspireEmailLeadsTracker\Http\ProxyRanges;
+use EnspireEmailLeadsTracker\Privacy\PersonalDataEraser;
+use EnspireEmailLeadsTracker\Privacy\PersonalDataExporter;
+use EnspireEmailLeadsTracker\Privacy\PolicyContent;
+use EnspireEmailLeadsTracker\Queue\SendWorker;
+use EnspireEmailLeadsTracker\Retention\RetentionService;
+use EnspireEmailLeadsTracker\Settings\SettingsPage;
+use EnspireEmailLeadsTracker\Shortcode\ContactShortcode;
+use EnspireEmailLeadsTracker\Webhook\Reconciler;
+use EnspireEmailLeadsTracker\Webhook\WebhookController;
+use EnspireEmailLeadsTracker\Webhook\WebhookSettings;
 
 defined( 'ABSPATH' ) || exit;
 

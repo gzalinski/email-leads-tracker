@@ -2,22 +2,22 @@
 /**
  * Sends leads: right after the submission and periodically from the queue (ARCHITECTURE.md §7, §9).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Queue;
+namespace EnspireEmailLeadsTracker\Queue;
 
-use EmailLeadsTracker\Alerts\AdminNotifier;
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Lead\LeadStatus;
-use EmailLeadsTracker\Postmark\EmailBuilder;
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Postmark\PostmarkClient;
-use EmailLeadsTracker\Postmark\SendResult;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Alerts\AdminNotifier;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Lead\LeadStatus;
+use EnspireEmailLeadsTracker\Postmark\EmailBuilder;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Postmark\PostmarkClient;
+use EnspireEmailLeadsTracker\Postmark\SendResult;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -96,7 +96,7 @@ final class SendWorker {
 
 	private static function mark_accepted( object $lead, string $message_id ): void {
 		global $wpdb;
-		$table = \EmailLeadsTracker\Database\Schema::leads();
+		$table = \EnspireEmailLeadsTracker\Database\Schema::leads();
 		$now   = Util::now();
 
 		// The webhook (v2) may have arrived first and set postmark_message_id; COALESCE keeps it.

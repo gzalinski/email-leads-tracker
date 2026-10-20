@@ -2,15 +2,15 @@
 /**
  * The "Status" tab: cron, leads per status, alerts (read-only).
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Settings;
+namespace EnspireEmailLeadsTracker\Settings;
 
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Http\ProxyRanges;
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Http\ProxyRanges;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\State;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,12 +2,12 @@
 /**
  * Validation and sanitization of the form fields.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Form;
+namespace EnspireEmailLeadsTracker\Form;
 
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

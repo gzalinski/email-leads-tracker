@@ -2,13 +2,13 @@
 /**
  * Hourly check: leads stuck in the queue.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Alerts;
+namespace EnspireEmailLeadsTracker\Alerts;
 
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

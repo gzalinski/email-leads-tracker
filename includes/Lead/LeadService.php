@@ -2,14 +2,14 @@
 /**
  * Lead creation: the minimal lead and the temporary content are saved together, before sending.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Lead;
+namespace EnspireEmailLeadsTracker\Lead;
 
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

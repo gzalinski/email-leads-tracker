@@ -2,13 +2,13 @@
 /**
  * Activation, deactivation, migrations and cron scheduling.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker;
+namespace EnspireEmailLeadsTracker;
 
-use EmailLeadsTracker\Database\Schema;
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Database\Schema;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

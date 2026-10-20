@@ -2,13 +2,13 @@
 /**
  * Minimal Postmark API client.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Postmark;
+namespace EnspireEmailLeadsTracker\Postmark;
 
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

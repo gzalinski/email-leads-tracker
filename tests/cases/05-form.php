@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile
-use EmailLeadsTracker\Form\Validator;
-use EmailLeadsTracker\Shortcode\RecipientResolver;
+use EnspireEmailLeadsTracker\Form\Validator;
+use EnspireEmailLeadsTracker\Shortcode\RecipientResolver;
 
 $valid = array(
 	'llt_name'    => 'John Smith',

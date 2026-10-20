@@ -1,8 +1,8 @@
 <?php
 // phpcs:ignoreFile
-use EmailLeadsTracker\Http\Cidr;
-use EmailLeadsTracker\Http\ClientIp;
-use EmailLeadsTracker\Http\ProxyRanges;
+use EnspireEmailLeadsTracker\Http\Cidr;
+use EnspireEmailLeadsTracker\Http\ClientIp;
+use EnspireEmailLeadsTracker\Http\ProxyRanges;
 
 // CIDR.
 check( 'cidr v4 inside the network', Cidr::contains( '104.16.0.0/13', '104.23.255.1' ) );

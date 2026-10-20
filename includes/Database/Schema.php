@@ -2,10 +2,10 @@
 /**
  * Plugin table definitions.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Database;
+namespace EnspireEmailLeadsTracker\Database;
 
 defined( 'ABSPATH' ) || exit;
 

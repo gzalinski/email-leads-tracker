@@ -2,14 +2,14 @@
 /**
  * The [location_contact object_id="245"] shortcode.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Shortcode;
+namespace EnspireEmailLeadsTracker\Shortcode;
 
-use EmailLeadsTracker\Form\Messages;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\Template;
+use EnspireEmailLeadsTracker\Form\Messages;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Template;
 
 defined( 'ABSPATH' ) || exit;
 

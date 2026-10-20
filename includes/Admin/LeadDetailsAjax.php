@@ -2,13 +2,13 @@
 /**
  * "View message" (v3): the visitor's data is loaded only on request, only for administrators.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Admin;
+namespace EnspireEmailLeadsTracker\Admin;
 
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

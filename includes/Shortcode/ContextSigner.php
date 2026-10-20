@@ -5,10 +5,10 @@
  * A visitor cannot change the recipient post or the render time (used by the time trap).
  * The context does not expire, so the form keeps working on cached pages.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Shortcode;
+namespace EnspireEmailLeadsTracker\Shortcode;
 
 defined( 'ABSPATH' ) || exit;
 

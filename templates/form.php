@@ -2,13 +2,13 @@
 /**
  * The contact form template.
  *
- * Can be overridden from the theme: copy the file to `wp-content/themes/<theme>/email-leads-tracker/form.php`.
+ * Can be overridden from the theme: copy the file to `wp-content/themes/<theme>/enspire-email-leads-tracker/form.php`.
  * The hidden fields and the field names (llt_*) must be kept.
  *
  * Variables: $llt — form_id, action, ctx, sig, return_url, status, status_ok, status_message,
  * consent_html, turnstile_key, post.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 defined( 'ABSPATH' ) || exit;

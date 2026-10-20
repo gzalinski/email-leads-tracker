@@ -4,12 +4,12 @@
  *
  * The IP is not stored: the key is an HMAC hash of the IP.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Form;
+namespace EnspireEmailLeadsTracker\Form;
 
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,13 +2,13 @@
 /**
  * Validation of the settings on save. Only the current tab's fields are saved; the rest stay unchanged.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Settings;
+namespace EnspireEmailLeadsTracker\Settings;
 
-use EmailLeadsTracker\Http\Cidr;
-use EmailLeadsTracker\Shortcode\ContactShortcode;
+use EnspireEmailLeadsTracker\Http\Cidr;
+use EnspireEmailLeadsTracker\Shortcode\ContactShortcode;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -5,18 +5,18 @@
  * Alerts go through wp_mail(), not Postmark, so they still arrive when Postmark itself is the problem.
  * They contain no personal data of the visitors.
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
-namespace EmailLeadsTracker\Alerts;
+namespace EnspireEmailLeadsTracker\Alerts;
 
-use EmailLeadsTracker\Postmark\EmailBuilder;
-use EmailLeadsTracker\Postmark\ErrorClassifier;
-use EmailLeadsTracker\Postmark\PostmarkClient;
-use EmailLeadsTracker\Postmark\SendResult;
-use EmailLeadsTracker\Settings\Settings;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Postmark\EmailBuilder;
+use EnspireEmailLeadsTracker\Postmark\ErrorClassifier;
+use EnspireEmailLeadsTracker\Postmark\PostmarkClient;
+use EnspireEmailLeadsTracker\Postmark\SendResult;
+use EnspireEmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 

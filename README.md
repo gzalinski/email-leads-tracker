@@ -56,7 +56,7 @@ define( 'LLT_ENCRYPTION_KEY', 'a-random-value-of-at-least-32-characters' );
 - The recipient is read from the post's `email` meta and **never appears in the HTML**.
 - The post must be published and have a valid `email`; otherwise editors see an explanatory message and visitors see no form.
 
-Templates can be overridden from the theme, in `email-leads-tracker/form.php` and `email-leads-tracker/email.php`.
+Templates can be overridden from the theme, in `enspire-email-leads-tracker/form.php` and `enspire-email-leads-tracker/email.php`.
 
 ## How it works
 
@@ -128,8 +128,9 @@ Note: some security plugins block visitor access to `wp-admin/admin-post.php`. T
 
 ## Versions
 
+- **1.4.0** — slug changed to `enspire-email-leads-tracker`: main file `enspire-email-leads-tracker.php`, folder and text domain, settings page `?page=enspire-email-leads-tracker`, theme override folder `enspire-email-leads-tracker/`, PHP namespace `EnspireEmailLeadsTracker`. Data identifiers are unchanged. On an existing install, WordPress sees it as a new plugin: make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, deactivate and delete the old plugin, then upload and activate the new one.
 - **1.3.1** — the display name is now "Enspire Email Leads Tracker". Slug, folder, namespace and data identifiers are unchanged from 1.3.0, so updating from 1.3.0 is a plain file replacement.
-- **1.3.0** — renamed to "Enspire Email Leads Tracker": main file `email-leads-tracker.php`, folder and text domain `email-leads-tracker`, PHP namespace `EmailLeadsTracker`, settings page `?page=email-leads-tracker`, theme override folder `email-leads-tracker/`. Data identifiers are unchanged (tables, options, the `llt_` prefix, the `[location_contact]` shortcode, the webhook route `llt/v1/postmark`, `wp llt`), so existing data and the Postmark webhook URL keep working. On an existing install: first make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, then deactivate and delete the old plugin, upload the new one and activate it.
+- **1.3.0** — renamed to "Email Leads Tracker": main file `email-leads-tracker.php`, folder and text domain `email-leads-tracker`, PHP namespace `EmailLeadsTracker`, settings page `?page=email-leads-tracker`, theme override folder `email-leads-tracker/`. Data identifiers are unchanged (tables, options, the `llt_` prefix, the `[location_contact]` shortcode, the webhook route `llt/v1/postmark`, `wp llt`), so existing data and the Postmark webhook URL keep working. On an existing install: first make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, then deactivate and delete the old plugin, upload the new one and activate it.
 - **1.2.2** — all code comments, UI strings, tests and documentation translated to English. No functional changes.
 - **1.2.1** — fixes: the return URL on subdirectory installs, the definition of stuck leads (overdue, not just old), webhook compatibility with Application Passwords.
 - **1.2.0 (v3)** — the "Failed leads" tab: views, filters, select by filter, bulk resend and dismiss, "View message", menu counter.

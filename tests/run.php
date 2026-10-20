@@ -2,15 +2,15 @@
 /**
  * Test runner. Usage: php tests/run.php
  *
- * @package EmailLeadsTracker
+ * @package EnspireEmailLeadsTracker
  */
 
 // phpcs:ignoreFile
 
 require __DIR__ . '/bootstrap.php';
 
-use EmailLeadsTracker\Http\ClientIp;
-use EmailLeadsTracker\Settings\Settings;
+use EnspireEmailLeadsTracker\Http\ClientIp;
+use EnspireEmailLeadsTracker\Settings\Settings;
 
 $GLOBALS['llt_passed'] = 0;
 $GLOBALS['llt_failed'] = array();

@@ -5,18 +5,18 @@
 // phpcs:ignoreFile
 require_once dirname( __DIR__ ) . '/wpdb-sqlite.php';
 
-use EmailLeadsTracker\Database\LeadRepository;
-use EmailLeadsTracker\Database\MessageRepository;
-use EmailLeadsTracker\Lead\LeadActions;
-use EmailLeadsTracker\Lead\LeadService;
-use EmailLeadsTracker\Privacy\PersonalDataEraser;
-use EmailLeadsTracker\Privacy\PersonalDataExporter;
-use EmailLeadsTracker\Queue\Lock;
-use EmailLeadsTracker\Queue\SendWorker;
-use EmailLeadsTracker\Retention\RetentionService;
-use EmailLeadsTracker\Settings\SecretStore;
-use EmailLeadsTracker\State;
-use EmailLeadsTracker\Util;
+use EnspireEmailLeadsTracker\Database\LeadRepository;
+use EnspireEmailLeadsTracker\Database\MessageRepository;
+use EnspireEmailLeadsTracker\Lead\LeadActions;
+use EnspireEmailLeadsTracker\Lead\LeadService;
+use EnspireEmailLeadsTracker\Privacy\PersonalDataEraser;
+use EnspireEmailLeadsTracker\Privacy\PersonalDataExporter;
+use EnspireEmailLeadsTracker\Queue\Lock;
+use EnspireEmailLeadsTracker\Queue\SendWorker;
+use EnspireEmailLeadsTracker\Retention\RetentionService;
+use EnspireEmailLeadsTracker\Settings\SecretStore;
+use EnspireEmailLeadsTracker\State;
+use EnspireEmailLeadsTracker\Util;
 
 global $wpdb;
 $wpdb = new LLT_Test_WPDB();
