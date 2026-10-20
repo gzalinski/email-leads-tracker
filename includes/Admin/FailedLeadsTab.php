@@ -1,6 +1,6 @@
 <?php
 /**
- * The "Failed leads" tab in Settings → Email Leads Tracker (v3). Administrators only.
+ * The "Failed leads" tab in Settings → Enspire Email Leads Tracker (v3). Administrators only.
  *
  * @package EmailLeadsTracker
  */

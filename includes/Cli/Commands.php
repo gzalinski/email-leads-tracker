@@ -235,7 +235,7 @@ final class Commands {
 			array(
 				'From'          => EmailBuilder::from(),
 				'To'            => $to,
-				'Subject'       => '[' . EmailBuilder::site_name() . '] Email Leads Tracker test email',
+				'Subject'       => '[' . EmailBuilder::site_name() . '] Enspire Email Leads Tracker test email',
 				'TextBody'      => 'The Postmark configuration works (sent from WP-CLI).',
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 				'Tag'           => 'llt-test',

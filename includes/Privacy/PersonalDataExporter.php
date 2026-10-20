@@ -23,7 +23,7 @@ final class PersonalDataExporter {
 	public static function register( $exporters ): array {
 		$exporters                          = is_array( $exporters ) ? $exporters : array();
 		$exporters['email-leads-tracker'] = array(
-			'exporter_friendly_name' => 'Email Leads Tracker',
+			'exporter_friendly_name' => 'Enspire Email Leads Tracker',
 			'callback'               => array( self::class, 'export' ),
 		);
 		return $exporters;

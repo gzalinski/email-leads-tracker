@@ -1,6 +1,6 @@
 <?php
 /**
- * The Settings → Email Leads Tracker page.
+ * The Settings → Enspire Email Leads Tracker page.
  *
  * @package EmailLeadsTracker
  */
@@ -29,8 +29,8 @@ final class SettingsPage {
 	}
 
 	public static function menu(): void {
-		$title      = (string) apply_filters( 'llt_menu_title', 'Email Leads Tracker' );
-		self::$hook = (string) add_options_page( 'Email Leads Tracker', $title, 'manage_options', self::SLUG, array( self::class, 'render' ) );
+		$title      = (string) apply_filters( 'llt_menu_title', 'Enspire Email Leads Tracker' );
+		self::$hook = (string) add_options_page( 'Enspire Email Leads Tracker', $title, 'manage_options', self::SLUG, array( self::class, 'render' ) );
 		do_action( 'llt_settings_page_registered', self::$hook );
 	}
 
@@ -85,7 +85,7 @@ final class SettingsPage {
 		$values  = Settings::all();
 
 		echo '<div class="wrap llt-admin">';
-		echo '<h1>Email Leads Tracker</h1>';
+		echo '<h1>Enspire Email Leads Tracker</h1>';
 
 		AdminNotice::render();
 		self::render_secret_warning();

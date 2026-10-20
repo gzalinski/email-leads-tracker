@@ -35,7 +35,7 @@ final class ContactShortcode {
 		$resolved = RecipientResolver::resolve( $object_id );
 		if ( is_wp_error( $resolved ) ) {
 			if ( current_user_can( 'edit_posts' ) ) {
-				return '<div class="llt-notice llt-notice--error"><strong>Email Leads Tracker:</strong> '
+				return '<div class="llt-notice llt-notice--error"><strong>Enspire Email Leads Tracker:</strong> '
 					. esc_html( $resolved->get_error_message() )
 					. ' The form is not shown to visitors.</div>';
 			}

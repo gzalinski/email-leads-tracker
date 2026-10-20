@@ -23,7 +23,7 @@ final class PersonalDataEraser {
 	public static function register( $erasers ): array {
 		$erasers                          = is_array( $erasers ) ? $erasers : array();
 		$erasers['email-leads-tracker'] = array(
-			'eraser_friendly_name' => 'Email Leads Tracker',
+			'eraser_friendly_name' => 'Enspire Email Leads Tracker',
 			'callback'             => array( self::class, 'erase' ),
 		);
 		return $erasers;

@@ -92,7 +92,7 @@ final class Util {
 
 	public static function log( string $message ): void {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( '[Email Leads Tracker] ' . self::mask_emails( $message ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[Enspire Email Leads Tracker] ' . self::mask_emails( $message ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 }

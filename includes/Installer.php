@@ -48,7 +48,7 @@ final class Installer {
 		if ( ! isset( $schedules['llt_every_minute'] ) ) {
 			$schedules['llt_every_minute'] = array(
 				'interval' => MINUTE_IN_SECONDS,
-				'display'  => 'Email Leads Tracker: every minute',
+				'display'  => 'Enspire Email Leads Tracker: every minute',
 			);
 		}
 		if ( ! isset( $schedules['weekly'] ) ) {

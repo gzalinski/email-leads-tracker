@@ -1,6 +1,6 @@
-# Email Leads Tracker — Architecture
+# Enspire Email Leads Tracker — Architecture
 
-Architecture document for the "Email Leads Tracker" WordPress plugin.
+Architecture document for the "Enspire Email Leads Tracker" WordPress plugin.
 Final version: **Postmark only**, asynchronous sending, recipient taken from the `email` post meta, administrator alerts, WP-CLI, optional captcha, GDPR consent, real IP detection, and a failed-leads list in the admin. Delivery is split into **v1**, **v2** and **v3**.
 
 ---
@@ -77,7 +77,7 @@ includes/
 ├── Settings/
 │   ├── Settings.php                   # Reading settings + defaults
 │   ├── SettingsFields.php             # Tabs and fields (extensible via the llt_settings_tabs filter)
-│   ├── SettingsPage.php               # The Settings → Email Leads Tracker page
+│   ├── SettingsPage.php               # The Settings → Enspire Email Leads Tracker page
 │   ├── SettingsSanitizer.php          # Validation on save (current tab only)
 │   ├── SecretStore.php                # libsodium encryption
 │   ├── TestActions.php                # Test email, test alert, IP diagnostics
@@ -557,7 +557,7 @@ Example:
 Subject: [Site] 3 leads could not be sent
 
 Postmark rejected the send: the API token is invalid (ErrorCode 10).
-Check the token in Settings → Email Leads Tracker → Postmark.
+Check the token in Settings → Enspire Email Leads Tracker → Postmark.
 Affected leads: #812, #813, #814 (first failure: 2026-10-20 14:02 UTC).
 
 The content of these messages is kept for 14 days.
@@ -810,7 +810,7 @@ The index on `sender_email` serves GDPR export/erasure.
 
 ## 15. Settings page
 
-**Settings → Email Leads Tracker**, capability `manage_options`, Settings API.
+**Settings → Enspire Email Leads Tracker**, capability `manage_options`, Settings API.
 
 | Tab | Fields | Stage |
 | --- | --- | --- |
@@ -870,10 +870,10 @@ The CLI commands and the admin page (v3) use the same `LeadActions` class, so th
 
 ### 17.1. Access
 
-- The **"Failed leads"** tab in **Settings → Email Leads Tracker**:
+- The **"Failed leads"** tab in **Settings → Enspire Email Leads Tracker**:
   `options-general.php?page=email-leads-tracker&tab=failed`
 - Capability: `manage_options` (administrators only), checked on display, on every action and on every AJAX request. Editors and other roles see neither the tab nor the counter.
-- Menu counter: **"Email Leads Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
+- Menu counter: **"Enspire Email Leads Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
 
 ### 17.2. Configuration banner
 

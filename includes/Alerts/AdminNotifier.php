@@ -67,7 +67,7 @@ final class AdminNotifier {
 		if ( $was_alerting ) {
 			self::deliver(
 				'Sending works again',
-				"Email Leads Tracker successfully sent a lead after the failures reported earlier.\n\n"
+				"Enspire Email Leads Tracker successfully sent a lead after the failures reported earlier.\n\n"
 				. "Leads that failed in the meantime are not resent automatically. Review them:\n"
 				. self::resolution_hint()
 			);
@@ -83,7 +83,7 @@ final class AdminNotifier {
 			sprintf( '%d leads were not sent on time', $count ),
 			sprintf( "%d leads were due more than an hour ago and are still in the queue.\n\n", $count )
 			. "Possible causes: the server cron is not running or Postmark is not responding.\n"
-			. "Check the Status tab in Settings → Email Leads Tracker or run: wp llt status\n"
+			. "Check the Status tab in Settings → Enspire Email Leads Tracker or run: wp llt status\n"
 		);
 	}
 
@@ -166,7 +166,7 @@ final class AdminNotifier {
 	public static function test(): array {
 		$ok = self::deliver(
 			'Test alert',
-			"This is a test email sent from Settings → Email Leads Tracker → Alerts.\n\n"
+			"This is a test email sent from Settings → Enspire Email Leads Tracker → Alerts.\n\n"
 			. "If you received it, alerts about failed leads will reach this address.\n"
 		);
 		return array(
@@ -209,7 +209,7 @@ final class AdminNotifier {
 			$lines[] = 'Details: ' . $error['message'];
 		}
 		if ( 'config' === $type ) {
-			$lines[] = 'Check the settings in Settings → Email Leads Tracker → Postmark and send a test email.';
+			$lines[] = 'Check the settings in Settings → Enspire Email Leads Tracker → Postmark and send a test email.';
 		}
 		$lines[] = '';
 		if ( $ids ) {
@@ -242,7 +242,7 @@ final class AdminNotifier {
 	private static function deliver( string $subject, string $body ): bool {
 		$to      = self::recipient();
 		$subject = '[' . EmailBuilder::site_name() . '] ' . $subject;
-		$body   .= "\n—\nEmail Leads Tracker · " . home_url( '/' ) . "\n";
+		$body   .= "\n—\nEnspire Email Leads Tracker · " . home_url( '/' ) . "\n";
 
 		self::$mail_error = null;
 		$sent             = (bool) wp_mail( $to, $subject, $body );

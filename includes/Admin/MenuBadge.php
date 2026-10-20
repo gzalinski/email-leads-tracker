@@ -1,6 +1,6 @@
 <?php
 /**
- * The number of failed leads shown next to "Email Leads Tracker" in the Settings menu (v3).
+ * The number of failed leads shown next to "Enspire Email Leads Tracker" in the Settings menu (v3).
  *
  * @package EmailLeadsTracker
  */

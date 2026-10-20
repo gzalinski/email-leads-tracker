@@ -78,8 +78,8 @@ final class TestActions {
 			array(
 				'From'          => EmailBuilder::from(),
 				'To'            => $to,
-				'Subject'       => '[' . EmailBuilder::site_name() . '] Email Leads Tracker test email',
-				'TextBody'      => "The Postmark configuration works.\n\nThis email was sent from Settings → Email Leads Tracker → Postmark.",
+				'Subject'       => '[' . EmailBuilder::site_name() . '] Enspire Email Leads Tracker test email',
+				'TextBody'      => "The Postmark configuration works.\n\nThis email was sent from Settings → Enspire Email Leads Tracker → Postmark.",
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 				'Tag'           => 'llt-test',
 				'TrackOpens'    => false,

@@ -69,7 +69,7 @@ final class Reconciler {
 	 */
 	public static function cli(): void {
 		if ( ! Settings::tracking_enabled() ) {
-			\WP_CLI::warning( 'Delivery confirmation is not enabled (Settings → Email Leads Tracker → Webhook).' );
+			\WP_CLI::warning( 'Delivery confirmation is not enabled (Settings → Enspire Email Leads Tracker → Webhook).' );
 			return;
 		}
 		$stats = self::run();
