@@ -7,12 +7,14 @@
 
 namespace EnspireEmailLeadsTracker\Settings;
 
+use EnspireEmailLeadsTracker\State;
+
 defined( 'ABSPATH' ) || exit;
 
 final class SettingsPage {
 
 	const SLUG  = 'enspire-email-leads-tracker';
-	const GROUP = 'llt_settings_group';
+	const GROUP = 'eelt_settings_group';
 
 	/** @var string */
 	private static $hook = '';
@@ -29,9 +31,9 @@ final class SettingsPage {
 	}
 
 	public static function menu(): void {
-		$title      = (string) apply_filters( 'llt_menu_title', 'Enspire Email Leads Tracker' );
+		$title      = (string) apply_filters( 'eelt_menu_title', 'Enspire Email Leads Tracker' );
 		self::$hook = (string) add_options_page( 'Enspire Email Leads Tracker', $title, 'manage_options', self::SLUG, array( self::class, 'render' ) );
-		do_action( 'llt_settings_page_registered', self::$hook );
+		do_action( 'eelt_settings_page_registered', self::$hook );
 	}
 
 	public static function hook(): string {
@@ -57,14 +59,14 @@ final class SettingsPage {
 		if ( $hook !== self::$hook ) {
 			return;
 		}
-		wp_enqueue_style( 'llt-admin', LLT_URL . 'assets/admin.css', array(), LLT_VERSION );
-		wp_enqueue_script( 'llt-admin', LLT_URL . 'assets/admin.js', array(), LLT_VERSION, true );
+		wp_enqueue_style( 'eelt-admin', EELT_URL . 'assets/admin.css', array(), EELT_VERSION );
+		wp_enqueue_script( 'eelt-admin', EELT_URL . 'assets/admin.js', array(), EELT_VERSION, true );
 		wp_localize_script(
-			'llt-admin',
-			'lltAdmin',
+			'eelt-admin',
+			'eeltAdmin',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'llt_admin' ),
+				'nonce'   => wp_create_nonce( 'eelt_admin' ),
 			)
 		);
 	}
@@ -84,11 +86,12 @@ final class SettingsPage {
 		$tab     = $tabs[ $current ];
 		$values  = Settings::all();
 
-		echo '<div class="wrap llt-admin">';
+		echo '<div class="wrap eelt-admin">';
 		echo '<h1>Enspire Email Leads Tracker</h1>';
 
 		AdminNotice::render();
 		self::render_secret_warning();
+		self::render_migration_notice();
 
 		echo '<nav class="nav-tab-wrapper">';
 		foreach ( $tabs as $key => $definition ) {
@@ -123,6 +126,25 @@ final class SettingsPage {
 		echo '</div>';
 	}
 
+	/**
+	 * Shown for 30 days after the migration from the pre-1.5.0 identifiers.
+	 */
+	private static function render_migration_notice(): void {
+		$migrated = (int) State::get( 'legacy_migrated' );
+		if ( ! $migrated || time() - $migrated > 30 * DAY_IN_SECONDS ) {
+			return;
+		}
+		echo '<div class="notice notice-warning"><p><strong>The plugin was updated to new identifiers.</strong> Your leads and settings were kept. Three things need your attention:</p><ol>';
+		echo '<li>Replace the shortcode <code>[location_contact]</code> with <code>[enspire_contact_form]</code> on your pages and templates (the attributes are the same).</li>';
+		printf(
+			'<li>If you use delivery confirmation, edit the webhook in Postmark: change the path from <code>/wp-json/llt/v1/postmark</code> to <code>%s</code>, keep the same user and password, and click Verify. Until then, the hourly reconciliation still confirms deliveries. (<a href="%s">Webhook tab</a>)</li>',
+			esc_html( (string) wp_parse_url( \EnspireEmailLeadsTracker\Webhook\WebhookController::url(), PHP_URL_PATH ) ),
+			esc_url( self::url( 'webhook' ) )
+		);
+		echo '<li>Clear the page cache, so cached forms use the new field names. The WP-CLI command is now <code>wp eelt</code>; in wp-config.php, rename <code>LLT_ENCRYPTION_KEY</code> to <code>EELT_ENCRYPTION_KEY</code> when convenient (the old name still works).</li>';
+		echo '</ol></div>';
+	}
+
 	private static function render_secret_warning(): void {
 		$unreadable = Settings::unreadable_secrets();
 		if ( ! $unreadable ) {
@@ -130,12 +152,12 @@ final class SettingsPage {
 		}
 		echo '<div class="notice notice-error"><p><strong>Some secrets can no longer be decrypted</strong> (';
 		echo esc_html( implode( ', ', $unreadable ) );
-		echo '). Most likely the site was moved or the WordPress salts changed. Enter the values again. To avoid this when moving the site, define <code>LLT_ENCRYPTION_KEY</code> in wp-config.php.</p></div>';
+		echo '). Most likely the site was moved or the WordPress salts changed. Enter the values again. To avoid this when moving the site, define <code>EELT_ENCRYPTION_KEY</code> in wp-config.php.</p></div>';
 	}
 
 	private static function field( string $key, array $field, array $values ): void {
 		$name  = Settings::OPTION . '[' . $key . ']';
-		$id    = 'llt_' . $key;
+		$id    = 'eelt_' . $key;
 		$value = $values[ $key ] ?? '';
 
 		echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $field['label'] ) . '</label></th><td>';

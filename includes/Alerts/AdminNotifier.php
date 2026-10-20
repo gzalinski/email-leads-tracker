@@ -83,7 +83,7 @@ final class AdminNotifier {
 			sprintf( '%d leads were not sent on time', $count ),
 			sprintf( "%d leads were due more than an hour ago and are still in the queue.\n\n", $count )
 			. "Possible causes: the server cron is not running or Postmark is not responding.\n"
-			. "Check the Status tab in Settings → Enspire Email Leads Tracker or run: wp llt status\n"
+			. "Check the Status tab in Settings → Enspire Email Leads Tracker or run: wp eelt status\n"
 		);
 	}
 
@@ -103,7 +103,7 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Sends the grouped alert for the accumulated bounces (hook `llt_health_check_run`).
+	 * Sends the grouped alert for the accumulated bounces (hook `eelt_health_check_run`).
 	 */
 	public static function flush_bounces(): void {
 		$pending = (array) State::get( 'pending_bounces', array() );
@@ -120,7 +120,7 @@ final class AdminNotifier {
 			"The following leads did not reach the location, because the recipient server rejected the email:\n\n"
 			. implode( "\n", $lines )
 			. "\n\nCheck the address in the location's \"email\" field. If Postmark deactivated the address, reactivate it in Postmark → Suppressions.\n"
-			. "The visitors' data is kept temporarily; you can view it with: wp llt leads show <id> --with-content\n"
+			. "The visitors' data is kept temporarily; you can view it with: wp eelt leads show <id> --with-content\n"
 		);
 		if ( $sent ) {
 			State::set( 'pending_bounces', array() );
@@ -235,8 +235,8 @@ final class AdminNotifier {
 	 * Where failed leads are handled: the admin list (v3) and/or WP-CLI.
 	 */
 	public static function resolution_hint(): string {
-		$hint = (string) apply_filters( 'llt_alert_admin_link', '' );
-		return ( '' !== $hint ? $hint . "\nor run:  " : '' ) . 'wp llt retry --failed';
+		$hint = (string) apply_filters( 'eelt_alert_admin_link', '' );
+		return ( '' !== $hint ? $hint . "\nor run:  " : '' ) . 'wp eelt retry --failed';
 	}
 
 	private static function deliver( string $subject, string $body ): bool {
@@ -257,7 +257,7 @@ final class AdminNotifier {
 						'Subject'       => $subject,
 						'TextBody'      => $body,
 						'MessageStream' => (string) Settings::get( 'postmark_stream' ),
-						'Tag'           => 'llt-alert',
+						'Tag'           => 'eelt-alert',
 					)
 				);
 				$sent = $result->is( SendResult::ACCEPTED );

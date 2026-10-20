@@ -41,17 +41,17 @@ final class StatusTab {
 				: '—',
 			'Cloudflare IP list'    => ProxyRanges::updated_at() ? 'updated ' . self::ago( ProxyRanges::updated_at() ) : 'the list bundled with the plugin',
 		);
-		$rows = (array) apply_filters( 'llt_status_rows', $rows, $state, $counts );
+		$rows = (array) apply_filters( 'eelt_status_rows', $rows, $state, $counts );
 
 		if ( $stale ) {
 			echo '<div class="notice notice-warning inline"><p>The queue has not run in the last 15 minutes. Check that the server cron calls WordPress every minute.</p></div>';
 		}
-		echo '<table class="widefat striped llt-status"><tbody>';
+		echo '<table class="widefat striped eelt-status"><tbody>';
 		foreach ( $rows as $label => $value ) {
 			printf( '<tr><th scope="row">%s</th><td>%s</td></tr>', esc_html( $label ), esc_html( (string) $value ) );
 		}
 		echo '</tbody></table>';
-		echo '<p class="description">Useful commands: <code>wp llt status</code>, <code>wp llt leads list --status=failed</code>, <code>wp llt retry --failed</code>.</p>';
+		echo '<p class="description">Useful commands: <code>wp eelt status</code>, <code>wp eelt leads list --status=failed</code>, <code>wp eelt retry --failed</code>.</p>';
 	}
 
 	public static function ago( int $timestamp ): string {

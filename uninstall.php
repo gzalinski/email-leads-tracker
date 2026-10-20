@@ -7,21 +7,21 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-foreach ( array( 'llt_send_lead', 'llt_process_queue', 'llt_process_queue_now', 'llt_health_check', 'llt_retention_cleanup', 'llt_refresh_proxy_ranges', 'llt_reconcile_delivery' ) as $llt_hook ) {
-	wp_unschedule_hook( $llt_hook );
+foreach ( array( 'eelt_send_lead', 'eelt_process_queue', 'eelt_process_queue_now', 'eelt_health_check', 'eelt_retention_cleanup', 'eelt_refresh_proxy_ranges', 'eelt_reconcile_delivery' ) as $eelt_hook ) {
+	wp_unschedule_hook( $eelt_hook );
 }
 
-$llt_settings = get_option( 'llt_settings' );
-if ( ! is_array( $llt_settings ) || empty( $llt_settings['delete_on_uninstall'] ) ) {
+$eelt_settings = get_option( 'eelt_settings' );
+if ( ! is_array( $eelt_settings ) || empty( $eelt_settings['delete_on_uninstall'] ) ) {
 	return;
 }
 
 global $wpdb;
-$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}location_lead_messages" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}location_leads" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}eelt_lead_messages" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}eelt_leads" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
-foreach ( array( 'llt_settings', 'llt_db_version', 'llt_state', 'llt_proxy_ranges', 'llt_worker_lock' ) as $llt_option ) {
-	delete_option( $llt_option );
+foreach ( array( 'eelt_settings', 'eelt_db_version', 'eelt_state', 'eelt_proxy_ranges', 'eelt_worker_lock' ) as $eelt_option ) {
+	delete_option( $eelt_option );
 }
 
-$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_llt\\_%' OR option_name LIKE '\\_transient\\_timeout\\_llt\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_eelt\\_%' OR option_name LIKE '\\_transient\\_timeout\\_eelt\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery

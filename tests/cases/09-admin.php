@@ -14,37 +14,37 @@ use EnspireEmailLeadsTracker\Lead\LeadService;
 use EnspireEmailLeadsTracker\Util;
 
 global $wpdb;
-$wpdb = new LLT_Test_WPDB();
-$GLOBALS['llt_test_options']['llt_state'] = array();
-$GLOBALS['llt_test_transients']           = array();
+$wpdb = new EELT_Test_WPDB();
+$GLOBALS['eelt_test_options']['eelt_state'] = array();
+$GLOBALS['eelt_test_transients']           = array();
 reset_settings( array( 'retention_failed_days' => 14 ) );
 
 $wpdb->query( "INSERT INTO wp_posts (ID, post_title) VALUES (245, 'Downtown Location'), (300, 'Riverside Location')" );
 $data = array( 'name' => 'John', 'email' => 'john@example.com', 'phone' => '', 'message' => 'Hello' );
 
-function llt_failed( array $data, int $object_id, string $code, string $created = '' ): int {
+function eelt_failed( array $data, int $object_id, string $code, string $created = '' ): int {
 	global $wpdb;
 	$id      = LeadService::create( $data, $object_id, 'x@example.com' );
 	$created = $created ?: Util::now();
-	$wpdb->query( "UPDATE wp_location_leads SET send_status = 'failed', last_error_code = '{$code}', next_retry_at = NULL, created_at = '{$created}' WHERE id = {$id}" );
+	$wpdb->query( "UPDATE wp_eelt_leads SET send_status = 'failed', last_error_code = '{$code}', next_retry_at = NULL, created_at = '{$created}' WHERE id = {$id}" );
 	return $id;
 }
 
-$f1 = llt_failed( $data, 245, 'pm_406', '2026-10-01 10:00:00' );
-$f2 = llt_failed( $data, 245, 'retries_exhausted', '2026-10-05 10:00:00' );
-$f3 = llt_failed( $data, 300, 'pm_406', '2026-10-10 10:00:00' );
-$f4 = llt_failed( $data, 300, 'pm_10', '2026-10-15 10:00:00' );
+$f1 = eelt_failed( $data, 245, 'pm_406', '2026-10-01 10:00:00' );
+$f2 = eelt_failed( $data, 245, 'retries_exhausted', '2026-10-05 10:00:00' );
+$f3 = eelt_failed( $data, 300, 'pm_406', '2026-10-10 10:00:00' );
+$f4 = eelt_failed( $data, 300, 'pm_10', '2026-10-15 10:00:00' );
 MessageRepository::delete( $f4 );
 
 // A lead stuck in the queue and a bounced lead.
 $stuck = LeadService::create( $data, 245, 'x@example.com' );
-$wpdb->query( "UPDATE wp_location_leads SET created_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "' WHERE id = {$stuck}" );
+$wpdb->query( "UPDATE wp_eelt_leads SET created_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( -2 * HOUR_IN_SECONDS ) . "' WHERE id = {$stuck}" );
 $fresh = LeadService::create( $data, 245, 'x@example.com' );
 // An old lead waiting for a retry scheduled in a few hours: not stuck.
 $waiting = LeadService::create( $data, 245, 'x@example.com' );
-$wpdb->query( "UPDATE wp_location_leads SET created_at = '" . Util::now( -7 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( 3 * HOUR_IN_SECONDS ) . "' WHERE id = {$waiting}" );
+$wpdb->query( "UPDATE wp_eelt_leads SET created_at = '" . Util::now( -7 * HOUR_IN_SECONDS ) . "', next_retry_at = '" . Util::now( 3 * HOUR_IN_SECONDS ) . "' WHERE id = {$waiting}" );
 $bounced = LeadService::create( $data, 300, 'x@example.com' );
-$wpdb->query( "UPDATE wp_location_leads SET send_status = 'accepted', delivery_status = 'bounced', last_error_code = 'bounce:HardBounce' WHERE id = {$bounced}" );
+$wpdb->query( "UPDATE wp_eelt_leads SET send_status = 'accepted', delivery_status = 'bounced', last_error_code = 'bounce:HardBounce' WHERE id = {$bounced}" );
 
 // Views.
 same( 'failed view', 4, FailedLeadsQuery::count( 'failed', array() ) );
@@ -62,7 +62,7 @@ same( 'date range filter (end day included)', array( $f2, $f3 ), FailedLeadsQuer
 same( 'combined filter', array( $f3 ), FailedLeadsQuery::ids( 'failed', array( 'error' => 'pm_406', 's' => 'Riverside', 'from' => '', 'to' => '' ) ) );
 same( 'error codes for the dropdown', array( 'pm_10', 'pm_406', 'retries_exhausted' ), FailedLeadsQuery::error_codes( 'failed' ) );
 
-$filters = FailedLeadsQuery::filters_from( array( 'llt_error' => 'pm_406', 's' => '<b>Downtown</b>', 'llt_from' => '2026-13-99x', 'llt_to' => '2026-10-31' ) );
+$filters = FailedLeadsQuery::filters_from( array( 'eelt_error' => 'pm_406', 's' => '<b>Downtown</b>', 'eelt_from' => '2026-13-99x', 'eelt_to' => '2026-10-31' ) );
 same( 'sanitized filters', array( 'error' => 'pm_406', 's' => 'Downtown', 'from' => '', 'to' => '2026-10-31' ), $filters );
 
 // Rows, sorting, pagination.

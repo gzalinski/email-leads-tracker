@@ -37,7 +37,7 @@ final class BulkActionHandler {
 	);
 
 	public static function register(): void {
-		add_action( 'admin_post_llt_lead_action', array( self::class, 'handle' ) );
+		add_action( 'admin_post_eelt_lead_action', array( self::class, 'handle' ) );
 	}
 
 	/**
@@ -56,14 +56,14 @@ final class BulkActionHandler {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- nonce checked above.
 		$request = wp_unslash( $_REQUEST );
 		// phpcs:enable
-		$view    = FailedLeadsQuery::sanitize_view( sanitize_key( (string) ( $request['llt_view'] ?? 'failed' ) ) );
+		$view    = FailedLeadsQuery::sanitize_view( sanitize_key( (string) ( $request['eelt_view'] ?? 'failed' ) ) );
 		$filters = FailedLeadsQuery::filters_from( $request );
-		$action  = sanitize_key( (string) ( $request['llt_do'] ?? '' ) );
+		$action  = sanitize_key( (string) ( $request['eelt_do'] ?? '' ) );
 		if ( '' === $action ) {
-			$action = sanitize_key( (string) ( $request['llt_do_bottom'] ?? '' ) );
+			$action = sanitize_key( (string) ( $request['eelt_do_bottom'] ?? '' ) );
 		}
 
-		if ( ! empty( $request['llt_all_matching'] ) ) {
+		if ( ! empty( $request['eelt_all_matching'] ) ) {
 			$ids = FailedLeadsQuery::ids( $view, $filters );
 		} else {
 			$ids = Util::ids( $request['ids'] ?? array() );
@@ -73,7 +73,7 @@ final class BulkActionHandler {
 		AdminNotice::add( $message[0], $message[1] );
 
 		$back = array( 'view' => $view );
-		foreach ( array( 'llt_error' => 'error', 's' => 's', 'llt_from' => 'from', 'llt_to' => 'to' ) as $param => $key ) {
+		foreach ( array( 'eelt_error' => 'error', 's' => 's', 'eelt_from' => 'from', 'eelt_to' => 'to' ) as $param => $key ) {
 			if ( '' !== $filters[ $key ] ) {
 				$back[ $param ] = $filters[ $key ];
 			}
@@ -127,9 +127,9 @@ final class BulkActionHandler {
 		return wp_nonce_url(
 			add_query_arg(
 				array(
-					'action'   => 'llt_lead_action',
-					'llt_do'   => $action,
-					'llt_view' => $view,
+					'action'   => 'eelt_lead_action',
+					'eelt_do'   => $action,
+					'eelt_view' => $view,
 					'ids[]'    => $id,
 				),
 				admin_url( 'admin-post.php' )

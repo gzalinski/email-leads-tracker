@@ -13,17 +13,17 @@ define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'WEEK_IN_SECONDS', 604800 );
-define( 'LLT_VERSION', 'test' );
-define( 'LLT_DB_VERSION', '1' );
-define( 'LLT_DIR', dirname( __DIR__ ) . '/' );
-define( 'LLT_URL', 'https://example.test/wp-content/plugins/llt/' );
+define( 'EELT_VERSION', 'test' );
+define( 'EELT_DB_VERSION', '1' );
+define( 'EELT_DIR', dirname( __DIR__ ) . '/' );
+define( 'EELT_URL', 'https://example.test/wp-content/plugins/eelt/' );
 
-$GLOBALS['llt_test_options']    = array();
-$GLOBALS['llt_test_transients'] = array();
-$GLOBALS['llt_test_salt']       = 'salt-one';
-$GLOBALS['llt_test_errors']     = array();
-$GLOBALS['llt_test_posts']      = array();
-$GLOBALS['llt_test_meta']       = array();
+$GLOBALS['eelt_test_options']    = array();
+$GLOBALS['eelt_test_transients'] = array();
+$GLOBALS['eelt_test_salt']       = 'salt-one';
+$GLOBALS['eelt_test_errors']     = array();
+$GLOBALS['eelt_test_posts']      = array();
+$GLOBALS['eelt_test_meta']       = array();
 
 class WP_Error {
 	private $code;
@@ -93,39 +93,39 @@ function apply_filters( $hook, $value, ...$args ) {
 	return $value;
 }
 function get_option( $key, $default = false ) {
-	return array_key_exists( $key, $GLOBALS['llt_test_options'] ) ? $GLOBALS['llt_test_options'][ $key ] : $default;
+	return array_key_exists( $key, $GLOBALS['eelt_test_options'] ) ? $GLOBALS['eelt_test_options'][ $key ] : $default;
 }
 function update_option( $key, $value, $autoload = null ) {
-	$GLOBALS['llt_test_options'][ $key ] = $value;
+	$GLOBALS['eelt_test_options'][ $key ] = $value;
 	return true;
 }
 function add_option( $key, $value = '', $deprecated = '', $autoload = null ) {
-	if ( array_key_exists( $key, $GLOBALS['llt_test_options'] ) ) {
+	if ( array_key_exists( $key, $GLOBALS['eelt_test_options'] ) ) {
 		return false;
 	}
-	$GLOBALS['llt_test_options'][ $key ] = $value;
+	$GLOBALS['eelt_test_options'][ $key ] = $value;
 	return true;
 }
 function delete_option( $key ) {
-	unset( $GLOBALS['llt_test_options'][ $key ] );
+	unset( $GLOBALS['eelt_test_options'][ $key ] );
 	return true;
 }
 function wp_cache_delete( ...$args ) {
 	return true;
 }
 function get_transient( $key ) {
-	return $GLOBALS['llt_test_transients'][ $key ] ?? false;
+	return $GLOBALS['eelt_test_transients'][ $key ] ?? false;
 }
 function set_transient( $key, $value, $ttl = 0 ) {
-	$GLOBALS['llt_test_transients'][ $key ] = $value;
+	$GLOBALS['eelt_test_transients'][ $key ] = $value;
 	return true;
 }
 function delete_transient( $key ) {
-	unset( $GLOBALS['llt_test_transients'][ $key ] );
+	unset( $GLOBALS['eelt_test_transients'][ $key ] );
 	return true;
 }
 function wp_salt( $scheme = 'auth' ) {
-	return $GLOBALS['llt_test_salt'] . '|' . $scheme;
+	return $GLOBALS['eelt_test_salt'] . '|' . $scheme;
 }
 function wp_json_encode( $data ) {
 	return json_encode( $data );
@@ -169,13 +169,13 @@ function home_url( $path = '' ) {
 	return 'https://example.test' . $path;
 }
 function get_the_title( $id ) {
-	return isset( $GLOBALS['llt_test_posts'][ $id ] ) ? $GLOBALS['llt_test_posts'][ $id ]->post_title : 'Location';
+	return isset( $GLOBALS['eelt_test_posts'][ $id ] ) ? $GLOBALS['eelt_test_posts'][ $id ]->post_title : 'Location';
 }
 function get_post( $id ) {
-	return $GLOBALS['llt_test_posts'][ $id ] ?? null;
+	return $GLOBALS['eelt_test_posts'][ $id ] ?? null;
 }
 function get_post_meta( $id, $key, $single = false ) {
-	return $GLOBALS['llt_test_meta'][ $id ][ $key ] ?? '';
+	return $GLOBALS['eelt_test_meta'][ $id ][ $key ] ?? '';
 }
 function get_gmt_from_date( $date ) {
 	return $date;
@@ -184,7 +184,7 @@ function get_date_from_gmt( $date, $format ) {
 	return $date;
 }
 function add_settings_error( $setting, $code, $message, $type = 'error' ) {
-	$GLOBALS['llt_test_errors'][] = $message;
+	$GLOBALS['eelt_test_errors'][] = $message;
 }
 function current_user_can( $cap ) {
 	return false;
@@ -196,8 +196,12 @@ function human_time_diff( $from, $to = 0 ) {
 	return abs( $to - $from ) . ' s';
 }
 function wp_schedule_single_event( $time, $hook, $args = array() ) {
-	$GLOBALS['llt_test_cron'][] = array( $hook, $args );
+	$GLOBALS['eelt_test_cron'][] = array( $hook, $args );
 	return true;
+}
+function wp_unschedule_hook( $hook ) {
+	$GLOBALS['eelt_test_unscheduled'][] = $hook;
+	return 0;
 }
 function wp_next_scheduled( $hook, $args = array() ) {
 	return false;
@@ -216,21 +220,21 @@ function register_rest_route( ...$args ) {
 	return true;
 }
 
-// Simulated HTTP: responses go into $GLOBALS['llt_http_queue'], calls are recorded in $GLOBALS['llt_http_log'].
-$GLOBALS['llt_http_queue'] = array();
-$GLOBALS['llt_http_log']   = array();
-function llt_test_http( $method, $url, $args ) {
-	$GLOBALS['llt_http_log'][] = array( $method, $url, $args );
-	if ( ! $GLOBALS['llt_http_queue'] ) {
+// Simulated HTTP: responses go into $GLOBALS['eelt_http_queue'], calls are recorded in $GLOBALS['eelt_http_log'].
+$GLOBALS['eelt_http_queue'] = array();
+$GLOBALS['eelt_http_log']   = array();
+function eelt_test_http( $method, $url, $args ) {
+	$GLOBALS['eelt_http_log'][] = array( $method, $url, $args );
+	if ( ! $GLOBALS['eelt_http_queue'] ) {
 		throw new RuntimeException( "Unexpected HTTP request: {$method} {$url}" );
 	}
-	return array_shift( $GLOBALS['llt_http_queue'] );
+	return array_shift( $GLOBALS['eelt_http_queue'] );
 }
 function wp_remote_post( $url, $args = array() ) {
-	return llt_test_http( 'POST', $url, $args );
+	return eelt_test_http( 'POST', $url, $args );
 }
 function wp_remote_get( $url, $args = array() ) {
-	return llt_test_http( 'GET', $url, $args );
+	return eelt_test_http( 'GET', $url, $args );
 }
 function wp_remote_retrieve_response_code( $response ) {
 	return $response['code'] ?? 0;
@@ -241,7 +245,7 @@ function wp_remote_retrieve_body( $response ) {
 function wp_remote_retrieve_header( $response, $name ) {
 	return $response['headers'][ strtolower( $name ) ] ?? '';
 }
-function llt_http( int $code, $body = '', array $headers = array() ) {
+function eelt_http( int $code, $body = '', array $headers = array() ) {
 	return array(
 		'code'    => $code,
 		'body'    => is_array( $body ) ? json_encode( $body ) : $body,
@@ -250,11 +254,11 @@ function llt_http( int $code, $body = '', array $headers = array() ) {
 }
 
 // Simulated email.
-$GLOBALS['llt_mail_log']  = array();
-$GLOBALS['llt_mail_fail'] = false;
+$GLOBALS['eelt_mail_log']  = array();
+$GLOBALS['eelt_mail_fail'] = false;
 function wp_mail( $to, $subject, $body ) {
-	$GLOBALS['llt_mail_log'][] = array( $to, $subject, $body );
-	return ! $GLOBALS['llt_mail_fail'];
+	$GLOBALS['eelt_mail_log'][] = array( $to, $subject, $body );
+	return ! $GLOBALS['eelt_mail_fail'];
 }
 
 spl_autoload_register(
@@ -263,7 +267,7 @@ spl_autoload_register(
 		if ( 0 !== strncmp( $class, $prefix, strlen( $prefix ) ) ) {
 			return;
 		}
-		$file = LLT_DIR . 'includes/' . str_replace( '\\', '/', substr( $class, strlen( $prefix ) ) ) . '.php';
+		$file = EELT_DIR . 'includes/' . str_replace( '\\', '/', substr( $class, strlen( $prefix ) ) ) . '.php';
 		if ( is_readable( $file ) ) {
 			require_once $file;
 		}

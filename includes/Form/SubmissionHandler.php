@@ -1,6 +1,6 @@
 <?php
 /**
- * Handles form submissions (admin-post.php?action=llt_submit).
+ * Handles form submissions (admin-post.php?action=eelt_submit).
  *
  * The lead is saved, the visitor gets an immediate response, and the email is sent after the response.
  *
@@ -40,18 +40,18 @@ final class SubmissionHandler {
 		// phpcs:enable
 		$post = is_array( $post ) ? $post : array();
 
-		self::$ajax       = ! empty( $_SERVER['HTTP_X_LLT_AJAX'] );
-		self::$form_id    = sanitize_key( (string) ( $post['llt_form'] ?? '' ) );
-		self::$return_url = wp_validate_redirect( esc_url_raw( (string) ( $post['llt_return'] ?? '' ) ), home_url( '/' ) );
+		self::$ajax       = ! empty( $_SERVER['HTTP_X_EELT_AJAX'] );
+		self::$form_id    = sanitize_key( (string) ( $post['eelt_form'] ?? '' ) );
+		self::$return_url = wp_validate_redirect( esc_url_raw( (string) ( $post['eelt_return'] ?? '' ) ), home_url( '/' ) );
 
 		// 1. Signed context.
-		$context = ContextSigner::verify( (string) ( $post['llt_ctx'] ?? '' ), (string) ( $post['llt_sig'] ?? '' ) );
+		$context = ContextSigner::verify( (string) ( $post['eelt_ctx'] ?? '' ), (string) ( $post['eelt_sig'] ?? '' ) );
 		if ( null === $context ) {
 			self::finish( 'invalid' );
 		}
 
 		// 2. Honeypot: the bot gets "success", but nothing is created.
-		if ( '' !== trim( (string) ( $post['llt_hp'] ?? '' ) ) ) {
+		if ( '' !== trim( (string) ( $post['eelt_hp'] ?? '' ) ) ) {
 			self::finish( 'success' );
 		}
 
@@ -124,8 +124,8 @@ final class SubmissionHandler {
 		} else {
 			$url = add_query_arg(
 				array(
-					'llt_status' => $status,
-					'llt_form'   => self::$form_id,
+					'eelt_status' => $status,
+					'eelt_form'   => self::$form_id,
 				),
 				self::$return_url
 			);
@@ -152,7 +152,7 @@ final class SubmissionHandler {
 		$can_finish = function_exists( 'fastcgi_finish_request' ) || function_exists( 'litespeed_finish_request' );
 		if ( ! $can_finish ) {
 			// Without PHP-FPM / LiteSpeed: cron picks up the send within a minute.
-			wp_schedule_single_event( time(), 'llt_send_lead', array( $lead_id ) );
+			wp_schedule_single_event( time(), 'eelt_send_lead', array( $lead_id ) );
 			echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			if ( ! defined( 'DISABLE_WP_CRON' ) || ! DISABLE_WP_CRON ) {
 				spawn_cron();

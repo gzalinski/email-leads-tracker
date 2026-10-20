@@ -1,6 +1,6 @@
 <?php
 /**
- * The REST endpoint for the Postmark webhook: POST /wp-json/llt/v1/postmark
+ * The REST endpoint for the Postmark webhook: POST /wp-json/eelt/v1/postmark
  *
  * Response codes (Postmark retries only on 5xx, 408, 429 and network errors):
  * - 401: authentication failed (no retry);
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class WebhookController {
 
-	const NAMESPACE = 'llt/v1';
+	const NAMESPACE = 'eelt/v1';
 	const ROUTE     = '/postmark';
 	const MAX_BODY  = 262144;
 

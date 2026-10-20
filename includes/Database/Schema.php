@@ -13,12 +13,12 @@ final class Schema {
 
 	public static function leads(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'location_leads';
+		return $wpdb->prefix . 'eelt_leads';
 	}
 
 	public static function messages(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'location_lead_messages';
+		return $wpdb->prefix . 'eelt_lead_messages';
 	}
 
 	/**

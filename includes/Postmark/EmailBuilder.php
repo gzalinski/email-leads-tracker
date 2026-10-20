@@ -15,11 +15,11 @@ defined( 'ABSPATH' ) || exit;
 
 final class EmailBuilder {
 
-	const TAG = 'location-lead';
+	const TAG = 'eelt-lead';
 
 	/**
-	 * @param object $lead    Row from `location_leads`.
-	 * @param object $message Row from `location_lead_messages`.
+	 * @param object $lead    Row from `eelt_leads`.
+	 * @param object $message Row from `eelt_lead_messages`.
 	 */
 	public static function build( object $lead, object $message ): array {
 		$post_title = Util::single_line( wp_strip_all_tags( get_the_title( (int) $lead->object_id ) ) );
@@ -32,7 +32,7 @@ final class EmailBuilder {
 				'{site_name}'  => $site_name,
 			)
 		);
-		$subject = Util::single_line( (string) apply_filters( 'llt_email_subject', $subject, $lead ) );
+		$subject = Util::single_line( (string) apply_filters( 'eelt_email_subject', $subject, $lead ) );
 
 		$fields = array(
 			'site_name'  => $site_name,
@@ -49,10 +49,10 @@ final class EmailBuilder {
 			'From'          => self::from(),
 			'To'            => (string) $lead->recipient_email,
 			'Subject'       => $subject,
-			'TextBody'      => (string) apply_filters( 'llt_email_body', self::text_body( $fields ), $lead, $message ),
+			'TextBody'      => (string) apply_filters( 'eelt_email_body', self::text_body( $fields ), $lead, $message ),
 			'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 			'Tag'           => self::TAG,
-			'Metadata'      => array( 'llt_lead_id' => (string) $lead->id ),
+			'Metadata'      => array( 'eelt_lead_id' => (string) $lead->id ),
 			'TrackOpens'    => false,
 			'TrackLinks'    => 'None',
 		);

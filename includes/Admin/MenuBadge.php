@@ -11,10 +11,10 @@ defined( 'ABSPATH' ) || exit;
 
 final class MenuBadge {
 
-	const CACHE = 'llt_failed_count';
+	const CACHE = 'eelt_failed_count';
 
 	public static function register(): void {
-		add_filter( 'llt_menu_title', array( self::class, 'title' ) );
+		add_filter( 'eelt_menu_title', array( self::class, 'title' ) );
 	}
 
 	/**

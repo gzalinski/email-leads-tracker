@@ -18,7 +18,7 @@ final class RateLimiter {
 	const WINDOW = HOUR_IN_SECONDS;
 
 	private static function key( string $ip ): string {
-		return 'llt_rl_' . substr( hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) ), 0, 32 );
+		return 'eelt_rl_' . substr( hash_hmac( 'sha256', $ip, wp_salt( 'nonce' ) ), 0, 32 );
 	}
 
 	public static function allow( string $ip ): bool {

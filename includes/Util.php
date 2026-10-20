@@ -95,4 +95,19 @@ final class Util {
 			error_log( '[Enspire Email Leads Tracker] ' . self::mask_emails( $message ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
+
+	/**
+	 * The value of the first defined, non-empty constant from the list ('' if none).
+	 * Used to accept legacy constant names from before the rename.
+	 *
+	 * @param string[] $names Constant names, in order of preference.
+	 */
+	public static function constant( array $names ): string {
+		foreach ( $names as $name ) {
+			if ( defined( $name ) && '' !== (string) constant( $name ) ) {
+				return (string) constant( $name );
+			}
+		}
+		return '';
+	}
 }

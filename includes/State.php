@@ -1,6 +1,6 @@
 <?php
 /**
- * Internal plugin state (heartbeat, counters, recent alerts), stored in the `llt_state` option.
+ * Internal plugin state (heartbeat, counters, recent alerts), stored in the `eelt_state` option.
  *
  * @package EnspireEmailLeadsTracker
  */
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class State {
 
-	const OPTION = 'llt_state';
+	const OPTION = 'eelt_state';
 
 	public static function all(): array {
 		wp_cache_delete( self::OPTION, 'options' );

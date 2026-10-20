@@ -19,17 +19,17 @@ use EnspireEmailLeadsTracker\State;
 use EnspireEmailLeadsTracker\Util;
 
 global $wpdb;
-$wpdb = new LLT_Test_WPDB();
+$wpdb = new EELT_Test_WPDB();
 
 reset_settings( array( 'postmark_token' => SecretStore::encrypt( 'tok' ), 'alert_threshold' => 2 ) );
-$GLOBALS['llt_test_options']['llt_state']   = array();
-$GLOBALS['llt_test_options']['admin_email'] = 'admin@example.com';
+$GLOBALS['eelt_test_options']['eelt_state']   = array();
+$GLOBALS['eelt_test_options']['admin_email'] = 'admin@example.com';
 
 $data = array( 'name' => 'John', 'email' => 'john@example.com', 'phone' => '', 'message' => 'Hello' );
 
-function llt_make_due( int $id ): void {
+function eelt_make_due( int $id ): void {
 	global $wpdb;
-	$wpdb->query( "UPDATE wp_location_leads SET next_retry_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
+	$wpdb->query( "UPDATE wp_eelt_leads SET next_retry_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
 }
 
 // 1. Creation.
@@ -47,118 +47,118 @@ same( 'second claim fails', null, Lock::claim( $id ) );
 Lock::release( $id, $token );
 
 // 3. Accepted send.
-$GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-1' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-1' ) ) );
 SendWorker::process_lead( $id );
 $lead = LeadRepository::find( $id );
 same( 'accepted', 'accepted', $lead->send_status );
 same( 'MessageID saved', 'pm-1', $lead->postmark_message_id );
 check( 'sent_at set', null !== $lead->sent_at );
 same( 'lock released', null, $lead->lock_token );
-$payload = json_decode( $GLOBALS['llt_http_log'][0][2]['body'], true );
-same( 'metadata lead id', (string) $id, $payload['Metadata']['llt_lead_id'] );
+$payload = json_decode( $GLOBALS['eelt_http_log'][0][2]['body'], true );
+same( 'metadata lead id', (string) $id, $payload['Metadata']['eelt_lead_id'] );
 same( 'ReplyTo is the visitor', 'john@example.com', $payload['ReplyTo'] );
 same( 'To is the location', 'downtown@example.com', $payload['To'] );
 same( 'stream', 'outbound', $payload['MessageStream'] );
 
 // 4. An accepted lead is not sent again.
-$GLOBALS['llt_http_log'] = array();
+$GLOBALS['eelt_http_log'] = array();
 SendWorker::process_lead( $id );
-same( 'accepted is not resent', 0, count( $GLOBALS['llt_http_log'] ) );
+same( 'accepted is not resent', 0, count( $GLOBALS['eelt_http_log'] ) );
 
 // 5. Temporary error → retry scheduled.
 $id2 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 503, array( 'ErrorCode' => 100, 'Message' => 'Maintenance' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 503, array( 'ErrorCode' => 100, 'Message' => 'Maintenance' ) ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
 same( 'temporary stays pending', 'pending', $lead->send_status );
 same( 'retry_count 1', 1, (int) $lead->retry_count );
 check( 'next_retry_at in the future', $lead->next_retry_at > Util::now() );
 same( 'error code', 'pm_100', $lead->last_error_code );
-$GLOBALS['llt_http_log'] = array();
+$GLOBALS['eelt_http_log'] = array();
 SendWorker::process_lead( $id2 );
-same( 'not due, not sent', 0, count( $GLOBALS['llt_http_log'] ) );
+same( 'not due, not sent', 0, count( $GLOBALS['eelt_http_log'] ) );
 
 // 6. Ambiguous timeout → search in Postmark → found → accepted without resending.
-llt_make_due( $id2 );
-$GLOBALS['llt_http_queue'] = array( new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out after 15001 milliseconds with 0 bytes received' ) );
+eelt_make_due( $id2 );
+$GLOBALS['eelt_http_queue'] = array( new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out after 15001 milliseconds with 0 bytes received' ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
 same( 'ambiguous stays pending', 'pending', $lead->send_status );
 same( 'ambiguous_timeout code', 'ambiguous_timeout', $lead->last_error_code );
 check( 'ambiguous: pause ≥ 5 min', strtotime( $lead->next_retry_at . ' UTC' ) - time() >= 295 );
 
-llt_make_due( $id2 );
-$GLOBALS['llt_http_log']   = array();
-$GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'TotalCount' => 1, 'Messages' => array( array( 'MessageID' => 'pm-2' ) ) ) ) );
+eelt_make_due( $id2 );
+$GLOBALS['eelt_http_log']   = array();
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 200, array( 'TotalCount' => 1, 'Messages' => array( array( 'MessageID' => 'pm-2' ) ) ) ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
 same( 'found in Postmark → accepted', 'accepted', $lead->send_status );
 same( 'MessageID from the search', 'pm-2', $lead->postmark_message_id );
-same( 'a single request (GET), no resend', 1, count( $GLOBALS['llt_http_log'] ) );
-same( 'the request was the search', 'GET', $GLOBALS['llt_http_log'][0][0] );
-check( 'search by metadata', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'metadata_llt_lead_id=' . $id2 ) );
-check( 'search with the stream', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'messagestream=outbound' ) );
+same( 'a single request (GET), no resend', 1, count( $GLOBALS['eelt_http_log'] ) );
+same( 'the request was the search', 'GET', $GLOBALS['eelt_http_log'][0][0] );
+check( 'search by metadata', false !== strpos( $GLOBALS['eelt_http_log'][0][1], 'metadata_eelt_lead_id=' . $id2 ) );
+check( 'search with the stream', false !== strpos( $GLOBALS['eelt_http_log'][0][1], 'messagestream=outbound' ) );
 
 // 7. Ambiguous → not found → resent.
 $id3 = LeadService::create( $data, 245, 'downtown@example.com' );
-$wpdb->query( "UPDATE wp_location_leads SET last_error_code = 'ambiguous_timeout' WHERE id = {$id3}" );
-$GLOBALS['llt_http_log']   = array();
-$GLOBALS['llt_http_queue'] = array(
-	llt_http( 200, array( 'TotalCount' => 0, 'Messages' => array() ) ),
-	llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-3' ) ),
+$wpdb->query( "UPDATE wp_eelt_leads SET last_error_code = 'ambiguous_timeout' WHERE id = {$id3}" );
+$GLOBALS['eelt_http_log']   = array();
+$GLOBALS['eelt_http_queue'] = array(
+	eelt_http( 200, array( 'TotalCount' => 0, 'Messages' => array() ) ),
+	eelt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-3' ) ),
 );
 SendWorker::process_lead( $id3 );
 same( 'not found → sent', 'pm-3', LeadRepository::find( $id3 )->postmark_message_id );
-same( 'search + send', array( 'GET', 'POST' ), array_column( $GLOBALS['llt_http_log'], 0 ) );
+same( 'search + send', array( 'GET', 'POST' ), array_column( $GLOBALS['eelt_http_log'], 0 ) );
 
 // 8. Permanent error → failed + alert at the threshold.
-$GLOBALS['llt_mail_log'] = array();
+$GLOBALS['eelt_mail_log'] = array();
 $id4 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 406, 'Message' => 'Inactive recipient downtown@example.com' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 422, array( 'ErrorCode' => 406, 'Message' => 'Inactive recipient downtown@example.com' ) ) );
 SendWorker::process_lead( $id4 );
 $lead = LeadRepository::find( $id4 );
 same( '406 → failed', 'failed', $lead->send_status );
 same( '406 code', 'pm_406', $lead->last_error_code );
 check( 'email masked in the error', false === strpos( (string) $lead->last_error_message, '@' ) );
-same( 'below the threshold: no alert', 0, count( $GLOBALS['llt_mail_log'] ) );
+same( 'below the threshold: no alert', 0, count( $GLOBALS['eelt_mail_log'] ) );
 
 $id5 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
 SendWorker::process_lead( $id5 );
-same( 'at the threshold: alert sent', 1, count( $GLOBALS['llt_mail_log'] ) );
-check( 'the alert contains the IDs', false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id4 ) && false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id5 ) );
-check( 'the alert has no visitor data', false === strpos( $GLOBALS['llt_mail_log'][0][2], 'john@example.com' ) );
-same( 'the alert goes to the alert address', 'admin@example.com', $GLOBALS['llt_mail_log'][0][0] );
+same( 'at the threshold: alert sent', 1, count( $GLOBALS['eelt_mail_log'] ) );
+check( 'the alert contains the IDs', false !== strpos( $GLOBALS['eelt_mail_log'][0][2], '#' . $id4 ) && false !== strpos( $GLOBALS['eelt_mail_log'][0][2], '#' . $id5 ) );
+check( 'the alert has no visitor data', false === strpos( $GLOBALS['eelt_mail_log'][0][2], 'john@example.com' ) );
+same( 'the alert goes to the alert address', 'admin@example.com', $GLOBALS['eelt_mail_log'][0][0] );
 
 // Rate limiting: a second alert of the same type is not sent.
 $id6 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
 SendWorker::process_lead( $id6 );
-same( 'alert rate-limited', 1, count( $GLOBALS['llt_mail_log'] ) );
+same( 'alert rate-limited', 1, count( $GLOBALS['eelt_mail_log'] ) );
 
 // Recovery: a successful send triggers the "works again" notification.
 $id7 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-7' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-7' ) ) );
 SendWorker::process_lead( $id7 );
-same( 'recovery alert', 2, count( $GLOBALS['llt_mail_log'] ) );
-check( 'recovery subject', false !== strpos( $GLOBALS['llt_mail_log'][1][1], 'works again' ) );
+same( 'recovery alert', 2, count( $GLOBALS['eelt_mail_log'] ) );
+check( 'recovery subject', false !== strpos( $GLOBALS['eelt_mail_log'][1][1], 'works again' ) );
 same( 'counter reset', 0, (int) State::get( 'consecutive_failures' ) );
 
 // 9. Configuration error → immediate alert.
-$GLOBALS['llt_mail_log'] = array();
+$GLOBALS['eelt_mail_log'] = array();
 $id8 = LeadService::create( $data, 245, 'downtown@example.com' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 401, array( 'ErrorCode' => 10, 'Message' => 'Bad token' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 401, array( 'ErrorCode' => 10, 'Message' => 'Bad token' ) ) );
 SendWorker::process_lead( $id8 );
 same( 'config → failed', 'failed', LeadRepository::find( $id8 )->send_status );
-same( 'config → immediate alert', 1, count( $GLOBALS['llt_mail_log'] ) );
+same( 'config → immediate alert', 1, count( $GLOBALS['eelt_mail_log'] ) );
 
 // 10. Retries exhausted.
 reset_settings( array( 'postmark_token' => SecretStore::encrypt( 'tok' ), 'retry_schedule' => '1, 5', 'max_retries' => 2 ) );
 $id9 = LeadService::create( $data, 245, 'downtown@example.com' );
 same( 'max_retries from the settings', 2, (int) LeadRepository::find( $id9 )->max_retries );
 for ( $i = 0; $i < 3; $i++ ) {
-	llt_make_due( $id9 );
-	$GLOBALS['llt_http_queue'] = array( llt_http( 500, '' ) );
+	eelt_make_due( $id9 );
+	$GLOBALS['eelt_http_queue'] = array( eelt_http( 500, '' ) );
 	SendWorker::process_lead( $id9 );
 }
 $lead = LeadRepository::find( $id9 );
@@ -186,16 +186,16 @@ LeadActions::restore( array( $id8 ) );
 same( 'restored', null, LeadRepository::find( $id8 )->dismissed_at );
 
 // 12. The queue only processes due leads.
-$GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-4' ) ) );
+$GLOBALS['eelt_http_queue'] = array( eelt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-4' ) ) );
 SendWorker::process_queue();
 same( 'the queue sent the resent lead', 'accepted', LeadRepository::find( $id4 )->send_status );
 check( 'heartbeat', (int) State::get( 'worker_heartbeat' ) > 0 );
-same( 'global lock released', false, get_option( 'llt_worker_lock' ) );
+same( 'global lock released', false, get_option( 'eelt_worker_lock' ) );
 
 // 13. Retention (without delivery confirmation).
 reset_settings( array( 'retention_accepted_hours' => 24, 'retention_failed_days' => 14 ) );
-$wpdb->query( "UPDATE wp_location_leads SET sent_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
-$wpdb->query( "UPDATE wp_location_lead_messages SET created_at = '2000-01-01 00:00:00' WHERE lead_id = {$id8}" );
+$wpdb->query( "UPDATE wp_eelt_leads SET sent_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
+$wpdb->query( "UPDATE wp_eelt_lead_messages SET created_at = '2000-01-01 00:00:00' WHERE lead_id = {$id8}" );
 $dry = RetentionService::run( true );
 same( 'dry run accepted', 1, $dry['accepted'] );
 same( 'dry run failed', 1, $dry['failed'] );

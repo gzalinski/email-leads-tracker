@@ -21,7 +21,7 @@ if ( ! class_exists( '\WP_List_Table' ) ) {
 
 final class FailedLeadsTable extends \WP_List_Table {
 
-	const PER_PAGE_OPTION = 'llt_leads_per_page';
+	const PER_PAGE_OPTION = 'eelt_leads_per_page';
 
 	/** Errors that will probably repeat on resend. */
 	const REPEATING = array( 'pm_300', 'pm_406', 'content_missing' );
@@ -96,7 +96,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 	}
 
 	/**
-	 * The bulk action select uses the name `llt_do`, so it does not conflict with `action` from admin-post.php.
+	 * The bulk action select uses the name `eelt_do`, so it does not conflict with `action` from admin-post.php.
 	 *
 	 * @param string $which top or bottom.
 	 */
@@ -105,15 +105,15 @@ final class FailedLeadsTable extends \WP_List_Table {
 		if ( ! $actions ) {
 			return;
 		}
-		$id = 'llt-bulk-' . esc_attr( $which );
+		$id = 'eelt-bulk-' . esc_attr( $which );
 		echo '<label for="' . esc_attr( $id ) . '" class="screen-reader-text">Bulk actions</label>';
-		echo '<select name="' . ( 'top' === $which ? 'llt_do' : 'llt_do_bottom' ) . '" id="' . esc_attr( $id ) . '" class="llt-bulk-select">';
+		echo '<select name="' . ( 'top' === $which ? 'eelt_do' : 'eelt_do_bottom' ) . '" id="' . esc_attr( $id ) . '" class="eelt-bulk-select">';
 		echo '<option value="">Bulk actions</option>';
 		foreach ( $actions as $action ) {
 			printf( '<option value="%s">%s</option>', esc_attr( $action ), esc_html( BulkActionHandler::LABELS[ $action ] ) );
 		}
 		echo '</select>';
-		submit_button( 'Apply', 'action', '', false, array( 'id' => 'llt-apply-' . $which ) );
+		submit_button( 'Apply', 'action', '', false, array( 'id' => 'eelt-apply-' . $which ) );
 	}
 
 	/**
@@ -123,7 +123,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 		if ( ! BulkActionHandler::actions_for( $this->view ) ) {
 			return '';
 		}
-		return sprintf( '<input type="checkbox" name="ids[]" value="%d" class="llt-row-check">', (int) $item->id );
+		return sprintf( '<input type="checkbox" name="ids[]" value="%d" class="eelt-row-check">', (int) $item->id );
 	}
 
 	/**
@@ -139,12 +139,12 @@ final class FailedLeadsTable extends \WP_List_Table {
 			$actions[ $action ] = sprintf(
 				'<a href="%s"%s>%s</a>',
 				esc_url( BulkActionHandler::row_url( $action, $this->view, $id ) ),
-				'delete_content' === $action ? ' data-llt-confirm="Permanently delete the visitor\'s data for this lead?"' : '',
+				'delete_content' === $action ? ' data-eelt-confirm="Permanently delete the visitor\'s data for this lead?"' : '',
 				esc_html( BulkActionHandler::LABELS[ $action ] )
 			);
 		}
 		if ( $item->has_content ) {
-			$actions['view'] = sprintf( '<a href="#" class="llt-view-message" data-lead="%d">View message</a>', $id );
+			$actions['view'] = sprintf( '<a href="#" class="eelt-view-message" data-lead="%d">View message</a>', $id );
 		}
 		return '<strong>#' . $id . '</strong>' . $this->row_actions( $actions );
 	}
@@ -184,7 +184,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 		$text      = 0 === strpos( $code, 'bounce:' ) ? 'Rejected by the recipient server (' . substr( $code, 7 ) . ')' : ErrorClassifier::describe( $code );
 		return sprintf(
 			'%s%s<br><code>%s</code>',
-			$repeating ? '<span class="dashicons dashicons-warning llt-warning" title="This will probably repeat on resend"></span> ' : '',
+			$repeating ? '<span class="dashicons dashicons-warning eelt-warning" title="This will probably repeat on resend"></span> ' : '',
 			esc_html( $text ),
 			esc_html( $code )
 		);
@@ -211,7 +211,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 	 */
 	public function column_content( $item ) {
 		if ( ! $item->has_content ) {
-			return '<span class="llt-muted">Deleted — cannot be resent</span>';
+			return '<span class="eelt-muted">Deleted — cannot be resent</span>';
 		}
 		if ( in_array( $this->view, array( 'failed', 'bounced', 'dismissed' ), true ) && $item->content_created_at ) {
 			$expires = strtotime( $item->content_created_at . ' UTC' ) + DAY_IN_SECONDS * max( 1, (int) Settings::get( 'retention_failed_days' ) );

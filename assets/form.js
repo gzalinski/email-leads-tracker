@@ -6,17 +6,17 @@
 	'use strict';
 
 	function setStatus( form, ok, message ) {
-		var box = form.querySelector( '.llt-status' );
+		var box = form.querySelector( '.eelt-status' );
 		if ( ! box ) {
 			return;
 		}
 		box.textContent = message || '';
-		box.classList.toggle( 'llt-status--ok', !! ok );
-		box.classList.toggle( 'llt-status--error', ! ok );
+		box.classList.toggle( 'eelt-status--ok', !! ok );
+		box.classList.toggle( 'eelt-status--error', ! ok );
 	}
 
 	function clearErrors( form ) {
-		form.querySelectorAll( '.llt-error' ).forEach( function ( el ) {
+		form.querySelectorAll( '.eelt-error' ).forEach( function ( el ) {
 			el.textContent = '';
 		} );
 		form.querySelectorAll( '[aria-invalid]' ).forEach( function ( el ) {
@@ -27,7 +27,7 @@
 	function showErrors( form, errors ) {
 		var first = null;
 		Object.keys( errors || {} ).forEach( function ( name ) {
-			var slot = form.querySelector( '.llt-error[data-for="' + name + '"]' );
+			var slot = form.querySelector( '.eelt-error[data-for="' + name + '"]' );
 			var input = form.querySelector( '[name="' + name + '"]' );
 			if ( slot ) {
 				slot.textContent = errors[ name ];
@@ -53,12 +53,12 @@
 
 	function onSubmit( event ) {
 		var form = event.target;
-		if ( ! form.classList || ! form.classList.contains( 'llt-form' ) || ! window.fetch || ! window.FormData ) {
+		if ( ! form.classList || ! form.classList.contains( 'eelt-form' ) || ! window.fetch || ! window.FormData ) {
 			return;
 		}
 		event.preventDefault();
 
-		var button = form.querySelector( '.llt-submit' );
+		var button = form.querySelector( '.eelt-submit' );
 		if ( button && button.disabled ) {
 			return;
 		}
@@ -72,7 +72,7 @@
 			method: 'POST',
 			body: new FormData( form ),
 			credentials: 'same-origin',
-			headers: { 'X-LLT-Ajax': '1', Accept: 'application/json' },
+			headers: { 'X-EELT-Ajax': '1', Accept: 'application/json' },
 		} )
 			.then( function ( response ) {
 				return response.json();

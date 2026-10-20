@@ -37,25 +37,25 @@ final class Plugin {
 
 		// Front end.
 		add_action( 'init', array( ContactShortcode::class, 'register' ) );
-		add_action( 'admin_post_llt_submit', array( SubmissionHandler::class, 'handle' ) );
-		add_action( 'admin_post_nopriv_llt_submit', array( SubmissionHandler::class, 'handle' ) );
+		add_action( 'admin_post_eelt_submit', array( SubmissionHandler::class, 'handle' ) );
+		add_action( 'admin_post_nopriv_eelt_submit', array( SubmissionHandler::class, 'handle' ) );
 
 		// Cron.
-		add_action( 'llt_send_lead', array( SendWorker::class, 'process_lead' ) );
-		add_action( 'llt_process_queue', array( SendWorker::class, 'process_queue' ) );
-		add_action( 'llt_process_queue_now', array( SendWorker::class, 'process_queue' ) );
-		add_action( 'llt_health_check', array( HealthCheck::class, 'run' ) );
-		add_action( 'llt_retention_cleanup', array( RetentionService::class, 'run' ) );
-		add_action( 'llt_refresh_proxy_ranges', array( ProxyRanges::class, 'refresh' ) );
+		add_action( 'eelt_send_lead', array( SendWorker::class, 'process_lead' ) );
+		add_action( 'eelt_process_queue', array( SendWorker::class, 'process_queue' ) );
+		add_action( 'eelt_process_queue_now', array( SendWorker::class, 'process_queue' ) );
+		add_action( 'eelt_health_check', array( HealthCheck::class, 'run' ) );
+		add_action( 'eelt_retention_cleanup', array( RetentionService::class, 'run' ) );
+		add_action( 'eelt_refresh_proxy_ranges', array( ProxyRanges::class, 'refresh' ) );
 
 		// Alerts.
 		add_action( 'wp_mail_failed', array( AdminNotifier::class, 'capture_mail_error' ) );
-		add_action( 'llt_health_check_run', array( AdminNotifier::class, 'flush_bounces' ) );
+		add_action( 'eelt_health_check_run', array( AdminNotifier::class, 'flush_bounces' ) );
 
 		// Delivery confirmation (v2).
 		add_action( 'rest_api_init', array( WebhookController::class, 'register' ) );
 		add_filter( 'application_password_is_api_request', array( WebhookController::class, 'skip_application_passwords' ) );
-		add_action( 'llt_reconcile_delivery', array( Reconciler::class, 'run' ) );
+		add_action( 'eelt_reconcile_delivery', array( Reconciler::class, 'run' ) );
 		WebhookSettings::register();
 
 		// GDPR.
@@ -64,8 +64,8 @@ final class Plugin {
 		add_action( 'admin_init', array( PolicyContent::class, 'register' ) );
 
 		// Failed leads list (v3): the alert link and the menu counter are also updated from cron.
-		add_filter( 'llt_alert_admin_link', array( FailedLeadsTab::class, 'alert_link' ) );
-		add_action( 'llt_leads_changed', array( MenuBadge::class, 'bust' ) );
+		add_filter( 'eelt_alert_admin_link', array( FailedLeadsTab::class, 'alert_link' ) );
+		add_action( 'eelt_leads_changed', array( MenuBadge::class, 'bust' ) );
 
 		// Admin.
 		if ( is_admin() ) {

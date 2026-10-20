@@ -15,14 +15,14 @@ defined( 'ABSPATH' ) || exit;
 final class LeadDetailsAjax {
 
 	public static function register(): void {
-		add_action( 'wp_ajax_llt_lead_details', array( self::class, 'handle' ) );
+		add_action( 'wp_ajax_eelt_lead_details', array( self::class, 'handle' ) );
 	}
 
 	public static function handle(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'You do not have the required permission.' ), 403 );
 		}
-		check_ajax_referer( 'llt_admin', 'nonce' );
+		check_ajax_referer( 'eelt_admin', 'nonce' );
 
 		$lead_id = isset( $_POST['lead'] ) ? absint( wp_unslash( $_POST['lead'] ) ) : 0;
 		$message = $lead_id ? MessageRepository::find( $lead_id ) : null;

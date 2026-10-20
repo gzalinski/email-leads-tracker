@@ -17,8 +17,8 @@ defined( 'ABSPATH' ) || exit;
 final class FailedLeadsTab {
 
 	public static function register(): void {
-		add_filter( 'llt_settings_tabs', array( self::class, 'tab' ), 20 );
-		add_action( 'llt_settings_page_registered', array( self::class, 'screen_options' ) );
+		add_filter( 'eelt_settings_tabs', array( self::class, 'tab' ), 20 );
+		add_action( 'eelt_settings_page_registered', array( self::class, 'screen_options' ) );
 		add_filter( 'set-screen-option', array( self::class, 'save_screen_option' ), 10, 3 );
 		BulkActionHandler::register();
 		LeadDetailsAjax::register();
@@ -119,41 +119,41 @@ final class FailedLeadsTab {
 		$total = (int) $table->get_pagination_arg( 'total_items' );
 
 		// Bulk actions go to admin-post.php; the filters are sent again, for "select all".
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" id="llt-leads-form" data-total="' . (int) $total . '">';
-		echo '<input type="hidden" name="action" value="llt_lead_action">';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" id="eelt-leads-form" data-total="' . (int) $total . '">';
+		echo '<input type="hidden" name="action" value="eelt_lead_action">';
 		// The nonce (bulk-leads) is printed by WP_List_Table in the top bar.
-		printf( '<input type="hidden" name="llt_view" value="%s">', esc_attr( $view ) );
-		foreach ( array( 'llt_error' => 'error', 's' => 's', 'llt_from' => 'from', 'llt_to' => 'to' ) as $param => $key ) {
+		printf( '<input type="hidden" name="eelt_view" value="%s">', esc_attr( $view ) );
+		foreach ( array( 'eelt_error' => 'error', 's' => 's', 'eelt_from' => 'from', 'eelt_to' => 'to' ) as $param => $key ) {
 			printf( '<input type="hidden" name="%s" value="%s">', esc_attr( $param ), esc_attr( $filters[ $key ] ) );
 		}
-		echo '<input type="hidden" name="llt_all_matching" value="" id="llt-all-matching">';
+		echo '<input type="hidden" name="eelt_all_matching" value="" id="eelt-all-matching">';
 		printf(
-			'<div class="llt-select-all notice notice-info inline" hidden><p><span class="llt-select-all-text">All leads on this page are selected.</span> <a href="#" class="llt-select-all-link">Select all %d leads matching the filter</a></p></div>',
+			'<div class="eelt-select-all notice notice-info inline" hidden><p><span class="eelt-select-all-text">All leads on this page are selected.</span> <a href="#" class="eelt-select-all-link">Select all %d leads matching the filter</a></p></div>',
 			(int) $total
 		);
 		$table->display();
 		echo '</form>';
 
-		echo '<dialog id="llt-message-dialog" class="llt-dialog"><form method="dialog"><h2>Visitor message</h2><div class="llt-dialog-body"></div><p><button class="button">Close</button></p></form></dialog>';
+		echo '<dialog id="eelt-message-dialog" class="eelt-dialog"><form method="dialog"><h2>Visitor message</h2><div class="eelt-dialog-body"></div><p><button class="button">Close</button></p></form></dialog>';
 	}
 
 	private static function render_filters( string $view, array $filters ): void {
 		$codes = FailedLeadsQuery::error_codes( $view );
-		echo '<form method="get" class="llt-filters">';
+		echo '<form method="get" class="eelt-filters">';
 		echo '<input type="hidden" name="page" value="' . esc_attr( SettingsPage::SLUG ) . '">';
 		echo '<input type="hidden" name="tab" value="failed">';
 		echo '<input type="hidden" name="view" value="' . esc_attr( $view ) . '">';
 
-		echo '<label class="screen-reader-text" for="llt-filter-error">Error code</label>';
-		echo '<select name="llt_error" id="llt-filter-error"><option value="">All errors</option>';
+		echo '<label class="screen-reader-text" for="eelt-filter-error">Error code</label>';
+		echo '<select name="eelt_error" id="eelt-filter-error"><option value="">All errors</option>';
 		foreach ( $codes as $code ) {
 			printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $code ), selected( $filters['error'], $code, false ), esc_html( $code ) );
 		}
 		echo '</select> ';
 
-		printf( '<label>From <input type="date" name="llt_from" value="%s"></label> ', esc_attr( $filters['from'] ) );
-		printf( '<label>To <input type="date" name="llt_to" value="%s"></label> ', esc_attr( $filters['to'] ) );
-		printf( '<label class="screen-reader-text" for="llt-filter-s">Location</label><input type="search" id="llt-filter-s" name="s" value="%s" placeholder="Search by location"> ', esc_attr( $filters['s'] ) );
+		printf( '<label>From <input type="date" name="eelt_from" value="%s"></label> ', esc_attr( $filters['from'] ) );
+		printf( '<label>To <input type="date" name="eelt_to" value="%s"></label> ', esc_attr( $filters['to'] ) );
+		printf( '<label class="screen-reader-text" for="eelt-filter-s">Location</label><input type="search" id="eelt-filter-s" name="s" value="%s" placeholder="Search by location"> ', esc_attr( $filters['s'] ) );
 		submit_button( 'Filter', 'secondary', '', false );
 		if ( array_filter( $filters ) ) {
 			printf( ' <a href="%s" class="button-link">Reset filters</a>', esc_url( SettingsPage::url( 'failed', array( 'view' => $view ) ) ) );

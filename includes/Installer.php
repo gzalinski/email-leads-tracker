@@ -7,6 +7,7 @@
 
 namespace EnspireEmailLeadsTracker;
 
+use EnspireEmailLeadsTracker\Database\LegacyMigration;
 use EnspireEmailLeadsTracker\Database\Schema;
 use EnspireEmailLeadsTracker\Settings\Settings;
 
@@ -21,11 +22,11 @@ final class Installer {
 	 */
 	public static function recurring_events(): array {
 		return array(
-			'llt_process_queue'        => 'llt_every_minute',
-			'llt_health_check'         => 'hourly',
-			'llt_retention_cleanup'    => 'daily',
-			'llt_refresh_proxy_ranges' => 'weekly',
-			'llt_reconcile_delivery'   => 'hourly',
+			'eelt_process_queue'        => 'eelt_every_minute',
+			'eelt_health_check'         => 'hourly',
+			'eelt_retention_cleanup'    => 'daily',
+			'eelt_refresh_proxy_ranges' => 'weekly',
+			'eelt_reconcile_delivery'   => 'hourly',
 		);
 	}
 
@@ -35,7 +36,7 @@ final class Installer {
 	 * @return string[]
 	 */
 	public static function all_hooks(): array {
-		return array_merge( array_keys( self::recurring_events() ), array( 'llt_send_lead', 'llt_process_queue_now' ) );
+		return array_merge( array_keys( self::recurring_events() ), array( 'eelt_send_lead', 'eelt_process_queue_now' ) );
 	}
 
 	/**
@@ -45,8 +46,8 @@ final class Installer {
 	 */
 	public static function cron_schedules( $schedules ): array {
 		$schedules = is_array( $schedules ) ? $schedules : array();
-		if ( ! isset( $schedules['llt_every_minute'] ) ) {
-			$schedules['llt_every_minute'] = array(
+		if ( ! isset( $schedules['eelt_every_minute'] ) ) {
+			$schedules['eelt_every_minute'] = array(
 				'interval' => MINUTE_IN_SECONDS,
 				'display'  => 'Enspire Email Leads Tracker: every minute',
 			);
@@ -61,10 +62,11 @@ final class Installer {
 	}
 
 	public static function activate(): void {
+		LegacyMigration::run();
 		Schema::install();
-		update_option( 'llt_db_version', LLT_DB_VERSION );
+		update_option( 'eelt_db_version', EELT_DB_VERSION );
 		add_option( Settings::OPTION, array(), '', false );
-		add_option( 'llt_state', array(), '', false );
+		add_option( 'eelt_state', array(), '', false );
 		self::schedule_events();
 	}
 
@@ -72,16 +74,17 @@ final class Installer {
 		foreach ( self::all_hooks() as $hook ) {
 			wp_unschedule_hook( $hook );
 		}
-		delete_option( 'llt_worker_lock' );
+		delete_option( 'eelt_worker_lock' );
 	}
 
 	/**
 	 * Runs migrations when the schema version changed and restores missing cron events.
 	 */
 	public static function maybe_upgrade(): void {
-		if ( get_option( 'llt_db_version' ) !== LLT_DB_VERSION ) {
+		LegacyMigration::run();
+		if ( get_option( 'eelt_db_version' ) !== EELT_DB_VERSION ) {
 			Schema::install();
-			update_option( 'llt_db_version', LLT_DB_VERSION );
+			update_option( 'eelt_db_version', EELT_DB_VERSION );
 		}
 		self::schedule_events();
 	}

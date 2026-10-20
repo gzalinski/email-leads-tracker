@@ -1,6 +1,6 @@
 <?php
 /**
- * The [location_contact object_id="245"] shortcode.
+ * The [enspire_contact_form object_id="245"] shortcode.
  *
  * @package EnspireEmailLeadsTracker
  */
@@ -19,14 +19,14 @@ final class ContactShortcode {
 	private static $instance = 0;
 
 	public static function register(): void {
-		add_shortcode( 'location_contact', array( self::class, 'render' ) );
+		add_shortcode( 'enspire_contact_form', array( self::class, 'render' ) );
 	}
 
 	/**
 	 * @param array|string $atts Shortcode attributes.
 	 */
 	public static function render( $atts ): string {
-		$atts      = shortcode_atts( array( 'object_id' => 0 ), $atts, 'location_contact' );
+		$atts      = shortcode_atts( array( 'object_id' => 0 ), $atts, 'enspire_contact_form' );
 		$object_id = absint( $atts['object_id'] );
 		if ( ! $object_id ) {
 			$object_id = (int) get_the_ID();
@@ -35,7 +35,7 @@ final class ContactShortcode {
 		$resolved = RecipientResolver::resolve( $object_id );
 		if ( is_wp_error( $resolved ) ) {
 			if ( current_user_can( 'edit_posts' ) ) {
-				return '<div class="llt-notice llt-notice--error"><strong>Enspire Email Leads Tracker:</strong> '
+				return '<div class="eelt-notice eelt-notice--error"><strong>Enspire Email Leads Tracker:</strong> '
 					. esc_html( $resolved->get_error_message() )
 					. ' The form is not shown to visitors.</div>';
 			}
@@ -43,19 +43,19 @@ final class ContactShortcode {
 		}
 
 		++self::$instance;
-		$form_id = 'llt-form-' . self::$instance;
+		$form_id = 'eelt-form-' . self::$instance;
 		$context = ContextSigner::sign( $object_id );
 
 		self::enqueue_assets();
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- only displays the result after a redirect.
 		$status = '';
-		if ( isset( $_GET['llt_status'], $_GET['llt_form'] ) && sanitize_key( wp_unslash( $_GET['llt_form'] ) ) === $form_id ) {
-			$status = sanitize_key( wp_unslash( $_GET['llt_status'] ) );
+		if ( isset( $_GET['eelt_status'], $_GET['eelt_form'] ) && sanitize_key( wp_unslash( $_GET['eelt_form'] ) ) === $form_id ) {
+			$status = sanitize_key( wp_unslash( $_GET['eelt_status'] ) );
 		}
 		// phpcs:enable
 
-		$return_url = remove_query_arg( array( 'llt_status', 'llt_form' ), self::current_url() );
+		$return_url = remove_query_arg( array( 'eelt_status', 'eelt_form' ), self::current_url() );
 
 		return Template::render(
 			'form.php',
@@ -122,10 +122,10 @@ final class ContactShortcode {
 	}
 
 	private static function enqueue_assets(): void {
-		wp_enqueue_style( 'llt-form', LLT_URL . 'assets/form.css', array(), LLT_VERSION );
-		wp_enqueue_script( 'llt-form', LLT_URL . 'assets/form.js', array(), LLT_VERSION, true );
+		wp_enqueue_style( 'eelt-form', EELT_URL . 'assets/form.css', array(), EELT_VERSION );
+		wp_enqueue_script( 'eelt-form', EELT_URL . 'assets/form.js', array(), EELT_VERSION, true );
 		if ( self::turnstile_enabled() ) {
-			wp_enqueue_script( 'llt-turnstile', 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+			wp_enqueue_script( 'eelt-turnstile', 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		}
 	}
 }

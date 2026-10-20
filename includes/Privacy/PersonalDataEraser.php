@@ -36,7 +36,7 @@ final class PersonalDataEraser {
 	public static function erase( $email, $page = 1 ): array {
 		$deleted = MessageRepository::delete_by_sender( (string) $email, self::PER_PAGE );
 		if ( $deleted ) {
-			do_action( 'llt_leads_changed' );
+			do_action( 'eelt_leads_changed' );
 		}
 		return array(
 			'items_removed'  => $deleted > 0,

@@ -211,7 +211,7 @@ final class SettingsFields {
 			),
 		);
 
-		return (array) apply_filters( 'llt_settings_tabs', $tabs );
+		return (array) apply_filters( 'eelt_settings_tabs', $tabs );
 	}
 
 	/**

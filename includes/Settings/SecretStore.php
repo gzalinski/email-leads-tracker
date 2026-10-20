@@ -2,12 +2,14 @@
 /**
  * Encryption of secrets (Postmark token, Turnstile keys, webhook password) with libsodium.
  *
- * Key: `LLT_ENCRYPTION_KEY` from wp-config.php if defined, otherwise derived from the WordPress salts.
+ * Key: `EELT_ENCRYPTION_KEY` (or the legacy `LLT_ENCRYPTION_KEY`) from wp-config.php if defined, otherwise derived from the WordPress salts.
  *
  * @package EnspireEmailLeadsTracker
  */
 
 namespace EnspireEmailLeadsTracker\Settings;
+
+use EnspireEmailLeadsTracker\Util;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,9 +18,12 @@ final class SecretStore {
 	const PREFIX = 'v1:';
 
 	private static function key(): string {
-		$material = ( defined( 'LLT_ENCRYPTION_KEY' ) && '' !== (string) LLT_ENCRYPTION_KEY )
-			? (string) LLT_ENCRYPTION_KEY
-			: wp_salt( 'secure_auth' );
+		$material = Util::constant( array( 'EELT_ENCRYPTION_KEY', 'LLT_ENCRYPTION_KEY' ) );
+		if ( '' === $material ) {
+			$material = wp_salt( 'secure_auth' );
+		}
+		// The 'llt-secret|' context string predates the rename and must stay unchanged,
+		// otherwise secrets saved by earlier versions could no longer be decrypted.
 		return hash( 'sha256', 'llt-secret|' . $material, true );
 	}
 

@@ -21,6 +21,6 @@ final class HealthCheck {
 		if ( $stuck > 0 ) {
 			AdminNotifier::stuck_leads( $stuck );
 		}
-		do_action( 'llt_health_check_run' );
+		do_action( 'eelt_health_check_run' );
 	}
 }

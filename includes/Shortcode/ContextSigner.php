@@ -10,14 +10,15 @@
 
 namespace EnspireEmailLeadsTracker\Shortcode;
 
+use EnspireEmailLeadsTracker\Util;
+
 defined( 'ABSPATH' ) || exit;
 
 final class ContextSigner {
 
 	private static function secret(): string {
-		return ( defined( 'LLT_CONTEXT_SECRET' ) && '' !== (string) LLT_CONTEXT_SECRET )
-			? (string) LLT_CONTEXT_SECRET
-			: wp_salt( 'auth' );
+		$secret = Util::constant( array( 'EELT_CONTEXT_SECRET', 'LLT_CONTEXT_SECRET' ) );
+		return '' !== $secret ? $secret : wp_salt( 'auth' );
 	}
 
 	/**

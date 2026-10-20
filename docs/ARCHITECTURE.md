@@ -71,12 +71,12 @@ uninstall.php                          # Data removal (if enabled in the setting
 includes/
 ├── Plugin.php                         # Registers all components
 ├── Installer.php                      # dbDelta, schema version, cron events
-├── State.php                          # Internal state (the llt_state option)
+├── State.php                          # Internal state (the eelt_state option)
 ├── Template.php                       # Template rendering, theme overrides
 ├── Util.php                           # UTC dates, email masking, IDs
 ├── Settings/
 │   ├── Settings.php                   # Reading settings + defaults
-│   ├── SettingsFields.php             # Tabs and fields (extensible via the llt_settings_tabs filter)
+│   ├── SettingsFields.php             # Tabs and fields (extensible via the eelt_settings_tabs filter)
 │   ├── SettingsPage.php               # The Settings → Enspire Email Leads Tracker page
 │   ├── SettingsSanitizer.php          # Validation on save (current tab only)
 │   ├── SecretStore.php                # libsodium encryption
@@ -84,11 +84,11 @@ includes/
 │   ├── StatusTab.php                  # The Status tab
 │   └── AdminNotice.php                # Messages after actions
 ├── Shortcode/
-│   ├── ContactShortcode.php           # [location_contact]
+│   ├── ContactShortcode.php           # [enspire_contact_form]
 │   ├── RecipientResolver.php          # object_id → "email" post meta
 │   └── ContextSigner.php              # HMAC for object_id + render time
 ├── Form/
-│   ├── SubmissionHandler.php          # admin-post.php?action=llt_submit
+│   ├── SubmissionHandler.php          # admin-post.php?action=eelt_submit
 │   ├── Validator.php                  # Fields + consent
 │   ├── RateLimiter.php                # Per-IP limit (HMAC hash)
 │   ├── Messages.php                   # Messages for the visitor
@@ -115,10 +115,10 @@ includes/
 │   └── HealthCheck.php                # Hourly check
 ├── Retention/RetentionService.php     # Content deletion
 ├── Privacy/                           # Export, erasure, privacy policy text
-├── Database/                          # Schema, LeadRepository, MessageRepository
-├── Cli/Commands.php                   # wp llt ...
+├── Database/                          # Schema, LeadRepository, MessageRepository, LegacyMigration (pre-1.5.0 data)
+├── Cli/Commands.php                   # wp eelt ...
 ├── Webhook/                           # v2
-│   ├── WebhookController.php          # POST /wp-json/llt/v1/postmark
+│   ├── WebhookController.php          # POST /wp-json/eelt/v1/postmark
 │   ├── WebhookAuth.php                # Basic Auth + IP filter
 │   ├── EventProcessor.php             # Delivery / Bounce → lead
 │   ├── Reconciler.php                 # Hourly reconciliation through the Messages API
@@ -175,8 +175,8 @@ flowchart LR
 ### 5.1. Usage
 
 ```
-[location_contact object_id="245"]
-[location_contact]                    ← uses the current post
+[enspire_contact_form object_id="245"]
+[enspire_contact_form]                    ← uses the current post
 ```
 
 - `object_id` is optional; if missing, `get_the_ID()` is used.
@@ -208,9 +208,9 @@ Note: since there is no type restriction, the `object_id` in the shortcode must 
 
 | Hidden field | Content |
 | --- | --- |
-| `llt_ctx` | `object_id` + render time, base64url-encoded |
-| `llt_sig` | `HMAC-SHA256(llt_ctx, secret)` |
-| `llt_hp` | Honeypot (empty) |
+| `eelt_ctx` | `object_id` + render time, base64url-encoded |
+| `eelt_sig` | `HMAC-SHA256(eelt_ctx, secret)` |
+| `eelt_hp` | Honeypot (empty) |
 | Turnstile widget | only if enabled |
 
 **The recipient email appears nowhere.** On submit it is read again from post meta.
@@ -317,7 +317,7 @@ So:
 | Additional proxies | CIDR, one per line | empty |
 | Diagnostics | read-only, e.g. "Your detected IP: 85.x.x.x — via Cloudflare" | — |
 
-The downloaded Cloudflare list is stored in the `llt_proxy_ranges` option (§14.3).
+The downloaded Cloudflare list is stored in the `eelt_proxy_ranges` option (§14.3).
 
 The diagnostics let the administrator see immediately whether detection works: if the IP shown is not theirs, the setup needs an additional proxy.
 
@@ -352,12 +352,12 @@ sequenceDiagram
 
 1. The response to the visitor is sent in full.
 2. If `fastcgi_finish_request()` exists (PHP-FPM, the most common case), the connection is closed and the same process sends the email immediately.
-3. Otherwise, `wp_schedule_single_event( time(), 'llt_send_lead', [ $id ] )` is scheduled, and cron picks it up within a minute.
+3. Otherwise, `wp_schedule_single_event( time(), 'eelt_send_lead', [ $id ] )` is scheduled, and cron picks it up within a minute.
 4. In any case, the periodic worker picks up any due `pending` lead. Nothing stays unsent if step 2 or 3 fails.
 
 The lock (§9.3) guarantees a lead is never sent twice, even if steps 2 and 4 run at the same time.
 
-The form is submitted via AJAX (`form.js`) to `admin-post.php?action=llt_submit` and gets a JSON response. Without JavaScript, the same endpoint redirects back to the page with the confirmation or error message.
+The form is submitted via AJAX (`form.js`) to `admin-post.php?action=eelt_submit` and gets a JSON response. Without JavaScript, the same endpoint redirects back to the page with the confirmation or error message.
 
 ### 7.2. The Postmark request
 
@@ -371,11 +371,11 @@ The form is submitted via AJAX (`form.js`) to `admin-post.php?action=llt_submit`
 | `Subject` | from the settings, with `{post_title}`, `{site_name}` |
 | `TextBody` / `HtmlBody` | from `templates/email.php`, escaped content; `HtmlBody` only if the format in the settings is HTML |
 | `MessageStream` | from the settings (default `outbound`) |
-| `Tag` | `location-lead` |
-| `Metadata` | `{ "llt_lead_id": "123" }` |
+| `Tag` | `eelt-lead` |
+| `Metadata` | `{ "eelt_lead_id": "123" }` |
 | `TrackOpens` / `TrackLinks` | `false` |
 
-`Metadata.llt_lead_id` is used for duplicate-send protection (§7.4) and for correlating webhooks (v2).
+`Metadata.eelt_lead_id` is used for duplicate-send protection (§7.4) and for correlating webhooks (v2).
 
 ### 7.3. Classifying results (`ErrorClassifier`)
 
@@ -422,7 +422,7 @@ The fully automatic solution:
 
 1. The lead stays `pending`, with `last_error_code = ambiguous_timeout` and `next_retry_at = now + 5 minutes`.
 2. On the next run, before resending, the worker searches for the message in Postmark:
-   `GET /messages/outbound?count=1&offset=0&messagestream={stream}&metadata_llt_lead_id={id}`
+   `GET /messages/outbound?count=1&offset=0&messagestream={stream}&metadata_eelt_lead_id={id}`
 3. **Found** (status `Sent`, `Processed` or `Queued`) → `accepted`, with the `MessageID` from the result. Not resent.
 4. **Not found** → resent normally.
 5. **The search fails** → rescheduled according to the backoff; the number of attempts is still capped by `max_retries`.
@@ -485,14 +485,14 @@ The monotonic rule: `delivered` and `bounced` are never overwritten. The transit
 
 | Event | Frequency | Component | Stage |
 | --- | --- | --- | --- |
-| `llt_send_lead` | once, on submit | `SendWorker` | v1 |
-| `llt_process_queue` | every minute | `SendWorker` | v1 |
-| `llt_health_check` | hourly | `HealthCheck` | v1 |
-| `llt_retention_cleanup` | daily | `RetentionService` | v1 |
-| `llt_refresh_proxy_ranges` | weekly | `ProxyRanges` | v1 |
-| `llt_reconcile_delivery` | hourly | `Reconciler` | v2 |
+| `eelt_send_lead` | once, on submit | `SendWorker` | v1 |
+| `eelt_process_queue` | every minute | `SendWorker` | v1 |
+| `eelt_health_check` | hourly | `HealthCheck` | v1 |
+| `eelt_retention_cleanup` | daily | `RetentionService` | v1 |
+| `eelt_refresh_proxy_ranges` | weekly | `ProxyRanges` | v1 |
+| `eelt_reconcile_delivery` | hourly | `Reconciler` | v2 |
 
-The worker saves a heartbeat in `llt_state`; if it has not run for more than 15 minutes, the **Status** tab and `wp llt status` show a warning, and `HealthCheck` reports leads stuck in `pending` by alert.
+The worker saves a heartbeat in `eelt_state`; if it has not run for more than 15 minutes, the **Status** tab and `wp eelt status` show a warning, and `HealthCheck` reports leads stuck in `pending` by alert.
 
 ### 9.2. Backoff
 
@@ -505,7 +505,7 @@ After the last retry: `failed`, `last_error_code = retries_exhausted`.
 ### 9.3. Locking
 
 ```sql
-UPDATE {prefix}location_leads
+UPDATE {prefix}eelt_leads
 SET locked_until = UTC_TIMESTAMP() + INTERVAL 5 MINUTE, lock_token = %s
 WHERE id = %d
   AND send_status = 'pending'
@@ -544,7 +544,7 @@ The consecutive-failure counter resets on the first accepted send.
 - Channel: `wp_mail()`, **not** Postmark. If the problem is Postmark itself, the alert still gets through (via the server's default mailer or the site's SMTP plugin).
 - Risk: many hosts block PHP's `mail()` function. Without a configured SMTP plugin, `wp_mail()` can fail silently and alerts don't arrive. Therefore:
   - the **Alerts** tab has a **"Send test alert"** button, which sends through exactly the same channel and shows whether `wp_mail()` reported an error (the `wp_mail_failed` hook);
-  - if sending an alert fails, the failure is saved in `llt_state` and shown in the **Status** tab and in `wp llt status`;
+  - if sending an alert fails, the failure is saved in `eelt_state` and shown in the **Status** tab and in `wp eelt status`;
   - from v3, the counter in the admin menu flags failed leads even if the alert email did not arrive.
 - An option in the Alerts tab: **"Fallback"** — send alerts through Postmark if `wp_mail()` fails. Useful when the server cannot send email but Postmark works (e.g. a single lead with an invalid address). It does not help when the problem is the Postmark account itself.
 - Recipient: the **"Alert email"** setting (default `admin_email`).
@@ -563,7 +563,7 @@ Affected leads: #812, #813, #814 (first failure: 2026-10-20 14:02 UTC).
 The content of these messages is kept for 14 days.
 After fixing the problem, resend them from:
 https://example.com/wp-admin/options-general.php?page=enspire-email-leads-tracker&tab=failed
-or run:  wp llt retry --failed
+or run:  wp eelt retry --failed
 ```
 
 The link to the failed-leads list appears from v3; in v1 the alert contains only the CLI command.
@@ -578,7 +578,7 @@ WordPress has two tools under **Tools → Export Personal Data** and **Tools →
 
 The plugin registers with these tools:
 
-- **Export** (`PersonalDataExporter`): finds the messages in `location_lead_messages` with `sender_email` = the requested address and includes them in the archive generated by WordPress (name, email, phone, message, date).
+- **Export** (`PersonalDataExporter`): finds the messages in `eelt_lead_messages` with `sender_email` = the requested address and includes them in the archive generated by WordPress (name, email, phone, message, date).
 - **Erasure** (`PersonalDataEraser`): deletes those messages. The minimal lead remains, since it contains no visitor data.
 
 So a GDPR request is handled from the standard WordPress interface, without database access.
@@ -587,9 +587,9 @@ So a GDPR request is handled from the standard WordPress interface, without data
 
 | Data | Where | How long |
 | --- | --- | --- |
-| Visitor name, email, phone, message | `location_lead_messages` | Temporarily (§12) |
-| Post ID, recipient email (location), statuses, dates | `location_leads` | Permanently (history) |
-| Consent date | `location_leads.consent_at` | Permanently |
+| Visitor name, email, phone, message | `eelt_lead_messages` | Temporarily (§12) |
+| Post ID, recipient email (location), statuses, dates | `eelt_leads` | Permanently (history) |
+| Consent date | `eelt_leads.consent_at` | Permanently |
 | Visitor IP | Only a hash, in the rate-limiting transient | 1 hour |
 | Copy of the sent email | Postmark (Activity) | The Postmark account's retention (45 days by default, 7–14 recommended) |
 
@@ -626,13 +626,13 @@ Backups, server logs and the copies kept by Postmark are not affected, and are m
 ### 13.1. Endpoint
 
 ```
-POST https://example.com/wp-json/llt/v1/postmark
+POST https://example.com/wp-json/eelt/v1/postmark
 ```
 
 Configuration in Postmark (Server → Message Stream → Webhooks): the **Delivery** and **Bounce** events, a URL with Basic Auth:
 
 ```
-https://{user}:{password}@example.com/wp-json/llt/v1/postmark
+https://{user}:{password}@example.com/wp-json/eelt/v1/postmark
 ```
 
 The user and password are generated on the settings page; the full URL is copied with a button.
@@ -662,7 +662,7 @@ sequenceDiagram
         WC-->>PM: 401
     end
     WC->>EP: handle(payload)
-    EP->>DB: look up by MessageID, then Metadata.llt_lead_id
+    EP->>DB: look up by MessageID, then Metadata.eelt_lead_id
     EP->>DB: UPDATE with the monotonic rule
     alt Delivery applied
         EP->>DB: DELETE temporary content
@@ -709,7 +709,7 @@ The bounce type is saved in `last_error_code` (e.g. `bounce:HardBounce`), and `I
 **Other rules:**
 
 - The webhook never creates leads.
-- A webhook arriving before `MessageID` is saved (possible, because sending is asynchronous) → correlated through `Metadata.llt_lead_id`, and `postmark_message_id` is filled in then. Metadata pointing to a lead that already has a different `MessageID` is not correlated.
+- A webhook arriving before `MessageID` is saved (possible, because sending is asynchronous) → correlated through `Metadata.eelt_lead_id`, and `postmark_message_id` is filled in then. Metadata pointing to a lead that already has a different `MessageID` is not correlated.
 - Fast handler, no external calls.
 
 ### 13.5. Reconciling missed events (`Reconciler`)
@@ -735,10 +735,10 @@ Reconciliation turns the webhook from the single source of truth into an optimiz
 
 ## 14. Data model
 
-### 14.1. `{prefix}location_leads`
+### 14.1. `{prefix}eelt_leads`
 
 ```sql
-CREATE TABLE {prefix}location_leads (
+CREATE TABLE {prefix}eelt_leads (
   id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   object_id           BIGINT UNSIGNED NOT NULL,
   recipient_email     VARCHAR(254)    NOT NULL,
@@ -779,10 +779,10 @@ CREATE TABLE {prefix}location_leads (
 
 Columns added compared to the initial specification: `locked_until`, `lock_token` (locking), `consent_at` (proof of consent), `manual_resend_count`, `last_resend_by`, `last_resend_at` (trail of manual resends, v3), `dismissed_at`, `dismissed_by` (dismissed leads, v3). The `*_by` columns hold the WordPress user ID.
 
-### 14.2. `{prefix}location_lead_messages`
+### 14.2. `{prefix}eelt_lead_messages`
 
 ```sql
-CREATE TABLE {prefix}location_lead_messages (
+CREATE TABLE {prefix}eelt_lead_messages (
   lead_id      BIGINT UNSIGNED NOT NULL,
   sender_name  VARCHAR(200)    NOT NULL,
   sender_email VARCHAR(254)    NOT NULL,
@@ -801,10 +801,10 @@ The index on `sender_email` serves GDPR export/erasure.
 
 | Option | Content | Autoload |
 | --- | --- | --- |
-| `llt_settings` | All settings; secrets encrypted | no |
-| `llt_db_version` | Schema version | yes |
-| `llt_state` | Cron heartbeat, consecutive-failure counter, last alert per type, last failed alert, last webhook received, last reconciliation | no |
-| `llt_proxy_ranges` | The Cloudflare IP list + update date | no |
+| `eelt_settings` | All settings; secrets encrypted | no |
+| `eelt_db_version` | Schema version | yes |
+| `eelt_state` | Cron heartbeat, consecutive-failure counter, last alert per type, last failed alert, last webhook received, last reconciliation | no |
+| `eelt_proxy_ranges` | The Cloudflare IP list + update date | no |
 
 ---
 
@@ -828,7 +828,7 @@ The index on `sender_email` serves GDPR export/erasure.
 ### 15.1. Secrets (`SecretStore`)
 
 - The Postmark token, the Turnstile Secret Key and the webhook password are stored encrypted (`sodium_crypto_secretbox`).
-- Key: `LLT_ENCRYPTION_KEY` from `wp-config.php` if it exists (optional), otherwise derived from `wp_salt( 'secure_auth' )`.
+- Key: `EELT_ENCRYPTION_KEY` from `wp-config.php` if it exists (optional), otherwise derived from `wp_salt( 'secure_auth' )`.
 - A saved secret is never shown back; the field shows `••••••••`. An empty field on save = the value is left unchanged.
 - If the WordPress salts change, the secrets can no longer be decrypted: the page detects this and asks for them to be re-entered.
 
@@ -849,16 +849,16 @@ The commands never show visitors' personal data unless explicitly requested.
 
 | Command | Action |
 | --- | --- |
-| `wp llt status` | Cron status, leads by status, latest errors, valid / invalid configuration |
-| `wp llt leads list [--status=failed] [--since=2026-10-01] [--format=table\|csv\|json]` | Lead list (without content) |
-| `wp llt leads show <id> [--with-content]` | Lead details; with `--with-content` also the message, if it still exists |
-| `wp llt retry <id>…` / `wp llt retry --failed` | Puts the leads back into `pending` and resets `retry_count` |
-| `wp llt send-test <email>` | Test email through Postmark |
-| `wp llt queue run` | Runs the worker immediately |
-| `wp llt cleanup run [--dry-run]` | Runs retention |
-| `wp llt reconcile run` | Runs reconciliation immediately (v2) |
-| `wp llt content delete <id>` | Deletes a lead's content manually |
-| `wp llt stats [--since] [--until] [--by=object]` | Number of accepted / failed leads; in v2 also delivered / bounced, optionally per location |
+| `wp eelt status` | Cron status, leads by status, latest errors, valid / invalid configuration |
+| `wp eelt leads list [--status=failed] [--since=2026-10-01] [--format=table\|csv\|json]` | Lead list (without content) |
+| `wp eelt leads show <id> [--with-content]` | Lead details; with `--with-content` also the message, if it still exists |
+| `wp eelt retry <id>…` / `wp eelt retry --failed` | Puts the leads back into `pending` and resets `retry_count` |
+| `wp eelt send-test <email>` | Test email through Postmark |
+| `wp eelt queue run` | Runs the worker immediately |
+| `wp eelt cleanup run [--dry-run]` | Runs retention |
+| `wp eelt reconcile run` | Runs reconciliation immediately (v2) |
+| `wp eelt content delete <id>` | Deletes a lead's content manually |
+| `wp eelt stats [--since] [--until] [--by=object]` | Number of accepted / failed leads; in v2 also delivered / bounced, optionally per location |
 
 `retry` refuses leads whose content was already deleted and explains why.
 
@@ -947,7 +947,7 @@ sequenceDiagram
     A->>LA: Resend (IDs or "all matching the filter")
     LA->>LA: check_admin_referer, manage_options
     LA->>DB: UPDATE … SET pending, retry_count = 0, next_retry_at = now, manual_resend_count + 1, last_resend_by, last_resend_at, dismissed_at = NULL WHERE send_status = 'failed' AND content exists
-    LA->>LA: schedule llt_process_queue + spawn_cron()
+    LA->>LA: schedule eelt_process_queue + spawn_cron()
     LA-->>A: redirect + notice: "12 leads were put in the send queue… 2 skipped: their content was already deleted by retention."
     SW->>DB: picks up the leads within the next minute
 ```
@@ -999,25 +999,25 @@ The result of each action is kept in a per-user transient and shown as an admin 
 | `init` | Shortcode |
 | `wp_enqueue_scripts` | `form.js` + Turnstile only on pages with the shortcode |
 | `admin_menu`, `admin_init` | Settings page |
-| `admin_post_llt_test_email` | Test email |
-| `admin_post_llt_test_alert` | Test alert |
-| `admin_post_nopriv_llt_submit`, `admin_post_llt_submit` | Submit |
-| `llt_send_lead`, `llt_process_queue`, `llt_health_check`, `llt_retention_cleanup` | Cron (§9.1) |
+| `admin_post_eelt_test_email` | Test email |
+| `admin_post_eelt_test_alert` | Test alert |
+| `admin_post_nopriv_eelt_submit`, `admin_post_eelt_submit` | Submit |
+| `eelt_send_lead`, `eelt_process_queue`, `eelt_health_check`, `eelt_retention_cleanup` | Cron (§9.1) |
 | `wp_mail_failed` | Detecting unsent alerts |
 | `wp_privacy_personal_data_exporters`, `wp_privacy_personal_data_erasers` | GDPR |
 | `admin_init` → `wp_add_privacy_policy_content` | Policy text |
 | `rest_api_init` | Webhook (v2) |
 | `application_password_is_api_request` | Skipping Application Passwords on the webhook route (v2) |
-| `llt_reconcile_delivery` (hourly) | `Reconciler` (v2) |
-| `llt_refresh_proxy_ranges` (weekly) | `ProxyRanges` |
+| `eelt_reconcile_delivery` (hourly) | `Reconciler` (v2) |
+| `eelt_refresh_proxy_ranges` (weekly) | `ProxyRanges` |
 | `cli_init` / `WP_CLI::add_command` | WP-CLI |
-| `admin_post_llt_lead_action` | Lead actions (v3) |
-| `wp_ajax_llt_lead_details` | "View message" (v3) |
+| `admin_post_eelt_lead_action` | Lead actions (v3) |
+| `wp_ajax_eelt_lead_details` | "View message" (v3) |
 | `admin_menu` (counter) | `MenuBadge` (v3) |
 | `set-screen-option` | Rows per page (v3) |
 | activation / deactivation | `Installer` |
 
-Filters: `llt_email_subject`, `llt_email_body`, `llt_form_template`, `llt_recipient_email`.
+Filters: `eelt_email_subject`, `eelt_email_body`, `eelt_form_template`, `eelt_recipient_email`.
 
 ---
 
@@ -1077,7 +1077,7 @@ The automated suite (`php tests/run.php`) runs without WordPress: WordPress func
 - Duplicate or late events do not change final statuses.
 - Content is deleted right after `Delivery`.
 - Events missed by the webhook are recovered by reconciliation within an hour.
-- `wp llt stats` reports delivered and bounced leads.
+- `wp eelt stats` reports delivered and bounced leads.
 
 ### v3
 
@@ -1119,10 +1119,10 @@ The secrets (Postmark token, Turnstile keys, webhook password) are encrypted wit
 To avoid re-entering them, the same key can be defined on all environments:
 
 ```php
-define( 'LLT_ENCRYPTION_KEY', '...' ); // 32+ random characters, identical on staging and production
+define( 'EELT_ENCRYPTION_KEY', '...' ); // 32+ random characters, identical on staging and production
 ```
 
-If `LLT_ENCRYPTION_KEY` is added after the secrets were saved, they need to be re-entered once.
+If `EELT_ENCRYPTION_KEY` is added after the secrets were saved, they need to be re-entered once.
 
 ### 22.4. Post-installation check
 
@@ -1131,7 +1131,25 @@ If `LLT_ENCRYPTION_KEY` is added after the secrets were saved, they need to be r
 3. **Alerts** tab → "Send test alert" (confirms that `wp_mail()` works).
 4. **Anti-spam** tab → the IP diagnostics show the administrator's real IP.
 5. **Status** tab → cron ran in the last few minutes.
-6. (v2) Postmark → Webhooks → Verify, then send a test lead and confirm the `delivered` status in `wp llt leads list`.
+6. (v2) Postmark → Webhooks → Verify, then send a test lead and confirm the `delivered` status in `wp eelt leads list`.
+
+### 22.5. Migration from versions before 1.5.0 (`LegacyMigration`)
+
+Before 1.5.0 the plugin used the `llt` prefix, the tables `location_leads` / `location_lead_messages`, the shortcode `[location_contact]`, the webhook route `llt/v1/postmark` and the `wp llt` command. 1.5.0 renamed all of them to the `eelt` prefix (`eelt_leads`, `eelt_lead_messages`, `[enspire_contact_form]`, `eelt/v1/postmark`, `wp eelt`).
+
+The migration runs on activation and in `Installer::maybe_upgrade()`, before the schema check, only when the `llt_db_version` option exists:
+
+1. Renames the tables with `ALTER TABLE … RENAME TO …`, keeping IDs and history. If an empty new table already exists (created by activation), it is dropped first; if both tables hold data, the old one is left untouched and logged.
+2. Moves `llt_settings`, `llt_state`, `llt_proxy_ranges` and `llt_db_version` to the `eelt_*` names, and removes `llt_worker_lock`.
+3. Unschedules the old cron events; the new ones are scheduled normally.
+4. Records `legacy_migrated` in the state; the settings page shows the follow-up steps for 30 days.
+
+Compatibility kept on purpose:
+
+- The encryption key derivation still uses the `llt-secret|` context string, so secrets saved by earlier versions stay readable.
+- `LLT_ENCRYPTION_KEY` and `LLT_CONTEXT_SECRET` are still accepted when the `EELT_*` constants are not defined.
+
+Manual steps after the migration: replace the shortcode, update the webhook path in Postmark (same credentials; the hourly reconciliation covers the gap), clear the page cache.
 
 ---
 

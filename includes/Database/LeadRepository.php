@@ -1,6 +1,6 @@
 <?php
 /**
- * Access to the `location_leads` table.
+ * Access to the `eelt_leads` table.
  *
  * @package EnspireEmailLeadsTracker
  */

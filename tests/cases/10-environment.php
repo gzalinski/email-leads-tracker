@@ -17,9 +17,9 @@ same( 'current URL in a subdirectory (no duplication)', 'https://example.test/bl
 $_SERVER['REQUEST_URI'] = 'http://evil.test/';
 same( 'invalid REQUEST_URI → root', 'https://example.test/', ContactShortcode::current_url() );
 
-$_SERVER['REQUEST_URI'] = '/wp-json/llt/v1/postmark';
+$_SERVER['REQUEST_URI'] = '/wp-json/eelt/v1/postmark';
 same( 'Application Passwords skipped on the webhook', false, WebhookController::skip_application_passwords( true ) );
-$_SERVER['REQUEST_URI'] = '/?rest_route=%2Fllt%2Fv1%2Fpostmark';
+$_SERVER['REQUEST_URI'] = '/?rest_route=%2Feelt%2Fv1%2Fpostmark';
 same( 'Application Passwords skipped (rest_route)', false, WebhookController::skip_application_passwords( true ) );
 $_SERVER['REQUEST_URI'] = '/wp-json/wp/v2/posts';
 same( 'Application Passwords kept on other routes', true, WebhookController::skip_application_passwords( true ) );

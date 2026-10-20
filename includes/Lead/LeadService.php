@@ -43,7 +43,7 @@ final class LeadService {
 		);
 		if ( ! $inserted ) {
 			$wpdb->query( 'ROLLBACK' );
-			return new \WP_Error( 'llt_insert_lead', (string) $wpdb->last_error );
+			return new \WP_Error( 'eelt_insert_lead', (string) $wpdb->last_error );
 		}
 		$lead_id = (int) $wpdb->insert_id;
 
@@ -61,12 +61,12 @@ final class LeadService {
 		);
 		if ( ! $inserted ) {
 			$wpdb->query( 'ROLLBACK' );
-			return new \WP_Error( 'llt_insert_message', (string) $wpdb->last_error );
+			return new \WP_Error( 'eelt_insert_message', (string) $wpdb->last_error );
 		}
 
 		$wpdb->query( 'COMMIT' );
 
-		do_action( 'llt_lead_created', $lead_id, $object_id );
+		do_action( 'eelt_lead_created', $lead_id, $object_id );
 		return $lead_id;
 	}
 }

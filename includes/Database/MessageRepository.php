@@ -1,6 +1,6 @@
 <?php
 /**
- * Access to the temporary `location_lead_messages` table (the visitor's personal data).
+ * Access to the temporary `eelt_lead_messages` table (the visitor's personal data).
  *
  * @package EnspireEmailLeadsTracker
  */

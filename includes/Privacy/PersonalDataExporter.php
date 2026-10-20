@@ -45,7 +45,7 @@ final class PersonalDataExporter {
 			$items[] = array(
 				'group_id'    => 'enspire-email-leads-tracker',
 				'group_label' => 'Messages sent through the contact form',
-				'item_id'     => 'llt-lead-' . (int) $row->lead_id,
+				'item_id'     => 'eelt-lead-' . (int) $row->lead_id,
 				'data'        => array(
 					array(
 						'name'  => 'Location',

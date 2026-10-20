@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 final class AdminNotice {
 
 	private static function key(): string {
-		return 'llt_notice_' . get_current_user_id();
+		return 'eelt_notice_' . get_current_user_id();
 	}
 
 	public static function add( string $type, string $message ): void {

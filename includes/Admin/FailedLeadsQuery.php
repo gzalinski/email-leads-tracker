@@ -55,10 +55,10 @@ final class FailedLeadsQuery {
 			return preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ? $value : '';
 		};
 		return array(
-			'error' => substr( sanitize_text_field( (string) ( $request['llt_error'] ?? '' ) ), 0, 40 ),
+			'error' => substr( sanitize_text_field( (string) ( $request['eelt_error'] ?? '' ) ), 0, 40 ),
 			's'     => substr( sanitize_text_field( (string) ( $request['s'] ?? '' ) ), 0, 100 ),
-			'from'  => $date( $request['llt_from'] ?? '' ),
-			'to'    => $date( $request['llt_to'] ?? '' ),
+			'from'  => $date( $request['eelt_from'] ?? '' ),
+			'to'    => $date( $request['eelt_to'] ?? '' ),
 		);
 	}
 

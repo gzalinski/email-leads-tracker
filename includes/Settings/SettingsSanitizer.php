@@ -142,6 +142,6 @@ final class SettingsSanitizer {
 	}
 
 	private static function error( string $key, string $message ): void {
-		add_settings_error( Settings::OPTION, 'llt_' . $key, $message, 'error' );
+		add_settings_error( Settings::OPTION, 'eelt_' . $key, $message, 'error' );
 	}
 }

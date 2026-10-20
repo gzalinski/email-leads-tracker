@@ -81,7 +81,7 @@ final class RetentionService {
 		}
 
 		if ( ! $dry_run && array_sum( $counts ) > 0 ) {
-			do_action( 'llt_leads_changed' );
+			do_action( 'eelt_leads_changed' );
 		}
 		return $counts;
 	}

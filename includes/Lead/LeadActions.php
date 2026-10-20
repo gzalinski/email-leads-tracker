@@ -53,7 +53,7 @@ final class LeadActions {
 
 		if ( $result['queued'] > 0 ) {
 			self::kick_queue();
-			do_action( 'llt_leads_changed' );
+			do_action( 'eelt_leads_changed' );
 		}
 		return $result;
 	}
@@ -78,7 +78,7 @@ final class LeadActions {
 	public static function delete_content( array $ids ): int {
 		$deleted = MessageRepository::delete_many( $ids );
 		if ( $deleted ) {
-			do_action( 'llt_leads_changed' );
+			do_action( 'eelt_leads_changed' );
 		}
 		return $deleted;
 	}
@@ -87,8 +87,8 @@ final class LeadActions {
 	 * Starts processing the queue as soon as possible.
 	 */
 	public static function kick_queue(): void {
-		if ( ! wp_next_scheduled( 'llt_process_queue_now' ) ) {
-			wp_schedule_single_event( time(), 'llt_process_queue_now' );
+		if ( ! wp_next_scheduled( 'eelt_process_queue_now' ) ) {
+			wp_schedule_single_event( time(), 'eelt_process_queue_now' );
 		}
 		if ( ! defined( 'DISABLE_WP_CRON' ) || ! DISABLE_WP_CRON ) {
 			spawn_cron();
@@ -113,7 +113,7 @@ final class LeadActions {
 			$count = (int) $wpdb->query( $wpdb->prepare( $sql, $at, (int) $user_id, Util::now() ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 		if ( $count ) {
-			do_action( 'llt_leads_changed' );
+			do_action( 'eelt_leads_changed' );
 		}
 		return $count;
 	}

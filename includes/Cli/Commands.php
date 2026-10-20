@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-CLI commands: wp llt ...
+ * WP-CLI commands: wp eelt ...
  *
  * Visitors' personal data is shown only on explicit request (--with-content).
  *
@@ -30,17 +30,17 @@ final class Commands {
 
 	public static function register(): void {
 		$commands = array(
-			'llt status'         => array( 'status', 'Plugin status: cron, leads per status, recent errors.' ),
-			'llt leads list'     => array( 'leads_list', 'Lists leads (without visitor data).' ),
-			'llt leads show'     => array( 'leads_show', 'Details of a lead.' ),
-			'llt retry'          => array( 'retry', 'Puts failed leads back in the send queue.' ),
-			'llt send-test'      => array( 'send_test', 'Sends a test email through Postmark.' ),
-			'llt queue run'      => array( 'queue_run', 'Processes the queue now.' ),
-			'llt cleanup run'    => array( 'cleanup_run', 'Runs retention (deletes expired content).' ),
-			'llt content delete' => array( 'content_delete', 'Deletes the content of some leads.' ),
-			'llt stats'          => array( 'stats', 'Statistics per status.' ),
+			'eelt status'         => array( 'status', 'Plugin status: cron, leads per status, recent errors.' ),
+			'eelt leads list'     => array( 'leads_list', 'Lists leads (without visitor data).' ),
+			'eelt leads show'     => array( 'leads_show', 'Details of a lead.' ),
+			'eelt retry'          => array( 'retry', 'Puts failed leads back in the send queue.' ),
+			'eelt send-test'      => array( 'send_test', 'Sends a test email through Postmark.' ),
+			'eelt queue run'      => array( 'queue_run', 'Processes the queue now.' ),
+			'eelt cleanup run'    => array( 'cleanup_run', 'Runs retention (deletes expired content).' ),
+			'eelt content delete' => array( 'content_delete', 'Deletes the content of some leads.' ),
+			'eelt stats'          => array( 'stats', 'Statistics per status.' ),
 		);
-		$commands = (array) apply_filters( 'llt_cli_commands', $commands );
+		$commands = (array) apply_filters( 'eelt_cli_commands', $commands );
 
 		foreach ( $commands as $name => $definition ) {
 			$callable = is_array( $definition[0] ) ? $definition[0] : array( self::class, $definition[0] );
@@ -57,7 +57,7 @@ final class Commands {
 		$heartbeat = (int) ( $state['worker_heartbeat'] ?? 0 );
 
 		$rows = array(
-			array( 'Key' => 'Version', 'Value' => LLT_VERSION ),
+			array( 'Key' => 'Version', 'Value' => EELT_VERSION ),
 			array( 'Key' => 'Postmark token', 'Value' => Settings::has_secret( 'postmark_token' ) ? 'configured' : 'MISSING' ),
 			array( 'Key' => 'Message Stream', 'Value' => (string) Settings::get( 'postmark_stream' ) ),
 			array( 'Key' => 'Last queue run', 'Value' => $heartbeat ? gmdate( 'Y-m-d H:i:s', $heartbeat ) . ' UTC' : 'never' ),
@@ -70,7 +70,7 @@ final class Commands {
 			array( 'Key' => 'Last failed alert', 'Value' => (string) ( $state['last_alert_failure']['error'] ?? '—' ) ),
 			array( 'Key' => 'Cloudflare list', 'Value' => ProxyRanges::updated_at() ? gmdate( 'Y-m-d', ProxyRanges::updated_at() ) : 'bundled with the plugin' ),
 		);
-		$rows = (array) apply_filters( 'llt_cli_status_rows', $rows, $state, $counts );
+		$rows = (array) apply_filters( 'eelt_cli_status_rows', $rows, $state, $counts );
 
 		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Key', 'Value' ) );
 
@@ -213,7 +213,7 @@ final class Commands {
 		if ( $result['not_failed'] ) {
 			\WP_CLI::log( 'Not in the failed status, skipped: #' . implode( ', #', $result['not_failed'] ) );
 		}
-		\WP_CLI::success( sprintf( '%d leads queued. Run `wp llt queue run` to send them now.', $result['queued'] ) );
+		\WP_CLI::success( sprintf( '%d leads queued. Run `wp eelt queue run` to send them now.', $result['queued'] ) );
 	}
 
 	/**
@@ -238,7 +238,7 @@ final class Commands {
 				'Subject'       => '[' . EmailBuilder::site_name() . '] Enspire Email Leads Tracker test email',
 				'TextBody'      => 'The Postmark configuration works (sent from WP-CLI).',
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
-				'Tag'           => 'llt-test',
+				'Tag'           => 'eelt-test',
 			)
 		);
 		if ( $result->is( SendResult::ACCEPTED ) ) {

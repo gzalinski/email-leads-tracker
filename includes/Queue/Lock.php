@@ -51,19 +51,19 @@ final class Lock {
 	 */
 	public static function acquire_worker(): bool {
 		$expires = time() + self::TTL;
-		if ( add_option( 'llt_worker_lock', $expires, '', false ) ) {
+		if ( add_option( 'eelt_worker_lock', $expires, '', false ) ) {
 			return true;
 		}
-		wp_cache_delete( 'llt_worker_lock', 'options' );
-		$current = (int) get_option( 'llt_worker_lock', 0 );
+		wp_cache_delete( 'eelt_worker_lock', 'options' );
+		$current = (int) get_option( 'eelt_worker_lock', 0 );
 		if ( $current < time() ) {
-			delete_option( 'llt_worker_lock' );
-			return add_option( 'llt_worker_lock', $expires, '', false );
+			delete_option( 'eelt_worker_lock' );
+			return add_option( 'eelt_worker_lock', $expires, '', false );
 		}
 		return false;
 	}
 
 	public static function release_worker(): void {
-		delete_option( 'llt_worker_lock' );
+		delete_option( 'eelt_worker_lock' );
 	}
 }

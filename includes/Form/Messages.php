@@ -24,7 +24,7 @@ final class Messages {
 			'unavailable'  => 'The form is not available right now. Please try again later.',
 			'error'        => 'Something went wrong. Please try again.',
 		);
-		$messages = apply_filters( 'llt_form_messages', $messages );
+		$messages = apply_filters( 'eelt_form_messages', $messages );
 		return $messages[ $status ] ?? $messages['error'];
 	}
 }

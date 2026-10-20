@@ -59,7 +59,7 @@ final class PostmarkClient {
 	}
 
 	/**
-	 * Looks up the message sent for a lead, by the `llt_lead_id` metadata (ARCHITECTURE.md §7.4).
+	 * Looks up the message sent for a lead, by the `eelt_lead_id` metadata (ARCHITECTURE.md §7.4).
 	 *
 	 * @return array{found:bool,message_id:string}|\WP_Error
 	 */
@@ -70,7 +70,7 @@ final class PostmarkClient {
 				'count'                => 1,
 				'offset'               => 0,
 				'messagestream'        => (string) Settings::get( 'postmark_stream' ),
-				'metadata_llt_lead_id' => (string) $lead_id,
+				'metadata_eelt_lead_id' => (string) $lead_id,
 			)
 		);
 		if ( is_wp_error( $data ) ) {

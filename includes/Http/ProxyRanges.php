@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class ProxyRanges {
 
-	const OPTION = 'llt_proxy_ranges';
+	const OPTION = 'eelt_proxy_ranges';
 
 	const DEFAULT_V4 = array(
 		'173.245.48.0/20',

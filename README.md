@@ -42,14 +42,25 @@ The plugin works without a real cron, but retries and alerts then depend on traf
 Tokens are encrypted with a key derived from the WordPress salts. If the environments have different salts, define the same key on all of them:
 
 ```php
-define( 'LLT_ENCRYPTION_KEY', 'a-random-value-of-at-least-32-characters' );
+define( 'EELT_ENCRYPTION_KEY', 'a-random-value-of-at-least-32-characters' );
 ```
+
+### Upgrading from a version before 1.5.0
+
+Version 1.5.0 renamed every identifier (prefix `llt` → `eelt`). On the first load after the update, or on activation, the plugin migrates automatically: the tables `location_leads` / `location_lead_messages` are renamed to `eelt_leads` / `eelt_lead_messages` (all leads and history are kept), the settings and state are moved to the new option names, and the old cron events are removed. Encrypted secrets stay readable. Then:
+
+1. Replace `[location_contact]` with `[enspire_contact_form]` on your pages and templates (same attributes).
+2. If you use delivery confirmation, edit the webhook in Postmark: change the path from `/wp-json/llt/v1/postmark` to `/wp-json/eelt/v1/postmark` (same user and password) and click **Verify**. Until then, the hourly reconciliation still confirms deliveries.
+3. Clear the page cache, so cached forms use the new field names.
+4. Use `wp eelt` instead of `wp llt`. In `wp-config.php`, rename `LLT_ENCRYPTION_KEY` to `EELT_ENCRYPTION_KEY` when convenient (the old name still works).
+
+The settings page shows these steps for 30 days after the migration.
 
 ## Usage
 
 ```
-[location_contact object_id="245"]
-[location_contact]
+[enspire_contact_form object_id="245"]
+[enspire_contact_form]
 ```
 
 - `object_id` — the location post; if missing, the current post is used.
@@ -101,16 +112,16 @@ Leads whose content was already deleted by retention can no longer be resent; th
 ## WP-CLI
 
 ```
-wp llt status
-wp llt leads list [--status=failed] [--since=2026-10-01] [--format=table|csv|json]
-wp llt leads show <id> [--with-content]
-wp llt retry <id>... | --failed
-wp llt send-test <email>
-wp llt queue run
-wp llt cleanup run [--dry-run]
-wp llt content delete <id>...
-wp llt stats [--since=…] [--until=…] [--by=object]
-wp llt reconcile run
+wp eelt status
+wp eelt leads list [--status=failed] [--since=2026-10-01] [--format=table|csv|json]
+wp eelt leads show <id> [--with-content]
+wp eelt retry <id>... | --failed
+wp eelt send-test <email>
+wp eelt queue run
+wp eelt cleanup run [--dry-run]
+wp eelt content delete <id>...
+wp eelt stats [--since=…] [--until=…] [--by=object]
+wp eelt reconcile run
 ```
 
 ## Testing
@@ -128,7 +139,8 @@ Note: some security plugins block visitor access to `wp-admin/admin-post.php`. T
 
 ## Versions
 
-- **1.4.0** — slug changed to `enspire-email-leads-tracker`: main file `enspire-email-leads-tracker.php`, folder and text domain, settings page `?page=enspire-email-leads-tracker`, theme override folder `enspire-email-leads-tracker/`, PHP namespace `EnspireEmailLeadsTracker`. Data identifiers are unchanged. On an existing install, WordPress sees it as a new plugin: make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, deactivate and delete the old plugin, then upload and activate the new one.
+- **1.5.0** — all identifiers renamed to the `eelt` prefix: Postmark tag `eelt-lead`, shortcode `[enspire_contact_form]`, tables `eelt_leads` / `eelt_lead_messages`, options `eelt_*`, webhook route `eelt/v1/postmark`, WP-CLI `wp eelt`, constants `EELT_*`. Automatic migration of existing data (see "Upgrading from a version before 1.5.0").
+- **1.4.0** — slug changed to `enspire-email-leads-tracker`: main file `enspire-email-leads-tracker.php`, folder and text domain, settings page `?page=enspire-email-leads-tracker`, theme override folder `enspire-email-leads-tracker/`, PHP namespace `EnspireEmailLeadsTracker`. Data identifiers were unchanged in this version. On an existing install, WordPress sees it as a new plugin: make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, deactivate and delete the old plugin, then upload and activate the new one.
 - **1.3.1** — the display name is now "Enspire Email Leads Tracker". Slug, folder, namespace and data identifiers are unchanged from 1.3.0, so updating from 1.3.0 is a plain file replacement.
 - **1.3.0** — renamed to "Email Leads Tracker": main file `email-leads-tracker.php`, folder and text domain `email-leads-tracker`, PHP namespace `EmailLeadsTracker`, settings page `?page=email-leads-tracker`, theme override folder `email-leads-tracker/`. Data identifiers are unchanged (tables, options, the `llt_` prefix, the `[location_contact]` shortcode, the webhook route `llt/v1/postmark`, `wp llt`), so existing data and the Postmark webhook URL keep working. On an existing install: first make sure "Delete the tables and settings when the plugin is uninstalled" (Retention tab) is unticked, then deactivate and delete the old plugin, upload the new one and activate it.
 - **1.2.2** — all code comments, UI strings, tests and documentation translated to English. No functional changes.

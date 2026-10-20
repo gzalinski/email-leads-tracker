@@ -1,6 +1,6 @@
 <?php
 /**
- * Reading settings. All settings live in the `llt_settings` option; secrets are encrypted.
+ * Reading settings. All settings live in the `eelt_settings` option; secrets are encrypted.
  *
  * @package EnspireEmailLeadsTracker
  */
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class Settings {
 
-	const OPTION  = 'llt_settings';
+	const OPTION  = 'eelt_settings';
 	const SECRETS = array( 'postmark_token', 'turnstile_secret', 'webhook_pass' );
 
 	/** @var array|null */

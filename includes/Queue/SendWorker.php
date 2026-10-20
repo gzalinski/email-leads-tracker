@@ -110,8 +110,8 @@ final class SendWorker {
 			)
 		);
 
-		do_action( 'llt_leads_changed' );
-		do_action( 'llt_lead_accepted', (int) $lead->id, $message_id );
+		do_action( 'eelt_leads_changed' );
+		do_action( 'eelt_lead_accepted', (int) $lead->id, $message_id );
 		AdminNotifier::send_succeeded();
 	}
 
@@ -126,8 +126,8 @@ final class SendWorker {
 				'last_error_message' => Util::error_text( $result->message ),
 			)
 		);
-		do_action( 'llt_leads_changed' );
-		do_action( 'llt_lead_failed', (int) $lead->id, $result );
+		do_action( 'eelt_leads_changed' );
+		do_action( 'eelt_lead_failed', (int) $lead->id, $result );
 		AdminNotifier::lead_failed( (int) $lead->id, $result );
 	}
 

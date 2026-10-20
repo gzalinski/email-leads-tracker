@@ -32,7 +32,7 @@ check( 'bounced → deferred forbidden', ! LeadStatus::can_transition( 'bounced'
 check( 'deferred → deferred forbidden', ! LeadStatus::can_transition( 'deferred', 'deferred' ) );
 
 // Sanitizer: only the current tab is saved.
-$GLOBALS['llt_test_options']['llt_settings'] = array(
+$GLOBALS['eelt_test_options']['eelt_settings'] = array(
 	'from_email'     => 'old@example.com',
 	'postmark_token' => SecretStore::encrypt( 'old-token' ),
 );
@@ -58,12 +58,12 @@ same( 'secret deleted', '', $out['postmark_token'] );
 $already = array( 'from_email' => 'x@example.com' );
 same( 'second call returns the processed value', $already, SettingsSanitizer::sanitize( $already ) );
 
-$GLOBALS['llt_test_errors'] = array();
+$GLOBALS['eelt_test_errors'] = array();
 $out = SettingsSanitizer::sanitize( array( '_tab' => 'retry', 'max_retries' => '5', 'retry_schedule' => '10, 5' ) );
-check( 'non-increasing schedule rejected', ! empty( $GLOBALS['llt_test_errors'] ) );
+check( 'non-increasing schedule rejected', ! empty( $GLOBALS['eelt_test_errors'] ) );
 
-$GLOBALS['llt_test_errors'] = array();
-$GLOBALS['llt_test_options']['llt_settings'] = array();
+$GLOBALS['eelt_test_errors'] = array();
+$GLOBALS['eelt_test_options']['eelt_settings'] = array();
 $out = SettingsSanitizer::sanitize( array( '_tab' => 'retry', 'max_retries' => '8', 'retry_schedule' => '1, 5, 15' ) );
 same( 'max retries reduced to the number of intervals', 3, $out['max_retries'] );
 

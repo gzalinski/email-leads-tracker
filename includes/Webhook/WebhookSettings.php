@@ -19,11 +19,11 @@ defined( 'ABSPATH' ) || exit;
 final class WebhookSettings {
 
 	public static function register(): void {
-		add_filter( 'llt_settings_tabs', array( self::class, 'tabs' ) );
-		add_filter( 'llt_status_rows', array( self::class, 'status_rows' ), 10, 2 );
-		add_filter( 'llt_cli_status_rows', array( self::class, 'cli_status_rows' ), 10, 2 );
-		add_action( 'admin_post_llt_webhook_credentials', array( self::class, 'handle_generate' ) );
-		add_filter( 'llt_cli_commands', array( self::class, 'cli_commands' ) );
+		add_filter( 'eelt_settings_tabs', array( self::class, 'tabs' ) );
+		add_filter( 'eelt_status_rows', array( self::class, 'status_rows' ), 10, 2 );
+		add_filter( 'eelt_cli_status_rows', array( self::class, 'cli_status_rows' ), 10, 2 );
+		add_action( 'admin_post_eelt_webhook_credentials', array( self::class, 'handle_generate' ) );
+		add_filter( 'eelt_cli_commands', array( self::class, 'cli_commands' ) );
 	}
 
 	/**
@@ -31,7 +31,7 @@ final class WebhookSettings {
 	 */
 	public static function cli_commands( $commands ): array {
 		$commands                      = (array) $commands;
-		$commands['llt reconcile run'] = array( array( Reconciler::class, 'cli' ), 'Checks in Postmark the delivery of leads without confirmation (v2).' );
+		$commands['eelt reconcile run'] = array( array( Reconciler::class, 'cli' ), 'Checks in Postmark the delivery of leads without confirmation (v2).' );
 		return $commands;
 	}
 
@@ -111,10 +111,10 @@ final class WebhookSettings {
 			<li>Paste the URL, tick <strong>Delivery</strong> and <strong>Bounce</strong>, then click <strong>Verify</strong> and save.</li>
 			<li>Tick "Enable the Postmark webhook" above and save the settings.</li>
 		</ol>
-		<p>Webhook URL: <code class="llt-copyable"><?php echo esc_html( $masked ); ?></code></p>
+		<p>Webhook URL: <code class="eelt-copyable"><?php echo esc_html( $masked ); ?></code></p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-			<input type="hidden" name="action" value="llt_webhook_credentials">
-			<?php wp_nonce_field( 'llt_webhook_credentials' ); ?>
+			<input type="hidden" name="action" value="eelt_webhook_credentials">
+			<?php wp_nonce_field( 'eelt_webhook_credentials' ); ?>
 			<?php
 			submit_button(
 				$has_creds ? 'Regenerate credentials' : 'Generate credentials',
@@ -139,9 +139,9 @@ final class WebhookSettings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'You do not have the required permission.', 403 );
 		}
-		check_admin_referer( 'llt_webhook_credentials' );
+		check_admin_referer( 'eelt_webhook_credentials' );
 
-		$user = 'llt' . strtolower( wp_generate_password( 9, false, false ) );
+		$user = 'eelt' . strtolower( wp_generate_password( 9, false, false ) );
 		$pass = wp_generate_password( 32, false, false );
 
 		$settings                 = get_option( Settings::OPTION, array() );
@@ -195,7 +195,7 @@ final class WebhookSettings {
 	}
 
 	/**
-	 * @param array $rows  Rows of `wp llt status`.
+	 * @param array $rows  Rows of `wp eelt status`.
 	 * @param array $state Plugin state.
 	 */
 	public static function cli_status_rows( $rows, $state ): array {

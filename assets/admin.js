@@ -4,16 +4,16 @@
 ( function () {
 	'use strict';
 
-	var config = window.lltAdmin || {};
+	var config = window.eeltAdmin || {};
 
-	// "Copy" buttons: <button data-llt-copy="#element-id">.
+	// "Copy" buttons: <button data-eelt-copy="#element-id">.
 	document.addEventListener( 'click', function ( event ) {
-		var button = event.target.closest && event.target.closest( '[data-llt-copy]' );
+		var button = event.target.closest && event.target.closest( '[data-eelt-copy]' );
 		if ( ! button ) {
 			return;
 		}
 		event.preventDefault();
-		var source = document.querySelector( button.getAttribute( 'data-llt-copy' ) );
+		var source = document.querySelector( button.getAttribute( 'data-eelt-copy' ) );
 		if ( ! source ) {
 			return;
 		}
@@ -38,32 +38,32 @@
 		}
 	} );
 
-	// Confirmation for delete links: <a data-llt-confirm="Message">.
+	// Confirmation for delete links: <a data-eelt-confirm="Message">.
 	document.addEventListener( 'click', function ( event ) {
-		var link = event.target.closest && event.target.closest( '[data-llt-confirm]' );
-		if ( link && ! window.confirm( link.getAttribute( 'data-llt-confirm' ) ) ) {
+		var link = event.target.closest && event.target.closest( '[data-eelt-confirm]' );
+		if ( link && ! window.confirm( link.getAttribute( 'data-eelt-confirm' ) ) ) {
 			event.preventDefault();
 		}
 	} );
 
-	var form = document.getElementById( 'llt-leads-form' );
+	var form = document.getElementById( 'eelt-leads-form' );
 	if ( ! form ) {
 		return;
 	}
 
-	var banner = form.querySelector( '.llt-select-all' );
-	var allInput = document.getElementById( 'llt-all-matching' );
+	var banner = form.querySelector( '.eelt-select-all' );
+	var allInput = document.getElementById( 'eelt-all-matching' );
 	var total = parseInt( form.getAttribute( 'data-total' ), 10 ) || 0;
 
 	function rowChecks() {
-		return Array.prototype.slice.call( form.querySelectorAll( '.llt-row-check' ) );
+		return Array.prototype.slice.call( form.querySelectorAll( '.eelt-row-check' ) );
 	}
 
 	function resetAllMatching() {
 		allInput.value = '';
 		if ( banner ) {
-			banner.querySelector( '.llt-select-all-text' ).textContent = 'All leads on this page are selected.';
-			var link = banner.querySelector( '.llt-select-all-link' );
+			banner.querySelector( '.eelt-select-all-text' ).textContent = 'All leads on this page are selected.';
+			var link = banner.querySelector( '.eelt-select-all-link' );
 			link.hidden = false;
 		}
 	}
@@ -86,18 +86,18 @@
 	} );
 
 	if ( banner ) {
-		banner.querySelector( '.llt-select-all-link' ).addEventListener( 'click', function ( event ) {
+		banner.querySelector( '.eelt-select-all-link' ).addEventListener( 'click', function ( event ) {
 			event.preventDefault();
 			allInput.value = '1';
-			banner.querySelector( '.llt-select-all-text' ).textContent = 'All ' + total + ' leads matching the filter are selected.';
+			banner.querySelector( '.eelt-select-all-text' ).textContent = 'All ' + total + ' leads matching the filter are selected.';
 			this.hidden = true;
 		} );
 	}
 
 	// Confirmation for bulk deletion.
 	form.addEventListener( 'submit', function ( event ) {
-		var top = form.querySelector( 'select[name="llt_do"]' );
-		var bottom = form.querySelector( 'select[name="llt_do_bottom"]' );
+		var top = form.querySelector( 'select[name="eelt_do"]' );
+		var bottom = form.querySelector( 'select[name="eelt_do_bottom"]' );
 		var action = ( top && top.value ) || ( bottom && bottom.value ) || '';
 		if ( ! action ) {
 			event.preventDefault();
@@ -118,14 +118,14 @@
 	} );
 
 	// "View message": the visitor's data is loaded on request.
-	var dialog = document.getElementById( 'llt-message-dialog' );
+	var dialog = document.getElementById( 'eelt-message-dialog' );
 	document.addEventListener( 'click', function ( event ) {
-		var link = event.target.closest && event.target.closest( '.llt-view-message' );
+		var link = event.target.closest && event.target.closest( '.eelt-view-message' );
 		if ( ! link || ! dialog ) {
 			return;
 		}
 		event.preventDefault();
-		var body = dialog.querySelector( '.llt-dialog-body' );
+		var body = dialog.querySelector( '.eelt-dialog-body' );
 		body.textContent = 'Loading…';
 		if ( dialog.showModal ) {
 			dialog.showModal();
@@ -134,7 +134,7 @@
 		}
 
 		var data = new FormData();
-		data.append( 'action', 'llt_lead_details' );
+		data.append( 'action', 'eelt_lead_details' );
 		data.append( 'nonce', config.nonce || '' );
 		data.append( 'lead', link.getAttribute( 'data-lead' ) );
 
@@ -165,7 +165,7 @@
 					list.appendChild( dd );
 				} );
 				var message = document.createElement( 'pre' );
-				message.className = 'llt-dialog-message';
+				message.className = 'eelt-dialog-message';
 				message.textContent = d.message;
 				body.appendChild( list );
 				body.appendChild( message );

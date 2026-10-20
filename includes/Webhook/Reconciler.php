@@ -65,7 +65,7 @@ final class Reconciler {
 	}
 
 	/**
-	 * wp llt reconcile run
+	 * wp eelt reconcile run
 	 */
 	public static function cli(): void {
 		if ( ! Settings::tracking_enabled() ) {

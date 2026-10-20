@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Enspire Email Leads Tracker
  * Description:       Contact form for locations: sending through Postmark, lead tracking, automatic retries, alerts and controlled retention of personal data.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -14,11 +14,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LLT_VERSION', '1.4.0' );
-define( 'LLT_DB_VERSION', '1' );
-define( 'LLT_FILE', __FILE__ );
-define( 'LLT_DIR', plugin_dir_path( __FILE__ ) );
-define( 'LLT_URL', plugin_dir_url( __FILE__ ) );
+define( 'EELT_VERSION', '1.5.0' );
+define( 'EELT_DB_VERSION', '1' );
+define( 'EELT_FILE', __FILE__ );
+define( 'EELT_DIR', plugin_dir_path( __FILE__ ) );
+define( 'EELT_URL', plugin_dir_url( __FILE__ ) );
 
 spl_autoload_register(
 	static function ( $class ) {
@@ -27,7 +27,7 @@ spl_autoload_register(
 			return;
 		}
 		$relative = substr( $class, strlen( $prefix ) );
-		$file     = LLT_DIR . 'includes/' . str_replace( '\\', '/', $relative ) . '.php';
+		$file     = EELT_DIR . 'includes/' . str_replace( '\\', '/', $relative ) . '.php';
 		if ( is_readable( $file ) ) {
 			require_once $file;
 		}

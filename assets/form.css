@@ -1,22 +1,22 @@
 /* Enspire Email Leads Tracker — minimal styles; the theme can override them. */
-.llt-form-wrap { position: relative; }
-.llt-form .llt-field { margin: 0 0 1em; }
-.llt-form label { display: block; margin-bottom: .25em; font-weight: 600; }
-.llt-form input[type="text"],
-.llt-form input[type="email"],
-.llt-form input[type="tel"],
-.llt-form textarea { width: 100%; box-sizing: border-box; }
-.llt-form .llt-field--consent label { display: flex; gap: .5em; align-items: flex-start; font-weight: 400; }
-.llt-form .llt-field--consent input { margin-top: .25em; flex: none; }
-.llt-form .llt-required { color: #b91c1c; }
-.llt-form .llt-error { display: block; margin-top: .25em; color: #b91c1c; font-size: .9em; }
-.llt-form .llt-error:empty { display: none; }
-.llt-form [aria-invalid="true"] { border-color: #b91c1c; }
-.llt-form .llt-status:empty { display: none; }
-.llt-form .llt-status { margin: 0 0 1em; padding: .75em 1em; border-radius: 4px; border: 1px solid currentColor; }
-.llt-form .llt-status--ok { color: #166534; background: #f0fdf4; }
-.llt-form .llt-status--error { color: #991b1b; background: #fef2f2; }
-.llt-form[aria-busy="true"] .llt-submit { opacity: .6; cursor: progress; }
-.llt-form .cf-turnstile { margin: 0 0 1em; }
-.llt-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
-.llt-notice { padding: .75em 1em; border-left: 4px solid #b91c1c; background: #fef2f2; color: #1c1917; }
+.eelt-form-wrap { position: relative; }
+.eelt-form .eelt-field { margin: 0 0 1em; }
+.eelt-form label { display: block; margin-bottom: .25em; font-weight: 600; }
+.eelt-form input[type="text"],
+.eelt-form input[type="email"],
+.eelt-form input[type="tel"],
+.eelt-form textarea { width: 100%; box-sizing: border-box; }
+.eelt-form .eelt-field--consent label { display: flex; gap: .5em; align-items: flex-start; font-weight: 400; }
+.eelt-form .eelt-field--consent input { margin-top: .25em; flex: none; }
+.eelt-form .eelt-required { color: #b91c1c; }
+.eelt-form .eelt-error { display: block; margin-top: .25em; color: #b91c1c; font-size: .9em; }
+.eelt-form .eelt-error:empty { display: none; }
+.eelt-form [aria-invalid="true"] { border-color: #b91c1c; }
+.eelt-form .eelt-status:empty { display: none; }
+.eelt-form .eelt-status { margin: 0 0 1em; padding: .75em 1em; border-radius: 4px; border: 1px solid currentColor; }
+.eelt-form .eelt-status--ok { color: #166534; background: #f0fdf4; }
+.eelt-form .eelt-status--error { color: #991b1b; background: #fef2f2; }
+.eelt-form[aria-busy="true"] .eelt-submit { opacity: .6; cursor: progress; }
+.eelt-form .cf-turnstile { margin: 0 0 1em; }
+.eelt-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+.eelt-notice { padding: .75em 1em; border-left: 4px solid #b91c1c; background: #fef2f2; color: #1c1917; }

@@ -54,7 +54,7 @@ final class EventProcessor {
 	public static function handle( array $payload ): string {
 		$type       = (string) ( $payload['RecordType'] ?? '' );
 		$message_id = (string) ( $payload['MessageID'] ?? '' );
-		$lead_hint  = (int) ( $payload['Metadata']['llt_lead_id'] ?? 0 );
+		$lead_hint  = (int) ( $payload['Metadata']['eelt_lead_id'] ?? 0 );
 
 		if ( 'Delivery' === $type ) {
 			return self::apply(
@@ -167,13 +167,13 @@ final class EventProcessor {
 			AdminNotifier::bounce_recorded( (int) $lead->id, $code );
 		}
 
-		do_action( 'llt_leads_changed' );
-		do_action( 'llt_delivery_status_changed', (int) $lead->id, $target );
+		do_action( 'eelt_leads_changed' );
+		do_action( 'eelt_delivery_status_changed', (int) $lead->id, $target );
 		return self::RESULT_APPLIED;
 	}
 
 	/**
-	 * Correlation: first by MessageID, then by `llt_lead_id` from Metadata.
+	 * Correlation: first by MessageID, then by `eelt_lead_id` from Metadata.
 	 * Correlation by Metadata is accepted only if the lead does not already have a different MessageID.
 	 */
 	private static function find_lead( string $message_id, int $lead_hint ): ?object {

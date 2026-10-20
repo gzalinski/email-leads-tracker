@@ -8,7 +8,7 @@
 
 // phpcs:ignoreFile
 
-final class LLT_Test_WPDB {
+final class EELT_Test_WPDB {
 
 	public $prefix     = 'wp_';
 	public $options    = 'wp_options';
@@ -24,7 +24,7 @@ final class LLT_Test_WPDB {
 		$this->pdo = new PDO( 'sqlite::memory:' );
 		$this->pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT );
 		$this->pdo->exec(
-			'CREATE TABLE wp_location_leads (
+			'CREATE TABLE wp_eelt_leads (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				object_id INTEGER NOT NULL,
 				recipient_email TEXT NOT NULL,
@@ -52,7 +52,7 @@ final class LLT_Test_WPDB {
 			)'
 		);
 		$this->pdo->exec(
-			'CREATE TABLE wp_location_lead_messages (
+			'CREATE TABLE wp_eelt_lead_messages (
 				lead_id INTEGER PRIMARY KEY,
 				sender_name TEXT NOT NULL,
 				sender_email TEXT NOT NULL,
@@ -109,6 +109,9 @@ final class LLT_Test_WPDB {
 	}
 
 	private function select( string $sql ) {
+		if ( preg_match( "/^\\s*SHOW TABLES LIKE ('.*')\\s*$/is", $sql, $m ) ) {
+			$sql = "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE {$m[1]} ESCAPE '\\'";
+		}
 		$this->log[] = $sql;
 		$stmt        = $this->pdo->query( $sql );
 		if ( false === $stmt ) {
