@@ -1,0 +1,6 @@
+/* Location Lead Tracker — pagina de setări. */
+.llt-admin .nav-tab-wrapper { margin-bottom: 1em; }
+.llt-admin .llt-status { max-width: 900px; margin-top: 1em; }
+.llt-admin .llt-status th { width: 260px; }
+.llt-admin .notice.inline { margin: 1em 0; }
+.llt-admin code.llt-copyable { user-select: all; word-break: break-all; }
