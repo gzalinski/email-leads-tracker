@@ -86,6 +86,18 @@ Dacă **Verify** din Postmark întoarce 401 deși credențialele sunt corecte, s
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 ```
 
+## Leaduri eșuate în admin (v3)
+
+**Setări → Location Lead Tracker → Leaduri eșuate**, doar pentru administratori (`manage_options`). Numărul de leaduri care necesită atenție apare lângă numele pluginului în meniu.
+
+- Vizualizări: Eșuate, Blocate (în coadă de peste o oră), Respinse (v2), Ignorate.
+- Filtre: cod de eroare, interval de date, căutare după locație.
+- Selecție pe pagină sau „toate leadurile care corespund filtrului”.
+- Acțiuni: Retrimite, Ignoră, Restaurează, Șterge conținutul. Retrimiterea pune leadurile în coadă; emailurile pleacă în următorul minut.
+- „Vezi mesajul” încarcă datele vizitatorului doar la cerere.
+
+Leadurile al căror conținut a fost deja șters de retenție nu mai pot fi retrimise; lista le marchează ca atare.
+
 ## WP-CLI
 
 ```
@@ -116,5 +128,6 @@ Notă: unele pluginuri de securitate blochează accesul vizitatorilor la `wp-adm
 
 ## Versiuni
 
+- **1.2.0 (v3)** — tabul „Leaduri eșuate”: vizualizări, filtre, selecție după filtru, retrimitere și ignorare în masă, „Vezi mesajul”, contor în meniu.
 - **1.1.0 (v2)** — webhook Postmark (Delivery, Bounce) cu Basic Auth, stările `delivered` / `bounced` / `deferred`, ștergerea datelor la livrare, reconciliere orară, alerte pentru bounce și webhook oprit.
 - **1.0.0 (v1)** — trimitere prin Postmark, coadă cu retry, verificare anti-duplicat, pagină de setări cu secrete criptate, alerte, WP-CLI, GDPR, Turnstile, detectarea IP-ului real, retenție.

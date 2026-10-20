@@ -1,6 +1,20 @@
-/* Location Lead Tracker — pagina de setări. */
+/* Location Lead Tracker — pagina de setări și lista de leaduri. */
 .llt-admin .nav-tab-wrapper { margin-bottom: 1em; }
 .llt-admin .llt-status { max-width: 900px; margin-top: 1em; }
 .llt-admin .llt-status th { width: 260px; }
 .llt-admin .notice.inline { margin: 1em 0; }
 .llt-admin code.llt-copyable { user-select: all; word-break: break-all; }
+
+.llt-admin .llt-filters { margin: 1em 0 .5em; display: flex; flex-wrap: wrap; gap: .5em; align-items: center; }
+.llt-admin .llt-select-all { margin: .5em 0; }
+.llt-admin .llt-warning { color: #b32d2e; font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom; }
+.llt-admin .llt-muted { color: #646970; }
+.llt-admin .column-id { width: 9em; }
+.llt-admin .column-attempts { width: 10em; }
+
+.llt-dialog { max-width: 640px; width: calc(100% - 32px); border: 1px solid #c3c4c7; border-radius: 4px; padding: 0 24px 8px; }
+.llt-dialog::backdrop { background: rgba(0, 0, 0, .4); }
+.llt-dialog dl { display: grid; grid-template-columns: max-content 1fr; gap: .25em 1em; }
+.llt-dialog dt { font-weight: 600; }
+.llt-dialog dd { margin: 0; word-break: break-word; }
+.llt-dialog-message { white-space: pre-wrap; background: #f6f7f7; padding: 12px; border-radius: 4px; max-height: 40vh; overflow: auto; font: inherit; }

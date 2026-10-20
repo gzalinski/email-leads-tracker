@@ -7,6 +7,8 @@
 
 namespace LocationLeadTracker;
 
+use LocationLeadTracker\Admin\FailedLeadsTab;
+use LocationLeadTracker\Admin\MenuBadge;
 use LocationLeadTracker\Alerts\AdminNotifier;
 use LocationLeadTracker\Alerts\HealthCheck;
 use LocationLeadTracker\Cli\Commands;
@@ -60,9 +62,14 @@ final class Plugin {
 		add_filter( 'wp_privacy_personal_data_erasers', array( PersonalDataEraser::class, 'register' ) );
 		add_action( 'admin_init', array( PolicyContent::class, 'register' ) );
 
+		// Lista de leaduri eșuate (v3): linkul din alerte și contorul din meniu se actualizează și din cron.
+		add_filter( 'llt_alert_admin_link', array( FailedLeadsTab::class, 'alert_link' ) );
+		add_action( 'llt_leads_changed', array( MenuBadge::class, 'bust' ) );
+
 		// Admin.
 		if ( is_admin() ) {
 			SettingsPage::register();
+			FailedLeadsTab::register();
 		}
 
 		// WP-CLI.

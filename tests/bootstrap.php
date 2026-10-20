@@ -165,6 +165,9 @@ function get_post( $id ) {
 function get_post_meta( $id, $key, $single = false ) {
 	return $GLOBALS['llt_test_meta'][ $id ][ $key ] ?? '';
 }
+function get_gmt_from_date( $date ) {
+	return $date;
+}
 function get_date_from_gmt( $date, $format ) {
 	return $date;
 }

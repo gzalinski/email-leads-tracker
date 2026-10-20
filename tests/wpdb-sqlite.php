@@ -12,6 +12,7 @@ final class LLT_Test_WPDB {
 
 	public $prefix     = 'wp_';
 	public $options    = 'wp_options';
+	public $posts      = 'wp_posts';
 	public $insert_id  = 0;
 	public $last_error = '';
 	/** @var PDO */
@@ -61,6 +62,10 @@ final class LLT_Test_WPDB {
 			)'
 		);
 		$this->pdo->exec( 'CREATE TABLE wp_posts (ID INTEGER PRIMARY KEY, post_title TEXT)' );
+	}
+
+	public function esc_like( $text ) {
+		return addcslashes( (string) $text, '_%\\' );
 	}
 
 	public function get_charset_collate() {
