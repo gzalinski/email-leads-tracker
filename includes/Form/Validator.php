@@ -1,6 +1,6 @@
 <?php
 /**
- * Validarea și sanitizarea câmpurilor formularului.
+ * Validation and sanitization of the form fields.
  *
  * @package LocationLeadTracker
  */
@@ -18,7 +18,7 @@ final class Validator {
 	const MAX_MESSAGE = 5000;
 
 	/**
-	 * @param array $input Datele brute (deja fără slash-uri).
+	 * @param array $input Raw data (already unslashed).
 	 * @return array{data:array,errors:array<string,string>}
 	 */
 	public static function validate( array $input ): array {
@@ -31,27 +31,27 @@ final class Validator {
 		$consent = ! empty( $input['llt_consent'] );
 
 		if ( '' === $name ) {
-			$errors['llt_name'] = 'Numele este obligatoriu.';
+			$errors['llt_name'] = 'Your name is required.';
 		} elseif ( self::length( $name ) > self::MAX_NAME ) {
-			$errors['llt_name'] = 'Numele este prea lung.';
+			$errors['llt_name'] = 'The name is too long.';
 		}
 
 		if ( '' === $email || ! is_email( $email ) ) {
-			$errors['llt_email'] = 'Introdu o adresă de email validă.';
+			$errors['llt_email'] = 'Please enter a valid email address.';
 		}
 
 		if ( '' !== $phone && ( self::length( $phone ) > self::MAX_PHONE || ! preg_match( '/^[0-9+()\-.\s]{5,}$/', $phone ) ) ) {
-			$errors['llt_phone'] = 'Numărul de telefon nu este valid.';
+			$errors['llt_phone'] = 'The phone number is not valid.';
 		}
 
 		if ( '' === trim( $message ) ) {
-			$errors['llt_message'] = 'Mesajul este obligatoriu.';
+			$errors['llt_message'] = 'A message is required.';
 		} elseif ( self::length( $message ) > self::MAX_MESSAGE ) {
-			$errors['llt_message'] = sprintf( 'Mesajul poate avea cel mult %d de caractere.', self::MAX_MESSAGE );
+			$errors['llt_message'] = sprintf( 'The message can have at most %d characters.', self::MAX_MESSAGE );
 		}
 
 		if ( ! $consent ) {
-			$errors['llt_consent'] = 'Este necesar acordul pentru prelucrarea datelor.';
+			$errors['llt_consent'] = 'Your consent to the processing of your data is required.';
 		}
 
 		return array(

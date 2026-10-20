@@ -1,9 +1,9 @@
 <?php
 /**
- * Semnează contextul formularului (object_id + momentul randării) cu HMAC.
+ * Signs the form context (object_id + render time) with HMAC.
  *
- * Vizitatorul nu poate schimba postarea destinatar și nici momentul randării (folosit de time-trap).
- * Contextul nu expiră, ca formularul să funcționeze și pe pagini cache-uite.
+ * A visitor cannot change the recipient post or the render time (used by the time trap).
+ * The context does not expire, so the form keeps working on cached pages.
  *
  * @package LocationLeadTracker
  */

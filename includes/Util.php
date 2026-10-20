@@ -1,6 +1,6 @@
 <?php
 /**
- * Funcții ajutătoare fără stare.
+ * Stateless helpers.
  *
  * @package LocationLeadTracker
  */
@@ -12,17 +12,17 @@ defined( 'ABSPATH' ) || exit;
 final class Util {
 
 	/**
-	 * Momentul curent în UTC, format MySQL.
+	 * Current time in UTC, MySQL format.
 	 *
-	 * @param int $offset Secunde adăugate la momentul curent.
+	 * @param int $offset Seconds added to the current time.
 	 */
 	public static function now( int $offset = 0 ): string {
 		return gmdate( 'Y-m-d H:i:s', time() + $offset );
 	}
 
 	/**
-	 * Convertește un timestamp ISO 8601 (ex.: "2026-11-05T16:33:54.9070259Z") în UTC, format MySQL.
-	 * Postmark poate trimite 7 zecimale; PHP acceptă maximum 6, deci fracțiunea se taie.
+	 * Converts an ISO 8601 timestamp (e.g. "2026-11-05T16:33:54.9070259Z") to UTC, MySQL format.
+	 * Postmark may send 7 decimals; PHP accepts at most 6, so the fraction is truncated.
 	 */
 	public static function iso_to_mysql( string $iso ): ?string {
 		$iso = trim( $iso );
@@ -39,14 +39,14 @@ final class Util {
 	}
 
 	/**
-	 * Înlocuiește adresele de email cu *** (pentru loguri și mesaje de eroare).
+	 * Replaces email addresses with *** (for logs and error messages).
 	 */
 	public static function mask_emails( string $text ): string {
 		return (string) preg_replace( '/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i', '***', $text );
 	}
 
 	/**
-	 * Mesaj de eroare sigur pentru salvare: fără emailuri, maximum 255 de caractere.
+	 * Error message safe to store: no email addresses, at most 255 characters.
 	 */
 	public static function error_text( string $text ): string {
 		$text = trim( self::mask_emails( wp_strip_all_tags( $text ) ) );
@@ -54,14 +54,14 @@ final class Util {
 	}
 
 	/**
-	 * Elimină caracterele de linie nouă (protecție la injecția de headere).
+	 * Removes line breaks (protection against header injection).
 	 */
 	public static function single_line( string $text ): string {
 		return trim( (string) preg_replace( '/[\r\n\t]+/', ' ', $text ) );
 	}
 
 	/**
-	 * Data MySQL (UTC) afișată în fusul orar al site-ului.
+	 * A MySQL date (UTC) shown in the site's time zone.
 	 */
 	public static function local_date( ?string $mysql_utc ): string {
 		if ( empty( $mysql_utc ) ) {
@@ -71,9 +71,9 @@ final class Util {
 	}
 
 	/**
-	 * Lista de ID-uri întregi pozitive, fără duplicate.
+	 * A list of unique positive integer IDs.
 	 *
-	 * @param mixed $ids Valori brute.
+	 * @param mixed $ids Raw values.
 	 * @return int[]
 	 */
 	public static function ids( $ids ): array {
@@ -82,9 +82,9 @@ final class Util {
 	}
 
 	/**
-	 * Lista de ID-uri pentru o clauză IN; valorile sunt deja întregi.
+	 * A list of IDs for an IN clause; the values are already integers.
 	 *
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 */
 	public static function in_list( array $ids ): string {
 		return implode( ',', array_map( 'intval', $ids ) );

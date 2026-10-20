@@ -1,8 +1,8 @@
 <?php
 /**
- * Procesează trimiterea formularului (admin-post.php?action=llt_submit).
+ * Handles form submissions (admin-post.php?action=llt_submit).
  *
- * Leadul se salvează, vizitatorul primește răspunsul imediat, iar emailul se trimite după răspuns.
+ * The lead is saved, the visitor gets an immediate response, and the email is sent after the response.
  *
  * @package LocationLeadTracker
  */
@@ -31,8 +31,8 @@ final class SubmissionHandler {
 	private static $return_url = '';
 
 	/**
-	 * Fără nonce, intenționat: formularul trebuie să funcționeze pe pagini cache-uite.
-	 * Protecția vine din contextul semnat, honeypot, time-trap, rate limiting și Turnstile.
+	 * No nonce, on purpose: the form must work on cached pages.
+	 * Protection comes from the signed context, honeypot, time trap, rate limiting and Turnstile.
 	 */
 	public static function handle(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
@@ -44,23 +44,23 @@ final class SubmissionHandler {
 		self::$form_id    = sanitize_key( (string) ( $post['llt_form'] ?? '' ) );
 		self::$return_url = wp_validate_redirect( esc_url_raw( (string) ( $post['llt_return'] ?? '' ) ), home_url( '/' ) );
 
-		// 1. Contextul semnat.
+		// 1. Signed context.
 		$context = ContextSigner::verify( (string) ( $post['llt_ctx'] ?? '' ), (string) ( $post['llt_sig'] ?? '' ) );
 		if ( null === $context ) {
 			self::finish( 'invalid' );
 		}
 
-		// 2. Honeypot: botul primește „succes”, dar nu se creează nimic.
+		// 2. Honeypot: the bot gets "success", but nothing is created.
 		if ( '' !== trim( (string) ( $post['llt_hp'] ?? '' ) ) ) {
 			self::finish( 'success' );
 		}
 
-		// 3. Time-trap, cu momentul randării din contextul semnat.
+		// 3. Time trap, using the render time from the signed context.
 		if ( time() - $context['rendered_at'] < (int) Settings::get( 'min_seconds' ) ) {
 			self::finish( 'too_fast' );
 		}
 
-		// 4. Rate limiting pe IP-ul real.
+		// 4. Rate limiting on the real IP.
 		$ip = ClientIp::get();
 		if ( ! RateLimiter::allow( $ip ) ) {
 			self::finish( 'rate_limited' );
@@ -74,23 +74,23 @@ final class SubmissionHandler {
 			}
 		}
 
-		// 6. Câmpurile.
+		// 6. Fields.
 		$validated = Validator::validate( $post );
 		if ( $validated['errors'] ) {
 			self::finish( 'validation', $validated['errors'] );
 		}
 
-		// 7. Destinatarul, recitit din post meta.
+		// 7. Recipient, read again from post meta.
 		$recipient = RecipientResolver::resolve( $context['object_id'] );
 		if ( is_wp_error( $recipient ) ) {
-			Util::log( 'Submit respins: ' . $recipient->get_error_message() );
+			Util::log( 'Submission rejected: ' . $recipient->get_error_message() );
 			self::finish( 'unavailable' );
 		}
 
-		// 8. Leadul.
+		// 8. Lead.
 		$lead_id = LeadService::create( $validated['data'], $context['object_id'], $recipient['email'] );
 		if ( is_wp_error( $lead_id ) ) {
-			Util::log( 'Leadul nu a putut fi salvat: ' . $lead_id->get_error_message() );
+			Util::log( 'The lead could not be saved: ' . $lead_id->get_error_message() );
 			self::finish( 'error' );
 		}
 
@@ -99,9 +99,9 @@ final class SubmissionHandler {
 	}
 
 	/**
-	 * Trimite răspunsul și oprește execuția. Dacă există un lead nou, emailul se trimite după răspuns.
+	 * Sends the response and stops execution. If a new lead exists, the email is sent after the response.
 	 *
-	 * @param array<string,string> $errors Erori pe câmpuri.
+	 * @param array<string,string> $errors Field errors.
 	 * @return never
 	 */
 	private static function finish( string $status, array $errors = array(), int $lead_id = 0 ): void {
@@ -151,7 +151,7 @@ final class SubmissionHandler {
 
 		$can_finish = function_exists( 'fastcgi_finish_request' ) || function_exists( 'litespeed_finish_request' );
 		if ( ! $can_finish ) {
-			// Fără PHP-FPM / LiteSpeed: trimiterea o preia cronul în cel mult un minut.
+			// Without PHP-FPM / LiteSpeed: cron picks up the send within a minute.
 			wp_schedule_single_event( time(), 'llt_send_lead', array( $lead_id ) );
 			echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			if ( ! defined( 'DISABLE_WP_CRON' ) || ! DISABLE_WP_CRON ) {

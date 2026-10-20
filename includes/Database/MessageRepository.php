@@ -1,6 +1,6 @@
 <?php
 /**
- * Accesul la tabelul temporar `location_lead_messages` (datele personale ale vizitatorului).
+ * Access to the temporary `location_lead_messages` table (the visitor's personal data).
  *
  * @package LocationLeadTracker
  */
@@ -26,7 +26,7 @@ final class MessageRepository {
 	}
 
 	/**
-	 * @param int[] $lead_ids ID-uri.
+	 * @param int[] $lead_ids IDs.
 	 */
 	public static function delete_many( array $lead_ids ): int {
 		global $wpdb;
@@ -39,9 +39,9 @@ final class MessageRepository {
 	}
 
 	/**
-	 * Din lista dată, leadurile care încă au conținut.
+	 * From the given list, the leads that still have content.
 	 *
-	 * @param int[] $lead_ids ID-uri.
+	 * @param int[] $lead_ids IDs.
 	 * @return int[]
 	 */
 	public static function existing( array $lead_ids ): array {
@@ -55,7 +55,7 @@ final class MessageRepository {
 	}
 
 	/**
-	 * Mesajele unui vizitator, pentru exportul GDPR.
+	 * A visitor's messages, for the GDPR export.
 	 *
 	 * @return object[]
 	 */
@@ -68,7 +68,7 @@ final class MessageRepository {
 	}
 
 	/**
-	 * Șterge un lot de mesaje ale unui vizitator, pentru ștergerea GDPR.
+	 * Deletes a batch of a visitor's messages, for the GDPR erasure.
 	 */
 	public static function delete_by_sender( string $email, int $limit ): int {
 		global $wpdb;

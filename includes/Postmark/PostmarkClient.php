@@ -1,6 +1,6 @@
 <?php
 /**
- * Client minimal pentru Postmark API.
+ * Minimal Postmark API client.
  *
  * @package LocationLeadTracker
  */
@@ -59,7 +59,7 @@ final class PostmarkClient {
 	}
 
 	/**
-	 * Caută mesajul trimis pentru un lead, după metadata `llt_lead_id` (ARCHITECTURE.md §7.4).
+	 * Looks up the message sent for a lead, by the `llt_lead_id` metadata (ARCHITECTURE.md §7.4).
 	 *
 	 * @return array{found:bool,message_id:string}|\WP_Error
 	 */
@@ -102,7 +102,7 @@ final class PostmarkClient {
 	}
 
 	/**
-	 * @return array|\WP_Error Corpul JSON decodat; eroarea conține `status` (cod HTTP) în date.
+	 * @return array|\WP_Error The decoded JSON body; the error carries `status` (the HTTP code) in its data.
 	 */
 	public function get( string $path, array $query = array() ) {
 		if ( ! $this->has_token() ) {

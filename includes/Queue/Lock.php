@@ -1,6 +1,6 @@
 <?php
 /**
- * Locking pe rând: un lead este procesat de un singur worker o dată (ARCHITECTURE.md §9.3).
+ * Row-level locking: a lead is processed by one worker at a time (ARCHITECTURE.md §9.3).
  *
  * @package LocationLeadTracker
  */
@@ -17,7 +17,7 @@ final class Lock {
 	const TTL = 300;
 
 	/**
-	 * @return string|null Tokenul lock-ului sau null dacă leadul nu este disponibil.
+	 * @return string|null The lock token, or null if the lead is not available.
 	 */
 	public static function claim( int $lead_id ): ?string {
 		global $wpdb;
@@ -47,7 +47,7 @@ final class Lock {
 	}
 
 	/**
-	 * Lock global pentru worker, ca două rulări cron să nu proceseze coada în paralel.
+	 * Global worker lock, so two cron runs do not process the queue in parallel.
 	 */
 	public static function acquire_worker(): bool {
 		$expires = time() + self::TTL;

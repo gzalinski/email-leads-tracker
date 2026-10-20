@@ -1,6 +1,6 @@
 <?php
 /**
- * Ștergerea conținutului temporar (ARCHITECTURE.md §12). Leadul minimal nu se șterge niciodată automat.
+ * Deletes the temporary content (ARCHITECTURE.md §12). The minimal lead is never deleted automatically.
  *
  * @package LocationLeadTracker
  */
@@ -20,7 +20,7 @@ final class RetentionService {
 	const MAX_BATCHES = 20;
 
 	/**
-	 * Regulile active: nume => [condiție SQL pe l (lead) și m (mesaj), parametru dată].
+	 * Active rules: name => [SQL condition on l (lead) and m (message), date parameter].
 	 *
 	 * @return array<string,array{0:string,1:string|null}>
 	 */
@@ -49,7 +49,7 @@ final class RetentionService {
 	}
 
 	/**
-	 * @return array<string,int> Număr de mesaje șterse (sau care ar fi șterse, la dry-run) pe regulă.
+	 * @return array<string,int> Number of messages deleted (or that would be deleted, on a dry run) per rule.
 	 */
 	public static function run( bool $dry_run = false ): array {
 		global $wpdb;

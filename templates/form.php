@@ -1,11 +1,11 @@
 <?php
 /**
- * Template-ul formularului de contact.
+ * The contact form template.
  *
- * Poate fi suprascris din temă: copiază fișierul în `wp-content/themes/<tema>/location-lead-tracker/form.php`.
- * Câmpurile ascunse și numele câmpurilor (llt_*) trebuie păstrate.
+ * Can be overridden from the theme: copy the file to `wp-content/themes/<theme>/location-lead-tracker/form.php`.
+ * The hidden fields and the field names (llt_*) must be kept.
  *
- * Variabile: $llt — form_id, action, ctx, sig, return_url, status, status_ok, status_message,
+ * Variables: $llt — form_id, action, ctx, sig, return_url, status, status_ok, status_message,
  * consent_html, turnstile_key, post.
  *
  * @package LocationLeadTracker
@@ -24,14 +24,14 @@ $llt_id = $llt['form_id'];
 		<input type="hidden" name="llt_return" value="<?php echo esc_url( $llt['return_url'] ); ?>">
 
 		<div class="llt-hp" aria-hidden="true">
-			<label for="<?php echo esc_attr( $llt_id ); ?>-hp">Nu completa acest câmp</label>
+			<label for="<?php echo esc_attr( $llt_id ); ?>-hp">Leave this field empty</label>
 			<input type="text" id="<?php echo esc_attr( $llt_id ); ?>-hp" name="llt_hp" value="" tabindex="-1" autocomplete="off">
 		</div>
 
 		<div class="llt-status<?php echo $llt['status'] ? ( $llt['status_ok'] ? ' llt-status--ok' : ' llt-status--error' ) : ''; ?>" role="status" aria-live="polite"><?php echo esc_html( $llt['status_message'] ); ?></div>
 
 		<p class="llt-field">
-			<label for="<?php echo esc_attr( $llt_id ); ?>-name">Nume complet <span class="llt-required" aria-hidden="true">*</span></label>
+			<label for="<?php echo esc_attr( $llt_id ); ?>-name">Full name <span class="llt-required" aria-hidden="true">*</span></label>
 			<input type="text" id="<?php echo esc_attr( $llt_id ); ?>-name" name="llt_name" maxlength="200" autocomplete="name" required>
 			<span class="llt-error" data-for="llt_name"></span>
 		</p>
@@ -43,13 +43,13 @@ $llt_id = $llt['form_id'];
 		</p>
 
 		<p class="llt-field">
-			<label for="<?php echo esc_attr( $llt_id ); ?>-phone">Telefon</label>
+			<label for="<?php echo esc_attr( $llt_id ); ?>-phone">Phone number</label>
 			<input type="tel" id="<?php echo esc_attr( $llt_id ); ?>-phone" name="llt_phone" maxlength="50" autocomplete="tel">
 			<span class="llt-error" data-for="llt_phone"></span>
 		</p>
 
 		<p class="llt-field">
-			<label for="<?php echo esc_attr( $llt_id ); ?>-message">Mesaj <span class="llt-required" aria-hidden="true">*</span></label>
+			<label for="<?php echo esc_attr( $llt_id ); ?>-message">Message <span class="llt-required" aria-hidden="true">*</span></label>
 			<textarea id="<?php echo esc_attr( $llt_id ); ?>-message" name="llt_message" rows="5" maxlength="5000" required></textarea>
 			<span class="llt-error" data-for="llt_message"></span>
 		</p>
@@ -57,7 +57,7 @@ $llt_id = $llt['form_id'];
 		<p class="llt-field llt-field--consent">
 			<label>
 				<input type="checkbox" name="llt_consent" value="1" required>
-				<span><?php echo $llt['consent_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- filtrat cu wp_kses. ?></span>
+				<span><?php echo $llt['consent_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- filtered with wp_kses. ?></span>
 			</label>
 			<span class="llt-error" data-for="llt_consent"></span>
 		</p>
@@ -67,7 +67,7 @@ $llt_id = $llt['form_id'];
 		<?php endif; ?>
 
 		<p class="llt-actions">
-			<button type="submit" class="llt-submit">Trimite</button>
+			<button type="submit" class="llt-submit">Send</button>
 		</p>
 	</form>
 </div>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Setările v2: tabul Webhook, câmpurile suplimentare din Alerte și Retenție, rânduri în Stare și WP-CLI.
+ * v2 settings: the Webhook tab, the extra fields in Alerts and Retention, rows in Status and WP-CLI.
  *
  * @package LocationLeadTracker
  */
@@ -27,24 +27,24 @@ final class WebhookSettings {
 	}
 
 	/**
-	 * @param array $commands Comenzile WP-CLI.
+	 * @param array $commands WP-CLI commands.
 	 */
 	public static function cli_commands( $commands ): array {
 		$commands                      = (array) $commands;
-		$commands['llt reconcile run'] = array( array( Reconciler::class, 'cli' ), 'Verifică în Postmark livrarea leadurilor fără confirmare (v2).' );
+		$commands['llt reconcile run'] = array( array( Reconciler::class, 'cli' ), 'Checks in Postmark the delivery of leads without confirmation (v2).' );
 		return $commands;
 	}
 
 	/**
-	 * @param array $tabs Taburile existente.
+	 * @param array $tabs Existing tabs.
 	 */
 	public static function tabs( $tabs ): array {
 		$tabs = (array) $tabs;
 
 		$tabs['alerts']['fields']['alert_on_bounce'] = array(
 			'type'  => 'checkbox',
-			'label' => 'Bounce',
-			'text'  => 'Trimite o alertă (grupată, orar) când un email este respins definitiv',
+			'label' => 'Bounces',
+			'text'  => 'Send an alert (grouped, hourly) when an email is permanently rejected',
 		);
 
 		$tabs['retention']['fields'] = self::insert_after(
@@ -53,14 +53,14 @@ final class WebhookSettings {
 			array(
 				'retention_unconfirmed_days' => array(
 					'type'  => 'number',
-					'label' => 'Zile fără confirmare',
-					'desc'  => 'Când confirmarea livrării este activă: conținutul se șterge imediat după livrare, sau după acest număr de zile dacă livrarea nu este confirmată.',
+					'label' => 'Days without confirmation',
+					'desc'  => 'When delivery confirmation is on: the content is deleted right after delivery, or after this many days if delivery is not confirmed.',
 					'min'   => 1,
 					'max'   => 365,
 				),
 			)
 		);
-		$tabs['retention']['fields']['retention_accepted_hours']['desc'] = 'Folosit doar când confirmarea livrării (tabul Webhook) nu este activă.';
+		$tabs['retention']['fields']['retention_accepted_hours']['desc'] = 'Used only when delivery confirmation (Webhook tab) is off.';
 
 		$webhook = array(
 			'webhook' => array(
@@ -68,21 +68,21 @@ final class WebhookSettings {
 				'fields' => array(
 					'webhook_enabled'   => array(
 						'type'  => 'checkbox',
-						'label' => 'Confirmarea livrării',
-						'text'  => 'Activează webhookul Postmark (Delivery și Bounce) și reconcilierea orară',
+						'label' => 'Delivery confirmation',
+						'text'  => 'Enable the Postmark webhook (Delivery and Bounce) and the hourly reconciliation',
 					),
 					'webhook_ip_filter' => array(
 						'type'  => 'checkbox',
-						'label' => 'Filtru IP',
-						'text'  => 'Acceptă doar cereri de la IP-urile de webhook publicate de Postmark',
-						'desc'  => 'Opțional. Basic Auth este suficient; activează doar dacă vrei o protecție suplimentară. Postmark poate schimba IP-urile.',
+						'label' => 'IP filter',
+						'text'  => 'Accept only requests from the webhook IPs published by Postmark',
+						'desc'  => 'Optional. Basic Auth is enough; enable this only if you want extra protection. Postmark may change its IPs.',
 					),
 				),
 				'after'  => array( self::class, 'render_tab' ),
 			),
 		);
 
-		// Tabul Webhook stă înaintea tabului Stare.
+		// The Webhook tab goes before the Status tab.
 		$position = array_search( 'status', array_keys( $tabs ), true );
 		if ( false === $position ) {
 			return array_merge( $tabs, $webhook );
@@ -101,43 +101,43 @@ final class WebhookSettings {
 		$state     = State::all();
 		?>
 		<hr>
-		<h2>Configurare în Postmark</h2>
+		<h2>Setting it up in Postmark</h2>
 		<?php if ( 0 !== strpos( $url, 'https://' ) ) : ?>
-			<div class="notice notice-error inline"><p>Site-ul nu folosește HTTPS. Webhookul trebuie să fie accesibil prin HTTPS, altfel credențialele circulă necriptat.</p></div>
+			<div class="notice notice-error inline"><p>The site does not use HTTPS. The webhook must be reachable over HTTPS, otherwise the credentials travel unencrypted.</p></div>
 		<?php endif; ?>
 		<ol>
-			<li>Generează credențialele de mai jos și copiază URL-ul complet afișat o singură dată.</li>
-			<li>În Postmark: Server → Message Stream <code><?php echo esc_html( (string) Settings::get( 'postmark_stream' ) ); ?></code> → Webhooks → Add webhook.</li>
-			<li>Lipește URL-ul, bifează <strong>Delivery</strong> și <strong>Bounce</strong>, apoi apasă <strong>Verify</strong> și salvează.</li>
-			<li>Bifează „Activează webhookul” mai sus și salvează setările.</li>
+			<li>Generate the credentials below and copy the full URL, which is shown only once.</li>
+			<li>In Postmark: Server → Message Stream <code><?php echo esc_html( (string) Settings::get( 'postmark_stream' ) ); ?></code> → Webhooks → Add webhook.</li>
+			<li>Paste the URL, tick <strong>Delivery</strong> and <strong>Bounce</strong>, then click <strong>Verify</strong> and save.</li>
+			<li>Tick "Enable the Postmark webhook" above and save the settings.</li>
 		</ol>
-		<p>URL webhook: <code class="llt-copyable"><?php echo esc_html( $masked ); ?></code></p>
+		<p>Webhook URL: <code class="llt-copyable"><?php echo esc_html( $masked ); ?></code></p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="llt_webhook_credentials">
 			<?php wp_nonce_field( 'llt_webhook_credentials' ); ?>
 			<?php
 			submit_button(
-				$has_creds ? 'Regenerează credențialele' : 'Generează credențialele',
+				$has_creds ? 'Regenerate credentials' : 'Generate credentials',
 				'secondary',
 				'submit',
 				false,
-				$has_creds ? array( 'onclick' => "return confirm('Webhookul existent din Postmark nu va mai funcționa până nu actualizezi URL-ul acolo. Continui?');" ) : array()
+				$has_creds ? array( 'onclick' => "return confirm('The existing webhook in Postmark will stop working until you update the URL there. Continue?');" ) : array()
 			);
 			?>
 		</form>
 		<?php if ( ! empty( $state['last_webhook_rejected']['at'] ) ) : ?>
 			<p class="description">
-				Ultima cerere respinsă: <?php echo esc_html( StatusTab::ago( (int) $state['last_webhook_rejected']['at'] ) ); ?> —
+				Last rejected request: <?php echo esc_html( StatusTab::ago( (int) $state['last_webhook_rejected']['at'] ) ); ?> —
 				<?php echo esc_html( WebhookAuth::describe( (string) $state['last_webhook_rejected']['reason'] ) ); ?>.
 			</p>
 		<?php endif; ?>
-		<p class="description">Dacă Postmark raportează 401 la Verify deși credențialele sunt corecte, serverul elimină probabil headerul <code>Authorization</code>. Pe Apache adaugă în <code>.htaccess</code>: <code>SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</code></p>
+		<p class="description">If Postmark reports 401 on Verify even though the credentials are correct, the server is probably stripping the <code>Authorization</code> header. On Apache, add to <code>.htaccess</code>: <code>SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</code></p>
 		<?php
 	}
 
 	public static function handle_generate(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( 'Nu ai permisiunea necesară.', 403 );
+			wp_die( 'You do not have the required permission.', 403 );
 		}
 		check_admin_referer( 'llt_webhook_credentials' );
 
@@ -164,45 +164,45 @@ final class WebhookSettings {
 
 		AdminNotice::add(
 			'success',
-			'Credențiale noi generate. Copiază acum URL-ul complet în Postmark; parola nu va mai fi afișată:<br><code>' . esc_html( $full ) . '</code>'
+			'New credentials generated. Copy the full URL into Postmark now; the password will not be shown again:<br><code>' . esc_html( $full ) . '</code>'
 		);
 		wp_safe_redirect( SettingsPage::url( 'webhook' ) );
 		exit;
 	}
 
 	/**
-	 * @param array $rows  Rândurile din tabul Stare.
-	 * @param array $state Starea pluginului.
+	 * @param array $rows  Rows of the Status tab.
+	 * @param array $state Plugin state.
 	 */
 	public static function status_rows( $rows, $state ): array {
 		$rows = (array) $rows;
 		if ( ! Settings::tracking_enabled() ) {
-			$rows['Confirmarea livrării'] = 'dezactivată';
+			$rows['Delivery confirmation'] = 'disabled';
 			return $rows;
 		}
-		$counts                       = \LocationLeadTracker\Database\LeadRepository::counts();
-		$rows['Confirmarea livrării'] = 'activă';
-		$rows['Livrate']              = (string) $counts['delivery']['delivered'];
-		$rows['Respinse']             = (string) $counts['delivery']['bounced'];
-		$rows['Amânate']              = (string) $counts['delivery']['deferred'];
-		$rows['Ultimul webhook']      = ! empty( $state['last_webhook']['at'] )
+		$counts                        = \LocationLeadTracker\Database\LeadRepository::counts();
+		$rows['Delivery confirmation'] = 'enabled';
+		$rows['Delivered']             = (string) $counts['delivery']['delivered'];
+		$rows['Bounced']               = (string) $counts['delivery']['bounced'];
+		$rows['Deferred']              = (string) $counts['delivery']['deferred'];
+		$rows['Last webhook']          = ! empty( $state['last_webhook']['at'] )
 			? StatusTab::ago( (int) $state['last_webhook']['at'] ) . ' (' . $state['last_webhook']['type'] . ', ' . $state['last_webhook']['result'] . ')'
-			: 'niciunul';
-		$rows['Ultima reconciliere']  = ! empty( $state['last_reconcile']['at'] )
-			? StatusTab::ago( (int) $state['last_reconcile']['at'] ) . sprintf( ' (verificate %d, livrate %d, respinse %d)', $state['last_reconcile']['checked'], $state['last_reconcile']['delivered'], $state['last_reconcile']['bounced'] )
-			: 'niciuna';
+			: 'none';
+		$rows['Last reconciliation']   = ! empty( $state['last_reconcile']['at'] )
+			? StatusTab::ago( (int) $state['last_reconcile']['at'] ) . sprintf( ' (checked %d, delivered %d, bounced %d)', $state['last_reconcile']['checked'], $state['last_reconcile']['delivered'], $state['last_reconcile']['bounced'] )
+			: 'none';
 		return $rows;
 	}
 
 	/**
-	 * @param array $rows  Rândurile din `wp llt status`.
-	 * @param array $state Starea pluginului.
+	 * @param array $rows  Rows of `wp llt status`.
+	 * @param array $state Plugin state.
 	 */
 	public static function cli_status_rows( $rows, $state ): array {
 		$rows   = (array) $rows;
-		$rows[] = array( 'Cheie' => 'Confirmarea livrării', 'Valoare' => Settings::tracking_enabled() ? 'activă' : 'dezactivată' );
-		$rows[] = array( 'Cheie' => 'Ultimul webhook', 'Valoare' => ! empty( $state['last_webhook']['at'] ) ? gmdate( 'Y-m-d H:i:s', (int) $state['last_webhook']['at'] ) . ' UTC' : 'niciunul' );
-		$rows[] = array( 'Cheie' => 'Ultima reconciliere', 'Valoare' => ! empty( $state['last_reconcile']['at'] ) ? gmdate( 'Y-m-d H:i:s', (int) $state['last_reconcile']['at'] ) . ' UTC' : 'niciuna' );
+		$rows[] = array( 'Key' => 'Delivery confirmation', 'Value' => Settings::tracking_enabled() ? 'enabled' : 'disabled' );
+		$rows[] = array( 'Key' => 'Last webhook', 'Value' => ! empty( $state['last_webhook']['at'] ) ? gmdate( 'Y-m-d H:i:s', (int) $state['last_webhook']['at'] ) . ' UTC' : 'none' );
+		$rows[] = array( 'Key' => 'Last reconciliation', 'Value' => ! empty( $state['last_reconcile']['at'] ) ? gmdate( 'Y-m-d H:i:s', (int) $state['last_reconcile']['at'] ) . ' UTC' : 'none' );
 		return $rows;
 	}
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * Comenzile WP-CLI: wp llt ...
+ * WP-CLI commands: wp llt ...
  *
- * Nu afișează datele personale ale vizitatorilor decât la cerere explicită (--with-content).
+ * Visitors' personal data is shown only on explicit request (--with-content).
  *
  * @package LocationLeadTracker
  */
@@ -30,15 +30,15 @@ final class Commands {
 
 	public static function register(): void {
 		$commands = array(
-			'llt status'         => array( 'status', 'Starea pluginului: cron, leaduri pe stări, ultimele erori.' ),
-			'llt leads list'     => array( 'leads_list', 'Listează leadurile (fără datele vizitatorilor).' ),
-			'llt leads show'     => array( 'leads_show', 'Detaliile unui lead.' ),
-			'llt retry'          => array( 'retry', 'Readuce leadurile eșuate în coada de trimitere.' ),
-			'llt send-test'      => array( 'send_test', 'Trimite un email de test prin Postmark.' ),
-			'llt queue run'      => array( 'queue_run', 'Procesează coada imediat.' ),
-			'llt cleanup run'    => array( 'cleanup_run', 'Rulează retenția (ștergerea conținutului expirat).' ),
-			'llt content delete' => array( 'content_delete', 'Șterge conținutul unor leaduri.' ),
-			'llt stats'          => array( 'stats', 'Statistici pe stări.' ),
+			'llt status'         => array( 'status', 'Plugin status: cron, leads per status, recent errors.' ),
+			'llt leads list'     => array( 'leads_list', 'Lists leads (without visitor data).' ),
+			'llt leads show'     => array( 'leads_show', 'Details of a lead.' ),
+			'llt retry'          => array( 'retry', 'Puts failed leads back in the send queue.' ),
+			'llt send-test'      => array( 'send_test', 'Sends a test email through Postmark.' ),
+			'llt queue run'      => array( 'queue_run', 'Processes the queue now.' ),
+			'llt cleanup run'    => array( 'cleanup_run', 'Runs retention (deletes expired content).' ),
+			'llt content delete' => array( 'content_delete', 'Deletes the content of some leads.' ),
+			'llt stats'          => array( 'stats', 'Statistics per status.' ),
 		);
 		$commands = (array) apply_filters( 'llt_cli_commands', $commands );
 
@@ -49,7 +49,7 @@ final class Commands {
 	}
 
 	/**
-	 * Starea pluginului.
+	 * Plugin status.
 	 */
 	public static function status(): void {
 		$state     = State::all();
@@ -57,59 +57,59 @@ final class Commands {
 		$heartbeat = (int) ( $state['worker_heartbeat'] ?? 0 );
 
 		$rows = array(
-			array( 'Cheie' => 'Versiune', 'Valoare' => LLT_VERSION ),
-			array( 'Cheie' => 'Token Postmark', 'Valoare' => Settings::has_secret( 'postmark_token' ) ? 'configurat' : 'LIPSEȘTE' ),
-			array( 'Cheie' => 'Message Stream', 'Valoare' => (string) Settings::get( 'postmark_stream' ) ),
-			array( 'Cheie' => 'Ultima rulare coadă', 'Valoare' => $heartbeat ? gmdate( 'Y-m-d H:i:s', $heartbeat ) . ' UTC' : 'niciodată' ),
-			array( 'Cheie' => 'WP-Cron dezactivat', 'Valoare' => ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) ? 'da (cron de server)' : 'nu' ),
-			array( 'Cheie' => 'Pending', 'Valoare' => $counts['send']['pending'] ),
-			array( 'Cheie' => 'Accepted', 'Valoare' => $counts['send']['accepted'] ),
-			array( 'Cheie' => 'Failed', 'Valoare' => $counts['send']['failed'] ),
-			array( 'Cheie' => 'Eșecuri consecutive', 'Valoare' => (int) ( $state['consecutive_failures'] ?? 0 ) ),
-			array( 'Cheie' => 'Ultima eroare', 'Valoare' => (string) ( $state['last_error']['code'] ?? '—' ) ),
-			array( 'Cheie' => 'Ultima alertă eșuată', 'Valoare' => (string) ( $state['last_alert_failure']['error'] ?? '—' ) ),
-			array( 'Cheie' => 'Lista Cloudflare', 'Valoare' => ProxyRanges::updated_at() ? gmdate( 'Y-m-d', ProxyRanges::updated_at() ) : 'inclusă în plugin' ),
+			array( 'Key' => 'Version', 'Value' => LLT_VERSION ),
+			array( 'Key' => 'Postmark token', 'Value' => Settings::has_secret( 'postmark_token' ) ? 'configured' : 'MISSING' ),
+			array( 'Key' => 'Message Stream', 'Value' => (string) Settings::get( 'postmark_stream' ) ),
+			array( 'Key' => 'Last queue run', 'Value' => $heartbeat ? gmdate( 'Y-m-d H:i:s', $heartbeat ) . ' UTC' : 'never' ),
+			array( 'Key' => 'WP-Cron disabled', 'Value' => ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) ? 'yes (server cron)' : 'no' ),
+			array( 'Key' => 'Pending', 'Value' => $counts['send']['pending'] ),
+			array( 'Key' => 'Accepted', 'Value' => $counts['send']['accepted'] ),
+			array( 'Key' => 'Failed', 'Value' => $counts['send']['failed'] ),
+			array( 'Key' => 'Consecutive failures', 'Value' => (int) ( $state['consecutive_failures'] ?? 0 ) ),
+			array( 'Key' => 'Last error', 'Value' => (string) ( $state['last_error']['code'] ?? '—' ) ),
+			array( 'Key' => 'Last failed alert', 'Value' => (string) ( $state['last_alert_failure']['error'] ?? '—' ) ),
+			array( 'Key' => 'Cloudflare list', 'Value' => ProxyRanges::updated_at() ? gmdate( 'Y-m-d', ProxyRanges::updated_at() ) : 'bundled with the plugin' ),
 		);
 		$rows = (array) apply_filters( 'llt_cli_status_rows', $rows, $state, $counts );
 
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Cheie', 'Valoare' ) );
+		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Key', 'Value' ) );
 
 		if ( Settings::unreadable_secrets() ) {
-			\WP_CLI::warning( 'Unele secrete nu pot fi decriptate: ' . implode( ', ', Settings::unreadable_secrets() ) );
+			\WP_CLI::warning( 'Some secrets cannot be decrypted: ' . implode( ', ', Settings::unreadable_secrets() ) );
 		}
 		if ( ! $heartbeat || time() - $heartbeat > 15 * MINUTE_IN_SECONDS ) {
-			\WP_CLI::warning( 'Coada nu a rulat în ultimele 15 minute. Verifică cronul serverului.' );
+			\WP_CLI::warning( 'The queue has not run in the last 15 minutes. Check the server cron.' );
 		}
 	}
 
 	/**
-	 * Listează leadurile.
+	 * Lists leads.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--status=<status>]
-	 * : pending, accepted sau failed.
+	 * : pending, accepted or failed.
 	 *
 	 * [--delivery=<status>]
-	 * : unknown, deferred, delivered sau bounced.
+	 * : unknown, deferred, delivered or bounced.
 	 *
 	 * [--since=<date>]
-	 * : Data de început (YYYY-MM-DD, UTC).
+	 * : Start date (YYYY-MM-DD, UTC).
 	 *
 	 * [--limit=<n>]
-	 * : Numărul maxim de rânduri.
+	 * : Maximum number of rows.
 	 * ---
 	 * default: 50
 	 * ---
 	 *
 	 * [--format=<format>]
-	 * : table, csv sau json.
+	 * : table, csv or json.
 	 * ---
 	 * default: table
 	 * ---
 	 *
-	 * @param array $args  Argumente.
-	 * @param array $assoc Opțiuni.
+	 * @param array $args  Arguments.
+	 * @param array $assoc Options.
 	 */
 	public static function leads_list( $args, $assoc ): void {
 		$rows = LeadRepository::search(
@@ -124,76 +124,76 @@ final class Commands {
 		foreach ( $rows as $row ) {
 			$items[] = array(
 				'id'       => (int) $row->id,
-				'creat'    => $row->created_at,
-				'locație'  => (int) $row->object_id,
-				'trimitere' => $row->send_status,
-				'livrare'  => $row->delivery_status,
-				'încercări' => (int) $row->retry_count . '+' . (int) $row->manual_resend_count,
-				'eroare'   => (string) $row->last_error_code,
-				'conținut' => $row->has_content ? 'da' : 'nu',
+				'created'  => $row->created_at,
+				'location' => (int) $row->object_id,
+				'send'     => $row->send_status,
+				'delivery' => $row->delivery_status,
+				'attempts' => (int) $row->retry_count . '+' . (int) $row->manual_resend_count,
+				'error'    => (string) $row->last_error_code,
+				'content'  => $row->has_content ? 'yes' : 'no',
 			);
 		}
 		\WP_CLI\Utils\format_items(
 			(string) ( $assoc['format'] ?? 'table' ),
 			$items,
-			array( 'id', 'creat', 'locație', 'trimitere', 'livrare', 'încercări', 'eroare', 'conținut' )
+			array( 'id', 'created', 'location', 'send', 'delivery', 'attempts', 'error', 'content' )
 		);
 	}
 
 	/**
-	 * Detaliile unui lead.
+	 * Details of a lead.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <id>
-	 * : ID-ul leadului.
+	 * : The lead ID.
 	 *
 	 * [--with-content]
-	 * : Afișează și datele vizitatorului, dacă încă există.
+	 * : Also show the visitor's data, if it still exists.
 	 *
-	 * @param array $args  Argumente.
-	 * @param array $assoc Opțiuni.
+	 * @param array $args  Arguments.
+	 * @param array $assoc Options.
 	 */
 	public static function leads_show( $args, $assoc ): void {
 		$lead = LeadRepository::find( (int) ( $args[0] ?? 0 ) );
 		if ( ! $lead ) {
-			\WP_CLI::error( 'Leadul nu există.' );
+			\WP_CLI::error( 'The lead does not exist.' );
 		}
 		$rows = array();
 		foreach ( (array) $lead as $key => $value ) {
 			if ( 'lock_token' === $key ) {
 				continue;
 			}
-			$rows[] = array( 'Câmp' => $key, 'Valoare' => (string) $value );
+			$rows[] = array( 'Field' => $key, 'Value' => (string) $value );
 		}
 		if ( $lead->last_error_code ) {
-			$rows[] = array( 'Câmp' => 'explicație eroare', 'Valoare' => ErrorClassifier::describe( (string) $lead->last_error_code ) );
+			$rows[] = array( 'Field' => 'error explanation', 'Value' => ErrorClassifier::describe( (string) $lead->last_error_code ) );
 		}
 		$message = MessageRepository::find( (int) $lead->id );
-		$rows[]  = array( 'Câmp' => 'conținut', 'Valoare' => $message ? 'disponibil' : 'șters' );
+		$rows[]  = array( 'Field' => 'content', 'Value' => $message ? 'available' : 'deleted' );
 
 		if ( $message && \WP_CLI\Utils\get_flag_value( $assoc, 'with-content', false ) ) {
-			$rows[] = array( 'Câmp' => 'nume', 'Valoare' => $message->sender_name );
-			$rows[] = array( 'Câmp' => 'email', 'Valoare' => $message->sender_email );
-			$rows[] = array( 'Câmp' => 'telefon', 'Valoare' => (string) $message->sender_phone );
-			$rows[] = array( 'Câmp' => 'mesaj', 'Valoare' => $message->message );
+			$rows[] = array( 'Field' => 'name', 'Value' => $message->sender_name );
+			$rows[] = array( 'Field' => 'email', 'Value' => $message->sender_email );
+			$rows[] = array( 'Field' => 'phone', 'Value' => (string) $message->sender_phone );
+			$rows[] = array( 'Field' => 'message', 'Value' => $message->message );
 		}
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Câmp', 'Valoare' ) );
+		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Field', 'Value' ) );
 	}
 
 	/**
-	 * Readuce leadurile eșuate în coadă.
+	 * Puts failed leads back in the queue.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [<id>...]
-	 * : ID-urile leadurilor.
+	 * : The lead IDs.
 	 *
 	 * [--failed]
-	 * : Toate leadurile eșuate care încă au conținut.
+	 * : All failed leads that still have content.
 	 *
-	 * @param array $args  Argumente.
-	 * @param array $assoc Opțiuni.
+	 * @param array $args  Arguments.
+	 * @param array $assoc Options.
 	 */
 	public static function retry( $args, $assoc ): void {
 		global $wpdb;
@@ -203,46 +203,46 @@ final class Commands {
 			$ids   = array_merge( $ids, array_map( 'intval', (array) $wpdb->get_col( "SELECT id FROM {$table} WHERE send_status = 'failed'" ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 		if ( ! $ids ) {
-			\WP_CLI::error( 'Indică ID-urile leadurilor sau folosește --failed.' );
+			\WP_CLI::error( 'Give the lead IDs or use --failed.' );
 		}
 
 		$result = LeadActions::resend( $ids );
 		if ( $result['no_content'] ) {
-			\WP_CLI::warning( 'Fără conținut (șters de retenție), nu pot fi retrimise: #' . implode( ', #', $result['no_content'] ) );
+			\WP_CLI::warning( 'No content (deleted by retention), cannot be resent: #' . implode( ', #', $result['no_content'] ) );
 		}
 		if ( $result['not_failed'] ) {
-			\WP_CLI::log( 'Nu sunt în starea failed, sărite: #' . implode( ', #', $result['not_failed'] ) );
+			\WP_CLI::log( 'Not in the failed status, skipped: #' . implode( ', #', $result['not_failed'] ) );
 		}
-		\WP_CLI::success( sprintf( '%d leaduri puse în coadă. Rulează `wp llt queue run` pentru trimitere imediată.', $result['queued'] ) );
+		\WP_CLI::success( sprintf( '%d leads queued. Run `wp llt queue run` to send them now.', $result['queued'] ) );
 	}
 
 	/**
-	 * Email de test prin Postmark.
+	 * Test email through Postmark.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <email>
-	 * : Destinatarul.
+	 * : The recipient.
 	 *
-	 * @param array $args Argumente.
+	 * @param array $args Arguments.
 	 */
 	public static function send_test( $args ): void {
 		$to = sanitize_email( (string) ( $args[0] ?? '' ) );
 		if ( ! is_email( $to ) ) {
-			\WP_CLI::error( 'Adresa nu este validă.' );
+			\WP_CLI::error( 'The address is not valid.' );
 		}
 		$result = ( new PostmarkClient() )->send(
 			array(
 				'From'          => EmailBuilder::from(),
 				'To'            => $to,
-				'Subject'       => '[' . EmailBuilder::site_name() . '] Email de test Location Lead Tracker',
-				'TextBody'      => 'Configurarea Postmark funcționează (trimis din WP-CLI).',
+				'Subject'       => '[' . EmailBuilder::site_name() . '] Location Lead Tracker test email',
+				'TextBody'      => 'The Postmark configuration works (sent from WP-CLI).',
 				'MessageStream' => (string) Settings::get( 'postmark_stream' ),
 				'Tag'           => 'llt-test',
 			)
 		);
 		if ( $result->is( SendResult::ACCEPTED ) ) {
-			\WP_CLI::success( 'Acceptat de Postmark. MessageID: ' . $result->message_id );
+			\WP_CLI::success( 'Accepted by Postmark. MessageID: ' . $result->message_id );
 		} else {
 			\WP_CLI::error( ErrorClassifier::describe( $result->code ) . ' [' . $result->code . '] ' . $result->message );
 		}
@@ -250,19 +250,19 @@ final class Commands {
 
 	public static function queue_run(): void {
 		SendWorker::process_queue();
-		\WP_CLI::success( 'Coada a fost procesată.' );
+		\WP_CLI::success( 'The queue was processed.' );
 	}
 
 	/**
-	 * Rulează retenția.
+	 * Runs retention.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--dry-run]
-	 * : Doar numără, fără ștergere.
+	 * : Only count, without deleting.
 	 *
-	 * @param array $args  Argumente.
-	 * @param array $assoc Opțiuni.
+	 * @param array $args  Arguments.
+	 * @param array $assoc Options.
 	 */
 	public static function cleanup_run( $args, $assoc ): void {
 		$dry    = (bool) \WP_CLI\Utils\get_flag_value( $assoc, 'dry-run', false );
@@ -270,46 +270,46 @@ final class Commands {
 		foreach ( $counts as $rule => $count ) {
 			\WP_CLI::log( sprintf( '%s: %d', $rule, $count ) );
 		}
-		\WP_CLI::success( ( $dry ? 'Ar fi șterse: ' : 'Șterse: ' ) . array_sum( $counts ) );
+		\WP_CLI::success( ( $dry ? 'Would be deleted: ' : 'Deleted: ' ) . array_sum( $counts ) );
 	}
 
 	/**
-	 * Șterge conținutul unor leaduri.
+	 * Deletes the content of some leads.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : ID-urile leadurilor.
+	 * : The lead IDs.
 	 *
-	 * @param array $args Argumente.
+	 * @param array $args Arguments.
 	 */
 	public static function content_delete( $args ): void {
 		$deleted = LeadActions::delete_content( Util::ids( $args ) );
-		\WP_CLI::success( sprintf( 'Conținut șters pentru %d leaduri.', $deleted ) );
+		\WP_CLI::success( sprintf( 'Content deleted for %d leads.', $deleted ) );
 	}
 
 	/**
-	 * Statistici.
+	 * Statistics.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--since=<date>]
-	 * : Data de început (YYYY-MM-DD, UTC).
+	 * : Start date (YYYY-MM-DD, UTC).
 	 *
 	 * [--until=<date>]
-	 * : Data de sfârșit, exclusiv (YYYY-MM-DD, UTC).
+	 * : End date, exclusive (YYYY-MM-DD, UTC).
 	 *
 	 * [--by=<field>]
-	 * : object pentru împărțire pe locații.
+	 * : object, to split by location.
 	 *
 	 * [--format=<format>]
-	 * : table, csv sau json.
+	 * : table, csv or json.
 	 * ---
 	 * default: table
 	 * ---
 	 *
-	 * @param array $args  Argumente.
-	 * @param array $assoc Opțiuni.
+	 * @param array $args  Arguments.
+	 * @param array $assoc Options.
 	 */
 	public static function stats( $args, $assoc ): void {
 		global $wpdb;
@@ -324,9 +324,9 @@ final class Commands {
 			$items = array();
 			foreach ( $ids as $object_id ) {
 				$c       = LeadRepository::counts( $since, $until, $object_id );
-				$items[] = array_merge( array( 'locație' => $object_id . ' ' . get_the_title( $object_id ) ), self::stat_row( $c ) );
+				$items[] = array_merge( array( 'location' => $object_id . ' ' . get_the_title( $object_id ) ), self::stat_row( $c ) );
 			}
-			\WP_CLI\Utils\format_items( $format, $items, array_merge( array( 'locație' ), $fields ) );
+			\WP_CLI\Utils\format_items( $format, $items, array_merge( array( 'location' ), $fields ) );
 			return;
 		}
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Numărul de leaduri eșuate afișat lângă „Location Lead Tracker” în meniul Setări (v3).
+ * The number of failed leads shown next to "Location Lead Tracker" in the Settings menu (v3).
  *
  * @package LocationLeadTracker
  */
@@ -18,7 +18,7 @@ final class MenuBadge {
 	}
 
 	/**
-	 * @param string $title Titlul din meniu.
+	 * @param string $title The menu title.
 	 */
 	public static function title( $title ): string {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -29,7 +29,7 @@ final class MenuBadge {
 			return (string) $title;
 		}
 		return sprintf(
-			'%s <span class="awaiting-mod count-%d"><span class="pending-count" aria-hidden="true">%d</span><span class="screen-reader-text">%d leaduri eșuate</span></span>',
+			'%s <span class="awaiting-mod count-%d"><span class="pending-count" aria-hidden="true">%d</span><span class="screen-reader-text">%d failed leads</span></span>',
 			esc_html( (string) $title ),
 			$count,
 			$count,

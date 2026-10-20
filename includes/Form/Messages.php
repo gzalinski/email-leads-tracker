@@ -1,6 +1,6 @@
 <?php
 /**
- * Mesajele afișate vizitatorului după trimiterea formularului.
+ * Messages shown to the visitor after submitting the form.
  *
  * @package LocationLeadTracker
  */
@@ -16,13 +16,13 @@ final class Messages {
 	public static function get( string $status ): string {
 		$messages = array(
 			'success'      => (string) Settings::get( 'success_message' ),
-			'invalid'      => 'Formularul a expirat sau este invalid. Reîncarcă pagina și încearcă din nou.',
-			'too_fast'     => 'Te rugăm să completezi formularul înainte de a-l trimite.',
-			'rate_limited' => 'Ai trimis prea multe mesaje. Te rugăm să încerci din nou mai târziu.',
-			'captcha'      => 'Verificarea anti-spam nu a reușit. Te rugăm să încerci din nou.',
-			'validation'   => 'Te rugăm să completezi corect câmpurile marcate.',
-			'unavailable'  => 'Formularul nu este disponibil momentan. Te rugăm să încerci mai târziu.',
-			'error'        => 'A apărut o eroare. Te rugăm să încerci din nou.',
+			'invalid'      => 'The form has expired or is invalid. Please reload the page and try again.',
+			'too_fast'     => 'Please fill in the form before submitting it.',
+			'rate_limited' => 'You have sent too many messages. Please try again later.',
+			'captcha'      => 'The anti-spam check failed. Please try again.',
+			'validation'   => 'Please correct the highlighted fields.',
+			'unavailable'  => 'The form is not available right now. Please try again later.',
+			'error'        => 'Something went wrong. Please try again.',
 		);
 		$messages = apply_filters( 'llt_form_messages', $messages );
 		return $messages[ $status ] ?? $messages['error'];

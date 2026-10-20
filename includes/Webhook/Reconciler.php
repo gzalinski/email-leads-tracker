@@ -1,9 +1,9 @@
 <?php
 /**
- * Reconcilierea orară: recuperează prin Messages API evenimentele de livrare ratate de webhook (ARCHITECTURE.md §13.5).
+ * Hourly reconciliation: recovers through the Messages API the delivery events missed by the webhook (ARCHITECTURE.md §13.5).
  *
- * Postmark reîncearcă un webhook eșuat doar ~50 de minute și oprește tipul de eveniment
- * după eșecuri repetate, deci confirmările se pot pierde. Reconcilierea le recuperează.
+ * Postmark retries a failed webhook for only ~50 minutes and pauses the event type
+ * after repeated failures, so confirmations can be lost. Reconciliation recovers them.
  *
  * @package LocationLeadTracker
  */
@@ -23,9 +23,9 @@ defined( 'ABSPATH' ) || exit;
 
 final class Reconciler {
 
-	const BATCH     = 50;
-	const MIN_AGE   = 2 * HOUR_IN_SECONDS;
-	const SILENCE   = DAY_IN_SECONDS;
+	const BATCH   = 50;
+	const MIN_AGE = 2 * HOUR_IN_SECONDS;
+	const SILENCE = DAY_IN_SECONDS;
 
 	/**
 	 * @return array{checked:int,delivered:int,bounced:int,deferred:int,stopped:bool}
@@ -69,25 +69,25 @@ final class Reconciler {
 	 */
 	public static function cli(): void {
 		if ( ! Settings::tracking_enabled() ) {
-			\WP_CLI::warning( 'Confirmarea livrării nu este activă (Setări → Location Lead Tracker → Webhook).' );
+			\WP_CLI::warning( 'Delivery confirmation is not enabled (Settings → Location Lead Tracker → Webhook).' );
 			return;
 		}
 		$stats = self::run();
 		\WP_CLI::success(
 			sprintf(
-				'Verificate %d: livrate %d, respinse %d, amânate %d%s.',
+				'Checked %d: delivered %d, bounced %d, deferred %d%s.',
 				$stats['checked'],
 				$stats['delivered'],
 				$stats['bounced'],
 				$stats['deferred'],
-				$stats['stopped'] ? ' (oprit la limita de cereri Postmark)' : ''
+				$stats['stopped'] ? ' (stopped at the Postmark request limit)' : ''
 			)
 		);
 	}
 
 	/**
-	 * Leadurile acceptate fără confirmare, mai vechi de 2 ore și mai noi decât retenția.
-	 * Ordonate după `updated_at`, ca la fiecare rulare să fie verificate alte leaduri.
+	 * Accepted leads without confirmation, older than 2 hours and newer than the retention period.
+	 * Ordered by `updated_at`, so each run checks different leads.
 	 *
 	 * @return object[]
 	 */
@@ -148,7 +148,7 @@ final class Reconciler {
 				$target,
 				Util::iso_to_mysql( (string) ( $bounced['ReceivedAt'] ?? '' ) ),
 				'bounce:' . $name,
-				$inactive ? 'Adresa a fost dezactivată în Postmark.' : (string) ( $bounced['Details']['Summary'] ?? '' )
+				$inactive ? 'The address was deactivated in Postmark.' : (string) ( $bounced['Details']['Summary'] ?? '' )
 			);
 			return EventProcessor::RESULT_APPLIED === $result ? ( LeadStatus::BOUNCED === $target ? 'bounced' : 'deferred' ) : 'none';
 		}
@@ -175,14 +175,14 @@ final class Reconciler {
 	}
 
 	/**
-	 * Actualizează `updated_at`, ca leadul să treacă la sfârșitul rândului pentru următoarea reconciliere.
+	 * Updates `updated_at`, so the lead moves to the end of the line for the next reconciliation.
 	 */
 	private static function touch( object $lead ): void {
 		LeadRepository::update( (int) $lead->id, array() );
 	}
 
 	/**
-	 * Dacă reconcilierea găsește livrări, dar niciun webhook nu a mai venit de o zi, webhookul pare oprit.
+	 * If reconciliation finds deliveries but no webhook has arrived for a day, the webhook seems stopped.
 	 */
 	private static function check_webhook_silence( array $stats ): void {
 		if ( $stats['delivered'] + $stats['bounced'] === 0 ) {

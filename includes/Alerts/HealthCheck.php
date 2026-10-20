@@ -1,6 +1,6 @@
 <?php
 /**
- * Verificare orară: leaduri blocate în coadă.
+ * Hourly check: leads stuck in the queue.
  *
  * @package LocationLeadTracker
  */

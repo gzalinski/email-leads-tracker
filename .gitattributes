@@ -1,4 +1,4 @@
-# Fișierele excluse din arhivele de distribuție (git archive).
+# Files excluded from distribution archives (git archive).
 /tests export-ignore
 /docs export-ignore
 /.gitattributes export-ignore

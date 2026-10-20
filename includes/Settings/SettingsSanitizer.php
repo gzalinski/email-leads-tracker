@@ -1,6 +1,6 @@
 <?php
 /**
- * Validarea setărilor la salvare. Se salvează doar câmpurile tabului curent; restul rămân neschimbate.
+ * Validation of the settings on save. Only the current tab's fields are saved; the rest stay unchanged.
  *
  * @package LocationLeadTracker
  */
@@ -15,15 +15,15 @@ defined( 'ABSPATH' ) || exit;
 final class SettingsSanitizer {
 
 	/**
-	 * Callback-ul `sanitize_callback` din register_setting.
+	 * The `sanitize_callback` of register_setting.
 	 *
-	 * @param mixed $input Valorile trimise.
+	 * @param mixed $input Submitted values.
 	 */
 	public static function sanitize( $input ): array {
 		$current = get_option( Settings::OPTION, array() );
 		$current = is_array( $current ) ? $current : array();
 
-		// WordPress poate apela callback-ul a doua oară cu valoarea deja procesată.
+		// WordPress may call the callback a second time with the already processed value.
 		if ( ! is_array( $input ) || ! isset( $input['_tab'] ) ) {
 			return is_array( $input ) ? $input : $current;
 		}
@@ -35,19 +35,19 @@ final class SettingsSanitizer {
 		}
 
 		foreach ( $tabs[ $tab ]['fields'] as $key => $field ) {
-			$raw = $input[ $key ] ?? null;
+			$raw   = $input[ $key ] ?? null;
 			$value = self::field( $key, $field, $raw, $input, $current );
 			if ( null !== $value ) {
 				$current[ $key ] = $value;
 			}
 		}
 
-		// Numărul de retry-uri nu poate depăși numărul de intervale.
+		// The number of retries cannot exceed the number of intervals.
 		if ( isset( $current['max_retries'], $current['retry_schedule'] ) ) {
 			$intervals = count( Settings::parse_schedule( (string) $current['retry_schedule'] ) );
 			if ( (int) $current['max_retries'] > $intervals ) {
 				$current['max_retries'] = $intervals;
-				self::error( 'max_retries', sprintf( 'Numărul de retry-uri a fost redus la %d, câte intervale sunt definite.', $intervals ) );
+				self::error( 'max_retries', sprintf( 'The number of retries was reduced to %d, the number of defined intervals.', $intervals ) );
 			}
 		}
 
@@ -56,8 +56,8 @@ final class SettingsSanitizer {
 	}
 
 	/**
-	 * @param mixed $raw Valoarea brută.
-	 * @return mixed Valoarea validată sau null pentru a păstra valoarea curentă.
+	 * @param mixed $raw Raw value.
+	 * @return mixed The validated value, or null to keep the current value.
 	 */
 	private static function field( string $key, array $field, $raw, array $input, array $current ) {
 		$label = (string) $field['label'];
@@ -76,7 +76,7 @@ final class SettingsSanitizer {
 			case 'email':
 				$email = sanitize_email( (string) $raw );
 				if ( ! is_email( $email ) ) {
-					self::error( $key, sprintf( '„%s”: adresa de email nu este validă; valoarea anterioară a fost păstrată.', $label ) );
+					self::error( $key, sprintf( '"%s": the email address is not valid; the previous value was kept.', $label ) );
 					return null;
 				}
 				return $email;
@@ -109,28 +109,28 @@ final class SettingsSanitizer {
 					}
 				}
 				if ( $invalid ) {
-					self::error( $key, '„' . $label . '”: au fost ignorate valorile invalide: ' . implode( ', ', array_map( 'sanitize_text_field', $invalid ) ) );
+					self::error( $key, '"' . $label . '": these invalid values were ignored: ' . implode( ', ', array_map( 'sanitize_text_field', $invalid ) ) );
 				}
 				return implode( "\n", $valid );
 
 			case 'schedule':
-				$parts = preg_split( '/[\s,;]+/', (string) $raw, -1, PREG_SPLIT_NO_EMPTY );
+				$parts  = preg_split( '/[\s,;]+/', (string) $raw, -1, PREG_SPLIT_NO_EMPTY );
 				$values = array();
 				foreach ( $parts as $part ) {
 					if ( ! ctype_digit( $part ) || (int) $part <= 0 ) {
-						self::error( $key, '„' . $label . '”: folosește doar numere întregi pozitive.' );
+						self::error( $key, '"' . $label . '": use positive whole numbers only.' );
 						return null;
 					}
 					$values[] = (int) $part;
 				}
 				if ( ! $values || count( $values ) > 10 ) {
-					self::error( $key, '„' . $label . '”: definește între 1 și 10 intervale.' );
+					self::error( $key, '"' . $label . '": define between 1 and 10 intervals.' );
 					return null;
 				}
 				$sorted = $values;
 				sort( $sorted );
 				if ( $sorted !== $values ) {
-					self::error( $key, '„' . $label . '”: intervalele trebuie să fie crescătoare.' );
+					self::error( $key, '"' . $label . '": the intervals must be in increasing order.' );
 					return null;
 				}
 				return implode( ', ', $values );

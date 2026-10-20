@@ -1,8 +1,8 @@
 <?php
 /**
- * Limitează numărul de leaduri create de pe același IP într-o oră.
+ * Limits the number of leads created from the same IP within an hour.
  *
- * IP-ul nu se stochează: cheia este un hash HMAC al IP-ului.
+ * The IP is not stored: the key is an HMAC hash of the IP.
  *
  * @package LocationLeadTracker
  */

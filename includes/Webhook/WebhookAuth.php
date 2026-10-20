@@ -1,6 +1,6 @@
 <?php
 /**
- * Autentificarea webhookului Postmark: Basic Auth (Postmark nu semnează webhookurile) și filtru IP opțional.
+ * Postmark webhook authentication: Basic Auth (Postmark does not sign webhooks) and an optional IP filter.
  *
  * @package LocationLeadTracker
  */
@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class WebhookAuth {
 
-	/** IP-urile webhookurilor Postmark (support article 800-ips-for-firewalls, verificat octombrie 2026). */
+	/** Postmark webhook IPs (support article 800-ips-for-firewalls, checked October 2026). */
 	const POSTMARK_IPS = array( '3.134.147.250', '50.31.156.6', '50.31.156.77', '18.217.206.57' );
 
 	const OK             = 'ok';
@@ -24,9 +24,9 @@ final class WebhookAuth {
 	const IP_NOT_ALLOWED = 'ip_not_allowed';
 
 	/**
-	 * @param string|null $authorization Headerul Authorization din cerere.
+	 * @param string|null $authorization The request's Authorization header.
 	 * @param array       $server        $_SERVER.
-	 * @return string Unul dintre OK, NOT_CONFIGURED, MISSING_HEADER, BAD_CREDENTIAL, IP_NOT_ALLOWED.
+	 * @return string One of OK, NOT_CONFIGURED, MISSING_HEADER, BAD_CREDENTIAL, IP_NOT_ALLOWED.
 	 */
 	public static function check( ?string $authorization, array $server ): string {
 		$user = (string) Settings::get( 'webhook_user' );
@@ -50,8 +50,8 @@ final class WebhookAuth {
 	}
 
 	/**
-	 * Extrage credențialele: din headerul Authorization sau din variabilele PHP (PHP_AUTH_*).
-	 * Unele servere (Apache cu CGI/FPM) elimină headerul; vezi README.
+	 * Extracts the credentials: from the Authorization header or from the PHP variables (PHP_AUTH_*).
+	 * Some servers (Apache with CGI/FPM) strip the header; see the README.
 	 *
 	 * @return array{0:string|null,1:string|null}
 	 */
@@ -75,10 +75,10 @@ final class WebhookAuth {
 
 	public static function describe( string $result ): string {
 		$labels = array(
-			self::NOT_CONFIGURED => 'credențialele webhookului nu sunt generate',
-			self::MISSING_HEADER => 'cererea nu conține headerul Authorization (serverul îl poate elimina; vezi documentația)',
-			self::BAD_CREDENTIAL => 'utilizator sau parolă greșite',
-			self::IP_NOT_ALLOWED => 'IP-ul nu aparține Postmark',
+			self::NOT_CONFIGURED => 'the webhook credentials have not been generated',
+			self::MISSING_HEADER => 'the request has no Authorization header (the server may strip it; see the documentation)',
+			self::BAD_CREDENTIAL => 'wrong username or password',
+			self::IP_NOT_ALLOWED => 'the IP does not belong to Postmark',
 		);
 		return $labels[ $result ] ?? $result;
 	}

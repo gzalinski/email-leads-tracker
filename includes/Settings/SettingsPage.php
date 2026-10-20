@@ -1,6 +1,6 @@
 <?php
 /**
- * Pagina Setări → Location Lead Tracker.
+ * The Settings → Location Lead Tracker page.
  *
  * @package LocationLeadTracker
  */
@@ -51,7 +51,7 @@ final class SettingsPage {
 	}
 
 	/**
-	 * @param string $hook Pagina curentă din admin.
+	 * @param string $hook The current admin page.
 	 */
 	public static function assets( $hook ): void {
 		if ( $hook !== self::$hook ) {
@@ -110,7 +110,7 @@ final class SettingsPage {
 				self::field( $key, $field, $values );
 			}
 			echo '</tbody></table>';
-			submit_button( 'Salvează setările' );
+			submit_button( 'Save settings' );
 			echo '</form>';
 		}
 		if ( ! empty( $tab['render'] ) && is_callable( $tab['render'] ) ) {
@@ -128,9 +128,9 @@ final class SettingsPage {
 		if ( ! $unreadable ) {
 			return;
 		}
-		echo '<div class="notice notice-error"><p><strong>Unele secrete nu mai pot fi decriptate</strong> (';
+		echo '<div class="notice notice-error"><p><strong>Some secrets can no longer be decrypted</strong> (';
 		echo esc_html( implode( ', ', $unreadable ) );
-		echo '). Cel mai probabil site-ul a fost mutat sau salturile WordPress s-au schimbat. Reintrodu valorile. Pentru a evita situația la mutarea site-ului, definește <code>LLT_ENCRYPTION_KEY</code> în wp-config.php.</p></div>';
+		echo '). Most likely the site was moved or the WordPress salts changed. Enter the values again. To avoid this when moving the site, define <code>LLT_ENCRYPTION_KEY</code> in wp-config.php.</p></div>';
 	}
 
 	private static function field( string $key, array $field, array $values ): void {
@@ -157,11 +157,11 @@ final class SettingsPage {
 					'<input type="password" id="%1$s" name="%2$s" class="regular-text" autocomplete="new-password" placeholder="%3$s">',
 					esc_attr( $id ),
 					esc_attr( $name ),
-					esc_attr( $saved ? '•••••••• (salvat — lasă gol pentru a-l păstra)' : '' )
+					esc_attr( $saved ? '•••••••• (saved — leave empty to keep it)' : '' )
 				);
 				if ( $saved ) {
 					printf(
-						' <label><input type="checkbox" name="%s" value="1"> Șterge</label>',
+						' <label><input type="checkbox" name="%s" value="1"> Delete</label>',
 						esc_attr( Settings::OPTION . '[' . $key . '_clear]' )
 					);
 				}

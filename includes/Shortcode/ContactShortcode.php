@@ -1,6 +1,6 @@
 <?php
 /**
- * Shortcode-ul [location_contact object_id="245"].
+ * The [location_contact object_id="245"] shortcode.
  *
  * @package LocationLeadTracker
  */
@@ -23,7 +23,7 @@ final class ContactShortcode {
 	}
 
 	/**
-	 * @param array|string $atts Atributele shortcode-ului.
+	 * @param array|string $atts Shortcode attributes.
 	 */
 	public static function render( $atts ): string {
 		$atts      = shortcode_atts( array( 'object_id' => 0 ), $atts, 'location_contact' );
@@ -37,7 +37,7 @@ final class ContactShortcode {
 			if ( current_user_can( 'edit_posts' ) ) {
 				return '<div class="llt-notice llt-notice--error"><strong>Location Lead Tracker:</strong> '
 					. esc_html( $resolved->get_error_message() )
-					. ' Formularul nu este afișat vizitatorilor.</div>';
+					. ' The form is not shown to visitors.</div>';
 			}
 			return '';
 		}
@@ -48,7 +48,7 @@ final class ContactShortcode {
 
 		self::enqueue_assets();
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- doar afișarea rezultatului după redirect.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- only displays the result after a redirect.
 		$status = '';
 		if ( isset( $_GET['llt_status'], $_GET['llt_form'] ) && sanitize_key( wp_unslash( $_GET['llt_form'] ) ) === $form_id ) {
 			$status = sanitize_key( wp_unslash( $_GET['llt_status'] ) );
@@ -76,11 +76,11 @@ final class ContactShortcode {
 	}
 
 	/**
-	 * Textul de consimțământ, cu HTML limitat la linkuri și formatare simplă.
+	 * The consent text, with HTML limited to links and simple formatting.
 	 */
 	public static function consent_html(): string {
 		$html = wp_kses( (string) Settings::get( 'consent_text' ), self::consent_allowed_tags() );
-		// Linkurile deschise în tab nou primesc rel="noopener".
+		// Links that open in a new tab get rel="noopener".
 		return (string) preg_replace_callback(
 			'/<a\s[^>]*target=("|\')_blank\1[^>]*>/i',
 			static function ( $m ) {
@@ -104,8 +104,8 @@ final class ContactShortcode {
 	}
 
 	/**
-	 * URL-ul paginii curente. Domeniul se ia din home_url() (nu din headerul Host), iar calea din REQUEST_URI,
-	 * care include deja subdirectorul unei instalări de tip example.com/blog/.
+	 * URL of the current page. The domain comes from home_url() (not from the Host header) and the path from
+	 * REQUEST_URI, which already includes the subdirectory of an install such as example.com/blog/.
 	 */
 	public static function current_url(): string {
 		$home = wp_parse_url( home_url() );

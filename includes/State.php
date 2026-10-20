@@ -1,6 +1,6 @@
 <?php
 /**
- * Starea internă a pluginului (heartbeat, contoare, ultimele alerte), în opțiunea `llt_state`.
+ * Internal plugin state (heartbeat, counters, recent alerts), stored in the `llt_state` option.
  *
  * @package LocationLeadTracker
  */
@@ -20,7 +20,7 @@ final class State {
 	}
 
 	/**
-	 * @param mixed $default Valoare implicită.
+	 * @param mixed $default Default value.
 	 * @return mixed
 	 */
 	public static function get( string $key, $default = null ) {
@@ -29,7 +29,7 @@ final class State {
 	}
 
 	/**
-	 * @param mixed $value Valoare.
+	 * @param mixed $value Value.
 	 */
 	public static function set( string $key, $value ): void {
 		$state         = self::all();

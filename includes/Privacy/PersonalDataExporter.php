@@ -1,6 +1,6 @@
 <?php
 /**
- * Integrarea cu Unelte → Exportă date personale.
+ * Integration with Tools → Export Personal Data.
  *
  * @package LocationLeadTracker
  */
@@ -18,7 +18,7 @@ final class PersonalDataExporter {
 	const PER_PAGE = 50;
 
 	/**
-	 * @param array $exporters Exportatorii existenți.
+	 * @param array $exporters Existing exporters.
 	 */
 	public static function register( $exporters ): array {
 		$exporters                          = is_array( $exporters ) ? $exporters : array();
@@ -30,8 +30,8 @@ final class PersonalDataExporter {
 	}
 
 	/**
-	 * @param string $email Adresa persoanei.
-	 * @param int    $page  Pagina (de la 1).
+	 * @param string $email The person's address.
+	 * @param int    $page  Page (starting at 1).
 	 */
 	public static function export( $email, $page = 1 ): array {
 		$page  = max( 1, (int) $page );
@@ -44,15 +44,15 @@ final class PersonalDataExporter {
 
 			$items[] = array(
 				'group_id'    => 'location-lead-tracker',
-				'group_label' => 'Mesaje trimise prin formularul de contact',
+				'group_label' => 'Messages sent through the contact form',
 				'item_id'     => 'llt-lead-' . (int) $row->lead_id,
 				'data'        => array(
 					array(
-						'name'  => 'Locație',
+						'name'  => 'Location',
 						'value' => $title,
 					),
 					array(
-						'name'  => 'Nume',
+						'name'  => 'Name',
 						'value' => $row->sender_name,
 					),
 					array(
@@ -60,15 +60,15 @@ final class PersonalDataExporter {
 						'value' => $row->sender_email,
 					),
 					array(
-						'name'  => 'Telefon',
+						'name'  => 'Phone',
 						'value' => (string) $row->sender_phone,
 					),
 					array(
-						'name'  => 'Mesaj',
+						'name'  => 'Message',
 						'value' => $row->message,
 					),
 					array(
-						'name'  => 'Data',
+						'name'  => 'Date',
 						'value' => Util::local_date( (string) $row->created_at ),
 					),
 				),

@@ -1,6 +1,6 @@
 <?php
 /**
- * Crearea leadurilor: leadul minimal și conținutul temporar, salvate împreună, înainte de trimitere.
+ * Lead creation: the minimal lead and the temporary content are saved together, before sending.
  *
  * @package LocationLeadTracker
  */
@@ -16,8 +16,8 @@ defined( 'ABSPATH' ) || exit;
 final class LeadService {
 
 	/**
-	 * @param array{name:string,email:string,phone:string,message:string} $data Datele validate.
-	 * @return int|\WP_Error ID-ul leadului.
+	 * @param array{name:string,email:string,phone:string,message:string} $data Validated data.
+	 * @return int|\WP_Error The lead ID.
 	 */
 	public static function create( array $data, int $object_id, string $recipient_email ) {
 		global $wpdb;

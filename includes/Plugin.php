@@ -1,6 +1,6 @@
 <?php
 /**
- * Înregistrează toate componentele pluginului.
+ * Registers all plugin components.
  *
  * @package LocationLeadTracker
  */
@@ -30,12 +30,12 @@ defined( 'ABSPATH' ) || exit;
 final class Plugin {
 
 	/**
-	 * Punctul de pornire, apelat pe `plugins_loaded`.
+	 * Entry point, called on `plugins_loaded`.
 	 */
 	public static function boot(): void {
 		Installer::maybe_upgrade();
 
-		// Front-end.
+		// Front end.
 		add_action( 'init', array( ContactShortcode::class, 'register' ) );
 		add_action( 'admin_post_llt_submit', array( SubmissionHandler::class, 'handle' ) );
 		add_action( 'admin_post_nopriv_llt_submit', array( SubmissionHandler::class, 'handle' ) );
@@ -48,11 +48,11 @@ final class Plugin {
 		add_action( 'llt_retention_cleanup', array( RetentionService::class, 'run' ) );
 		add_action( 'llt_refresh_proxy_ranges', array( ProxyRanges::class, 'refresh' ) );
 
-		// Alerte.
+		// Alerts.
 		add_action( 'wp_mail_failed', array( AdminNotifier::class, 'capture_mail_error' ) );
 		add_action( 'llt_health_check_run', array( AdminNotifier::class, 'flush_bounces' ) );
 
-		// Confirmarea livrării (v2).
+		// Delivery confirmation (v2).
 		add_action( 'rest_api_init', array( WebhookController::class, 'register' ) );
 		add_filter( 'application_password_is_api_request', array( WebhookController::class, 'skip_application_passwords' ) );
 		add_action( 'llt_reconcile_delivery', array( Reconciler::class, 'run' ) );
@@ -63,7 +63,7 @@ final class Plugin {
 		add_filter( 'wp_privacy_personal_data_erasers', array( PersonalDataEraser::class, 'register' ) );
 		add_action( 'admin_init', array( PolicyContent::class, 'register' ) );
 
-		// Lista de leaduri eșuate (v3): linkul din alerte și contorul din meniu se actualizează și din cron.
+		// Failed leads list (v3): the alert link and the menu counter are also updated from cron.
 		add_filter( 'llt_alert_admin_link', array( FailedLeadsTab::class, 'alert_link' ) );
 		add_action( 'llt_leads_changed', array( MenuBadge::class, 'bust' ) );
 

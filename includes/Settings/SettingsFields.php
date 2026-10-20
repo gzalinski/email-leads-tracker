@@ -1,9 +1,9 @@
 <?php
 /**
- * Definiția taburilor și câmpurilor din pagina de setări.
+ * Definition of the tabs and fields of the settings page.
  *
- * Fiecare câmp: type, label, desc (opțional), plus atribute specifice tipului.
- * Tipuri: text, email, number, select, checkbox, secret, textarea, html, cidr_list, schedule.
+ * Each field: type, label, desc (optional), plus type-specific attributes.
+ * Types: text, email, number, select, checkbox, secret, textarea, html, cidr_list, schedule.
  *
  * @package LocationLeadTracker
  */
@@ -24,24 +24,24 @@ final class SettingsFields {
 				'fields' => array(
 					'from_email'   => array(
 						'type'  => 'email',
-						'label' => 'Email expeditor',
-						'desc'  => 'Adresă de pe un domeniu verificat în Postmark (DKIM și Return-Path).',
+						'label' => 'Sender email',
+						'desc'  => 'An address on a domain verified in Postmark (DKIM and Return-Path).',
 					),
 					'from_name'    => array(
 						'type'  => 'text',
-						'label' => 'Nume expeditor',
+						'label' => 'Sender name',
 					),
 					'subject'      => array(
 						'type'  => 'text',
-						'label' => 'Subiect email',
-						'desc'  => 'Variabile disponibile: {post_title}, {site_name}.',
+						'label' => 'Email subject',
+						'desc'  => 'Available variables: {post_title}, {site_name}.',
 					),
 					'email_format' => array(
 						'type'    => 'select',
-						'label'   => 'Format email',
+						'label'   => 'Email format',
 						'options' => array(
-							'text' => 'Text simplu',
-							'html' => 'HTML (cu variantă text)',
+							'text' => 'Plain text',
+							'html' => 'HTML (with a text version)',
 						),
 					),
 				),
@@ -52,16 +52,16 @@ final class SettingsFields {
 					'postmark_token'   => array(
 						'type'  => 'secret',
 						'label' => 'Server API Token',
-						'desc'  => 'Din Postmark → Server → API Tokens. Se salvează criptat și nu se mai afișează.',
+						'desc'  => 'From Postmark → Server → API Tokens. Stored encrypted and never shown again.',
 					),
 					'postmark_stream'  => array(
 						'type'  => 'text',
 						'label' => 'Message Stream',
-						'desc'  => 'Streamul tranzacțional; de obicei „outbound”.',
+						'desc'  => 'The transactional stream; usually "outbound".',
 					),
 					'postmark_timeout' => array(
 						'type'  => 'number',
-						'label' => 'Timeout (secunde)',
+						'label' => 'Timeout (seconds)',
 						'min'   => 5,
 						'max'   => 60,
 					),
@@ -69,17 +69,17 @@ final class SettingsFields {
 				'after'  => array( TestActions::class, 'render_test_email' ),
 			),
 			'form'      => array(
-				'label'  => 'Formular',
+				'label'  => 'Form',
 				'fields' => array(
 					'consent_text'    => array(
 						'type'  => 'html',
-						'label' => 'Text consimțământ GDPR',
-						'desc'  => 'Afișat lângă checkbox-ul obligatoriu. HTML permis: <a href target rel>, <strong>, <em>, <br>. Adaugă aici linkul către pagina de confidențialitate.',
+						'label' => 'GDPR consent text',
+						'desc'  => 'Shown next to the required checkbox. Allowed HTML: <a href target rel>, <strong>, <em>, <br>. Add the link to your privacy page here.',
 					),
 					'success_message' => array(
 						'type'  => 'text',
-						'label' => 'Mesaj de confirmare',
-						'desc'  => 'Afișat vizitatorului după trimitere. Nu promite livrarea emailului.',
+						'label' => 'Confirmation message',
+						'desc'  => 'Shown to the visitor after submitting. Do not promise that the email was delivered.',
 					),
 				),
 			),
@@ -89,7 +89,7 @@ final class SettingsFields {
 					'turnstile_enabled'   => array(
 						'type'  => 'checkbox',
 						'label' => 'Cloudflare Turnstile',
-						'text'  => 'Activează verificarea Turnstile',
+						'text'  => 'Enable the Turnstile check',
 					),
 					'turnstile_site_key'  => array(
 						'type'  => 'text',
@@ -101,112 +101,112 @@ final class SettingsFields {
 					),
 					'turnstile_fail_mode' => array(
 						'type'    => 'select',
-						'label'   => 'Dacă verificarea nu este disponibilă',
+						'label'   => 'If the check is unavailable',
 						'options' => array(
-							'reject' => 'Respinge trimiterea',
-							'accept' => 'Acceptă trimiterea',
+							'reject' => 'Reject the submission',
+							'accept' => 'Accept the submission',
 						),
 					),
 					'rate_limit'          => array(
 						'type'  => 'number',
-						'label' => 'Mesaje / IP / oră',
-						'desc'  => '0 dezactivează limita.',
+						'label' => 'Messages per IP per hour',
+						'desc'  => '0 disables the limit.',
 						'min'   => 0,
 						'max'   => 1000,
 					),
 					'min_seconds'         => array(
 						'type'  => 'number',
-						'label' => 'Timp minim de completare (secunde)',
+						'label' => 'Minimum time to fill in (seconds)',
 						'min'   => 0,
 						'max'   => 60,
 					),
 					'ip_source'           => array(
 						'type'    => 'select',
-						'label'   => 'Sursa IP',
-						'desc'    => 'Automat recunoaște conexiunea directă, Cloudflare și proxy-urile locale.',
+						'label'   => 'IP source',
+						'desc'    => 'Automatic recognizes direct connections, Cloudflare and local proxies.',
 						'options' => array(
-							'auto'       => 'Automat',
-							'direct'     => 'Doar conexiunea directă',
-							'cloudflare' => 'Doar Cloudflare',
+							'auto'       => 'Automatic',
+							'direct'     => 'Direct connection only',
+							'cloudflare' => 'Cloudflare only',
 						),
 					),
 					'extra_proxies'       => array(
 						'type'  => 'cidr_list',
-						'label' => 'Proxy-uri suplimentare',
-						'desc'  => 'Rețele CIDR (câte una pe linie) ale altor CDN-uri sau load balancere cu IP public.',
+						'label' => 'Additional proxies',
+						'desc'  => 'CIDR networks (one per line) of other CDNs or load balancers with public IPs.',
 					),
 				),
 				'after'  => array( TestActions::class, 'render_ip_diagnostic' ),
 			),
 			'retry'     => array(
-				'label'  => 'Retry',
+				'label'  => 'Retries',
 				'fields' => array(
 					'max_retries'    => array(
 						'type'  => 'number',
-						'label' => 'Număr maxim de retry-uri',
+						'label' => 'Maximum number of retries',
 						'min'   => 0,
 						'max'   => 10,
 					),
 					'retry_schedule' => array(
 						'type'  => 'schedule',
-						'label' => 'Intervale (minute)',
-						'desc'  => 'Separate prin virgulă, crescătoare. Ex.: 1, 5, 15, 60, 360.',
+						'label' => 'Intervals (minutes)',
+						'desc'  => 'Comma-separated, in increasing order. E.g. 1, 5, 15, 60, 360.',
 					),
 				),
 			),
 			'alerts'    => array(
-				'label'  => 'Alerte',
+				'label'  => 'Alerts',
 				'fields' => array(
 					'alert_email'             => array(
 						'type'  => 'email',
-						'label' => 'Email pentru alerte',
+						'label' => 'Alert email',
 					),
 					'alert_threshold'         => array(
 						'type'  => 'number',
-						'label' => 'Prag eșecuri consecutive',
+						'label' => 'Consecutive failure threshold',
 						'min'   => 1,
 						'max'   => 100,
 					),
 					'alert_interval_hours'    => array(
 						'type'  => 'number',
-						'label' => 'Interval minim între alerte (ore)',
+						'label' => 'Minimum interval between alerts (hours)',
 						'min'   => 1,
 						'max'   => 168,
 					),
 					'alert_fallback_postmark' => array(
 						'type'  => 'checkbox',
 						'label' => 'Fallback',
-						'text'  => 'Trimite alertele prin Postmark dacă wp_mail() eșuează',
+						'text'  => 'Send alerts through Postmark if wp_mail() fails',
 					),
 				),
 				'after'  => array( TestActions::class, 'render_test_alert' ),
 			),
 			'retention' => array(
-				'label'  => 'Retenție',
+				'label'  => 'Retention',
 				'fields' => array(
 					'retention_accepted_hours' => array(
 						'type'  => 'number',
-						'label' => 'Ore după acceptare',
-						'desc'  => 'Când confirmarea livrării nu este activă, conținutul se șterge la acest interval după acceptarea de către Postmark. 0 = la următoarea curățare.',
+						'label' => 'Hours after acceptance',
+						'desc'  => 'When delivery confirmation is off, the content is deleted this long after Postmark accepts the email. 0 = at the next cleanup.',
 						'min'   => 0,
 						'max'   => 720,
 					),
 					'retention_failed_days'    => array(
 						'type'  => 'number',
-						'label' => 'Zile pentru leadurile eșuate',
-						'desc'  => 'Cât timp pot fi retrimise.',
+						'label' => 'Days for failed leads',
+						'desc'  => 'How long they can be resent.',
 						'min'   => 1,
 						'max'   => 365,
 					),
 					'delete_on_uninstall'      => array(
 						'type'  => 'checkbox',
-						'label' => 'Dezinstalare',
-						'text'  => 'Șterge tabelele și setările la dezinstalarea pluginului',
+						'label' => 'Uninstall',
+						'text'  => 'Delete the tables and settings when the plugin is uninstalled',
 					),
 				),
 			),
 			'status'    => array(
-				'label'  => 'Stare',
+				'label'  => 'Status',
 				'render' => array( StatusTab::class, 'render' ),
 			),
 		);
@@ -215,7 +215,7 @@ final class SettingsFields {
 	}
 
 	/**
-	 * Toate câmpurile, din toate taburile.
+	 * All fields, from all tabs.
 	 */
 	public static function all_fields(): array {
 		$fields = array();

@@ -1,6 +1,6 @@
 <?php
 /**
- * Text sugerat pentru politica de confidențialitate (Setări → Confidențialitate).
+ * Suggested privacy policy text (Settings → Privacy).
  *
  * @package LocationLeadTracker
  */
@@ -21,20 +21,20 @@ final class PolicyContent {
 		$accepted_hours = (int) Settings::get( 'retention_accepted_hours' );
 		$failed_days    = (int) Settings::get( 'retention_failed_days' );
 
-		$html  = '<h2>Formularul de contact pentru locații</h2>';
-		$html .= '<p>Când trimiți un mesaj prin formularul de contact al unei locații, colectăm numele, adresa de email, numărul de telefon (opțional) și mesajul tău, pentru a-l transmite locației respective și pentru a-ți putea răspunde.</p>';
-		$html .= '<p>Mesajul este trimis prin serviciul de email Postmark (ActiveCampaign, LLC), care păstrează o copie a emailului pe durata retenției configurate în contul nostru Postmark.</p>';
+		$html  = '<h2>Location contact form</h2>';
+		$html .= '<p>When you send a message through a location\'s contact form, we collect your name, email address, phone number (optional) and your message, in order to forward it to that location and to be able to reply to you.</p>';
+		$html .= '<p>The message is sent through the Postmark email service (ActiveCampaign, LLC), which keeps a copy of the email for the retention period configured in our Postmark account.</p>';
 		if ( Settings::get( 'turnstile_enabled' ) ) {
-			$html .= '<p>Pentru protecția împotriva spamului, formularul folosește Cloudflare Turnstile, care încarcă resurse de la Cloudflare și poate prelucra date tehnice despre browserul tău.</p>';
+			$html .= '<p>To protect against spam, the form uses Cloudflare Turnstile, which loads resources from Cloudflare and may process technical data about your browser.</p>';
 		}
 		if ( Settings::tracking_enabled() ) {
-			$html .= '<p>Datele tale personale sunt șterse din baza noastră de date imediat după ce serverul destinatarului confirmă primirea emailului, sau după cel mult '
-				. (int) Settings::get( 'retention_unconfirmed_days' ) . ' zile dacă livrarea nu este confirmată.</p>';
+			$html .= '<p>Your personal data is deleted from our database as soon as the recipient\'s server confirms receipt of the email, or after at most '
+				. (int) Settings::get( 'retention_unconfirmed_days' ) . ' days if delivery is not confirmed.</p>';
 		} else {
-			$html .= '<p>Datele tale personale sunt șterse din baza noastră de date la ' . $accepted_hours . ' ore după trimiterea emailului.</p>';
+			$html .= '<p>Your personal data is deleted from our database ' . $accepted_hours . ' hours after the email is sent.</p>';
 		}
-		$html .= '<p>Dacă trimiterea eșuează, datele se păstrează cel mult ' . $failed_days . ' zile, pentru a putea fi retrimise. Păstrăm doar o evidență minimă a solicitării (locația, data și starea trimiterii), fără datele tale personale.</p>';
-		$html .= '<p>Adresa IP nu este stocată; folosim doar o valoare criptografică derivată din ea, timp de o oră, pentru a limita abuzurile.</p>';
+		$html .= '<p>If sending fails, the data is kept for at most ' . $failed_days . ' days so that it can be resent. We only keep a minimal record of the request (the location, the date and the sending status), without your personal data.</p>';
+		$html .= '<p>Your IP address is not stored; we only use a cryptographic value derived from it, for one hour, to limit abuse.</p>';
 
 		wp_add_privacy_policy_content( 'Location Lead Tracker', wp_kses_post( $html ) );
 	}

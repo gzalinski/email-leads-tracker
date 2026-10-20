@@ -1,11 +1,11 @@
 <?php
 /**
- * Endpointul REST pentru webhookul Postmark: POST /wp-json/llt/v1/postmark
+ * The REST endpoint for the Postmark webhook: POST /wp-json/llt/v1/postmark
  *
- * Coduri de răspuns (Postmark reîncearcă doar la 5xx, 408, 429 și erori de rețea):
- * - 401: autentificare eșuată (fără reîncercare);
- * - 200: eveniment procesat, duplicat, necorelat, ignorat sau payload invalid;
- * - 500: eroare internă, ca Postmark să reîncerce.
+ * Response codes (Postmark retries only on 5xx, 408, 429 and network errors):
+ * - 401: authentication failed (no retry);
+ * - 200: event processed, duplicate, uncorrelated, ignored or invalid payload;
+ * - 500: internal error, so Postmark retries.
  *
  * @package LocationLeadTracker
  */
@@ -31,17 +31,17 @@ final class WebhookController {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( self::class, 'handle' ),
-				'permission_callback' => '__return_true', // Autentificarea se face în handler, ca să putem răspunde 401 fără reîncercări.
+				'permission_callback' => '__return_true', // Authentication happens in the handler, so we can answer 401 without retries.
 			)
 		);
 	}
 
 	/**
-	 * Credențialele Basic Auth trimise de Postmark nu sunt ale unui utilizator WordPress.
-	 * Pe site-urile care folosesc Application Passwords, WordPress ar încerca să le autentifice
-	 * și ar respinge cererea cu 401 înainte să ajungă la handler. Excludem doar ruta webhookului.
+	 * Postmark's Basic Auth credentials are not a WordPress user.
+	 * On sites that use Application Passwords, WordPress would try to authenticate them
+	 * and reject the request with 401 before it reaches the handler. Only the webhook route is excluded.
 	 *
-	 * @param bool $is_api_request Valoarea curentă.
+	 * @param bool $is_api_request Current value.
 	 */
 	public static function skip_application_passwords( $is_api_request ): bool {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -56,7 +56,7 @@ final class WebhookController {
 	}
 
 	/**
-	 * @param \WP_REST_Request $request Cererea.
+	 * @param \WP_REST_Request $request The request.
 	 * @return \WP_REST_Response
 	 */
 	public static function handle( $request ) {
@@ -83,14 +83,14 @@ final class WebhookController {
 
 		$payload = json_decode( $body, true );
 		if ( ! is_array( $payload ) || empty( $payload['RecordType'] ) ) {
-			Util::log( 'Webhook cu payload invalid, ignorat.' );
+			Util::log( 'Webhook with an invalid payload, ignored.' );
 			return new \WP_REST_Response( array( 'ok' => true, 'result' => 'invalid_payload' ), 200 );
 		}
 
 		try {
 			$result = EventProcessor::handle( $payload );
 		} catch ( \Throwable $e ) {
-			Util::log( 'Eroare la procesarea webhookului: ' . $e->getMessage() );
+			Util::log( 'Error while processing the webhook: ' . $e->getMessage() );
 			return new \WP_REST_Response( array( 'ok' => false, 'error' => 'internal' ), 500 );
 		}
 
@@ -104,7 +104,7 @@ final class WebhookController {
 			)
 		);
 		if ( EventProcessor::RESULT_UNCORRELATED === $result ) {
-			Util::log( 'Webhook necorelat: ' . (string) ( $payload['MessageID'] ?? '' ) );
+			Util::log( 'Uncorrelated webhook: ' . (string) ( $payload['MessageID'] ?? '' ) );
 		}
 
 		return new \WP_REST_Response( array( 'ok' => true, 'result' => $result ), 200 );

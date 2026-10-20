@@ -4,10 +4,10 @@ use LocationLeadTracker\Postmark\ErrorClassifier;
 use LocationLeadTracker\Postmark\SendResult;
 
 $r = ErrorClassifier::from_response( 200, '{"ErrorCode":0,"Message":"OK","MessageID":"abc-123"}' );
-same( '200 acceptat', SendResult::ACCEPTED, $r->category );
+same( '200 accepted', SendResult::ACCEPTED, $r->category );
 same( '200 MessageID', 'abc-123', $r->message_id );
 
-same( '200 fără MessageID', SendResult::AMBIGUOUS, ErrorClassifier::from_response( 200, '{}' )->category );
+same( '200 without MessageID', SendResult::AMBIGUOUS, ErrorClassifier::from_response( 200, '{}' )->category );
 
 $cases = array(
 	array( 401, '{"ErrorCode":10,"Message":"Bad token"}', SendResult::CONFIG, 'pm_10' ),
@@ -30,13 +30,13 @@ $cases = array(
 );
 foreach ( $cases as $case ) {
 	$result = ErrorClassifier::from_response( $case[0], $case[1] );
-	same( "HTTP {$case[0]} {$case[3]} categorie", $case[2], $result->category );
-	same( "HTTP {$case[0]} {$case[3]} cod", $case[3], $result->code );
+	same( "HTTP {$case[0]} {$case[3]} category", $case[2], $result->category );
+	same( "HTTP {$case[0]} {$case[3]} code", $case[3], $result->code );
 }
 
-same( 'Retry-After secunde', 120, ErrorClassifier::from_response( 429, '', '120' )->retry_after );
-check( 'Retry-After dată', ErrorClassifier::retry_after( gmdate( 'D, d M Y H:i:s', time() + 300 ) . ' GMT' ) >= 298 );
-same( 'Retry-After invalid', 0, ErrorClassifier::retry_after( 'mâine' ) );
+same( 'Retry-After in seconds', 120, ErrorClassifier::from_response( 429, '', '120' )->retry_after );
+check( 'Retry-After as a date', ErrorClassifier::retry_after( gmdate( 'D, d M Y H:i:s', time() + 300 ) . ' GMT' ) >= 298 );
+same( 'invalid Retry-After', 0, ErrorClassifier::retry_after( 'tomorrow-ish' ) );
 
 $transport = array(
 	'cURL error 28: Operation timed out after 15001 milliseconds with 0 bytes received' => SendResult::AMBIGUOUS,
@@ -53,6 +53,6 @@ foreach ( $transport as $message => $expected ) {
 	same( 'transport: ' . substr( $message, 0, 40 ), $expected, ErrorClassifier::from_transport_error( new WP_Error( 'http_request_failed', $message ) )->category );
 }
 
-check( 'descriere 406', false !== strpos( ErrorClassifier::describe( 'pm_406' ), 'inactiv' ) );
-check( 'descriere cod necunoscut', false !== strpos( ErrorClassifier::describe( 'pm_12345' ), 'pm_12345' ) );
+check( 'description of 406', false !== strpos( ErrorClassifier::describe( 'pm_406' ), 'inactive' ) );
+check( 'description of an unknown code', false !== strpos( ErrorClassifier::describe( 'pm_12345' ), 'pm_12345' ) );
 check( 'final failure', SendResult::failure( SendResult::CONFIG, 'x', '' )->is_final_failure() && ! SendResult::failure( SendResult::AMBIGUOUS, 'x', '' )->is_final_failure() );

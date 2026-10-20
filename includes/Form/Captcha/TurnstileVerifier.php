@@ -1,6 +1,6 @@
 <?php
 /**
- * Verificarea server-side a tokenului Cloudflare Turnstile.
+ * Server-side verification of the Cloudflare Turnstile token.
  *
  * @package LocationLeadTracker
  */
@@ -16,7 +16,7 @@ final class TurnstileVerifier {
 	const ENDPOINT = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 	/**
-	 * @return bool|null true = valid, false = invalid, null = verificarea nu este disponibilă.
+	 * @return bool|null true = valid, false = invalid, null = verification not available.
 	 */
 	public static function verify( string $token, string $ip ): ?bool {
 		$secret = Settings::secret( 'turnstile_secret' );

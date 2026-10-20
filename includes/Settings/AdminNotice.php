@@ -1,6 +1,6 @@
 <?php
 /**
- * Mesaje afișate după acțiunile din admin (email de test, alertă de test, acțiuni pe leaduri).
+ * Messages shown after admin actions (test email, test alert, lead actions).
  *
  * @package LocationLeadTracker
  */

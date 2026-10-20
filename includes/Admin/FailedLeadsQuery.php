@@ -1,9 +1,9 @@
 <?php
 /**
- * Interogările pentru lista de leaduri din admin (v3): vizualizări, filtre, paginare.
+ * Queries for the admin lead list (v3): views, filters, pagination.
  *
- * Aceeași condiție se folosește pentru listă, pentru numărători și pentru „selectează toate după filtru”,
- * ca o acțiune în masă să se aplice exact leadurilor afișate de filtru.
+ * The same condition is used for the list, the counts and "select all matching the filter",
+ * so a bulk action applies exactly to the leads shown by the filter.
  *
  * @package LocationLeadTracker
  */
@@ -19,16 +19,16 @@ defined( 'ABSPATH' ) || exit;
 final class FailedLeadsQuery {
 
 	const VIEWS = array(
-		'failed'    => 'Eșuate',
-		'stuck'     => 'Blocate',
-		'bounced'   => 'Respinse',
-		'dismissed' => 'Ignorate',
+		'failed'    => 'Failed',
+		'stuck'     => 'Stuck',
+		'bounced'   => 'Bounced',
+		'dismissed' => 'Dismissed',
 	);
 
 	const MAX_IDS = 5000;
 
 	/**
-	 * Vizualizările disponibile. „Respinse” apare doar cu confirmarea livrării activă sau când există leaduri respinse.
+	 * The available views. "Bounced" appears only when delivery confirmation is on or bounced leads exist.
 	 *
 	 * @return array<string,string>
 	 */
@@ -45,7 +45,7 @@ final class FailedLeadsQuery {
 	}
 
 	/**
-	 * Filtrele din cerere: error, s (locație), from, to (YYYY-MM-DD).
+	 * Filters from the request: error, s (location), from, to (YYYY-MM-DD).
 	 *
 	 * @param array $request $_GET / $_POST.
 	 */
@@ -63,7 +63,7 @@ final class FailedLeadsQuery {
 	}
 
 	/**
-	 * Condiția SQL (pe aliasurile l = lead, m = mesaj, p = postare) și parametrii ei.
+	 * The SQL condition (on the aliases l = lead, m = message, p = post) and its parameters.
 	 *
 	 * @return array{0:string,1:array}
 	 */
@@ -73,7 +73,7 @@ final class FailedLeadsQuery {
 
 		switch ( self::sanitize_view( $view ) ) {
 			case 'stuck':
-				// Scadente de peste o oră, dar neprocesate (cron oprit sau Postmark indisponibil).
+				// Due more than an hour ago, but not processed (cron stopped or Postmark unavailable).
 				$where[]  = "l.send_status = 'pending' AND l.next_retry_at < %s";
 				$params[] = Util::now( -HOUR_IN_SECONDS );
 				break;
@@ -138,7 +138,7 @@ final class FailedLeadsQuery {
 	}
 
 	/**
-	 * Toate ID-urile care corespund filtrului (pentru „selectează toate”).
+	 * All IDs matching the filter (for "select all").
 	 *
 	 * @return int[]
 	 */
@@ -173,19 +173,19 @@ final class FailedLeadsQuery {
 	}
 
 	/**
-	 * Codurile de eroare prezente într-o vizualizare (pentru filtrul dropdown).
+	 * The error codes present in a view (for the dropdown filter).
 	 *
 	 * @return string[]
 	 */
 	public static function error_codes( string $view ): array {
 		global $wpdb;
 		list( $where, $params ) = self::where( $view, array() );
-		$codes = $wpdb->get_col( self::prepare( 'SELECT DISTINCT l.last_error_code FROM ' . self::from() . " WHERE {$where} AND l.last_error_code IS NOT NULL ORDER BY l.last_error_code", $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$codes                  = $wpdb->get_col( self::prepare( 'SELECT DISTINCT l.last_error_code FROM ' . self::from() . " WHERE {$where} AND l.last_error_code IS NOT NULL ORDER BY l.last_error_code", $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		return array_values( array_filter( array_map( 'strval', (array) $codes ) ) );
 	}
 
 	/**
-	 * Numărul afișat în meniu: leaduri eșuate, neignorate, care încă pot fi retrimise.
+	 * The number shown in the menu: failed, not dismissed leads that can still be resent.
 	 */
 	public static function attention_count(): int {
 		global $wpdb;

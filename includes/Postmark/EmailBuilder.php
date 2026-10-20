@@ -1,6 +1,6 @@
 <?php
 /**
- * Construiește cererea Postmark pentru un lead.
+ * Builds the Postmark request for a lead.
  *
  * @package LocationLeadTracker
  */
@@ -18,8 +18,8 @@ final class EmailBuilder {
 	const TAG = 'location-lead';
 
 	/**
-	 * @param object $lead    Rând din `location_leads`.
-	 * @param object $message Rând din `location_lead_messages`.
+	 * @param object $lead    Row from `location_leads`.
+	 * @param object $message Row from `location_lead_messages`.
 	 */
 	public static function build( object $lead, object $message ): array {
 		$post_title = Util::single_line( wp_strip_all_tags( get_the_title( (int) $lead->object_id ) ) );
@@ -78,25 +78,25 @@ final class EmailBuilder {
 	}
 
 	/**
-	 * @param array $f Câmpurile emailului.
+	 * @param array $f Email fields.
 	 */
 	public static function text_body( array $f ): string {
 		$lines   = array();
-		$lines[] = sprintf( 'Mesaj nou de pe %s pentru „%s”.', $f['site_name'], $f['post_title'] );
+		$lines[] = sprintf( 'New message from %s for "%s".', $f['site_name'], $f['post_title'] );
 		$lines[] = '';
-		$lines[] = 'Nume: ' . $f['name'];
+		$lines[] = 'Name: ' . $f['name'];
 		$lines[] = 'Email: ' . $f['email'];
 		if ( '' !== $f['phone'] ) {
-			$lines[] = 'Telefon: ' . $f['phone'];
+			$lines[] = 'Phone: ' . $f['phone'];
 		}
-		$lines[] = 'Data: ' . $f['date'];
+		$lines[] = 'Date: ' . $f['date'];
 		$lines[] = '';
-		$lines[] = 'Mesaj:';
+		$lines[] = 'Message:';
 		$lines[] = $f['message'];
 		$lines[] = '';
 		$lines[] = '—';
-		$lines[] = 'Răspunde direct la acest email pentru a-i scrie vizitatorului.';
-		$lines[] = sprintf( 'Referință: #%d', $f['lead_id'] );
+		$lines[] = 'Reply directly to this email to write to the visitor.';
+		$lines[] = sprintf( 'Reference: #%d', $f['lead_id'] );
 		return implode( "\n", $lines );
 	}
 }

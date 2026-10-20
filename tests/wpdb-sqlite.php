@@ -1,7 +1,7 @@
 <?php
 /**
- * Un $wpdb minimal pe SQLite în memorie, pentru testele de integrare ale cozii.
- * Implementează doar metodele folosite de plugin.
+ * A minimal $wpdb on in-memory SQLite, for the queue integration tests.
+ * Implements only the methods used by the plugin.
  *
  * @package LocationLeadTracker
  */
@@ -94,8 +94,7 @@ final class LLT_Test_WPDB {
 	}
 
 	private function translate( string $sql ): string {
-		$sql = preg_replace( '/^\s*START TRANSACTION/i', 'BEGIN', $sql );
-		return $sql;
+		return preg_replace( '/^\s*START TRANSACTION/i', 'BEGIN', $sql );
 	}
 
 	public function query( $sql ) {
@@ -114,7 +113,7 @@ final class LLT_Test_WPDB {
 		$stmt        = $this->pdo->query( $sql );
 		if ( false === $stmt ) {
 			$this->last_error = implode( ' ', $this->pdo->errorInfo() );
-			throw new RuntimeException( 'SQL invalid: ' . $this->last_error . ' — ' . $sql );
+			throw new RuntimeException( 'Invalid SQL: ' . $this->last_error . ' — ' . $sql );
 		}
 		return $stmt;
 	}

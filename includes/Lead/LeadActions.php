@@ -1,6 +1,6 @@
 <?php
 /**
- * Acțiuni manuale pe leaduri, comune pentru WP-CLI și pagina din admin (v3).
+ * Manual lead actions, shared by WP-CLI and the admin page (v3).
  *
  * @package LocationLeadTracker
  */
@@ -16,9 +16,9 @@ defined( 'ABSPATH' ) || exit;
 final class LeadActions {
 
 	/**
-	 * Readuce leadurile `failed` în coadă. Doar leadurile care încă au conținut pot fi retrimise.
+	 * Puts `failed` leads back in the queue. Only leads that still have content can be resent.
 	 *
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 * @return array{queued:int,no_content:int[],not_failed:int[]}
 	 */
 	public static function resend( array $ids, int $user_id = 0 ): array {
@@ -59,21 +59,21 @@ final class LeadActions {
 	}
 
 	/**
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 */
 	public static function dismiss( array $ids, int $user_id = 0 ): int {
 		return self::set_dismissed( $ids, Util::now(), $user_id ?: null );
 	}
 
 	/**
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 */
 	public static function restore( array $ids ): int {
 		return self::set_dismissed( $ids, null, null );
 	}
 
 	/**
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 */
 	public static function delete_content( array $ids ): int {
 		$deleted = MessageRepository::delete_many( $ids );
@@ -84,7 +84,7 @@ final class LeadActions {
 	}
 
 	/**
-	 * Pornește procesarea cozii cât mai repede.
+	 * Starts processing the queue as soon as possible.
 	 */
 	public static function kick_queue(): void {
 		if ( ! wp_next_scheduled( 'llt_process_queue_now' ) ) {
@@ -96,7 +96,7 @@ final class LeadActions {
 	}
 
 	/**
-	 * @param int[] $ids ID-uri.
+	 * @param int[] $ids IDs.
 	 */
 	private static function set_dismissed( array $ids, ?string $at, ?int $user_id ): int {
 		global $wpdb;

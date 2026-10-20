@@ -1,6 +1,6 @@
 <?php
 /**
- * Calculul întârzierii până la următorul retry: interval din setări, jitter ±20%, Retry-After.
+ * Computes the delay until the next retry: interval from the settings, ±20% jitter, Retry-After.
  *
  * @package LocationLeadTracker
  */
@@ -18,9 +18,9 @@ final class BackoffPolicy {
 	const AMBIGUOUS_MIN = 300;
 
 	/**
-	 * @param int      $retry_index Indexul retry-ului (0 = primul retry).
-	 * @param int      $retry_after Secunde cerute de Postmark.
-	 * @param int[]|null $schedule  Intervalele în minute (implicit din setări).
+	 * @param int        $retry_index Retry index (0 = first retry).
+	 * @param int        $retry_after Seconds requested by Postmark.
+	 * @param int[]|null $schedule    Intervals in minutes (from the settings by default).
 	 */
 	public static function delay( int $retry_index, int $retry_after = 0, ?array $schedule = null ): int {
 		$schedule = $schedule ?? Settings::retry_schedule();

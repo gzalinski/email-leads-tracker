@@ -1,8 +1,8 @@
 <?php
 /**
- * Găsește emailul destinatarului: post meta `email` a postării indicate.
+ * Finds the recipient email: the `email` post meta of the given post.
  *
- * Cheia meta este fixă și nu există restricție după tipul postării.
+ * The meta key is fixed and there is no restriction by post type.
  *
  * @package LocationLeadTracker
  */
@@ -20,15 +20,15 @@ final class RecipientResolver {
 	 */
 	public static function resolve( int $object_id ) {
 		if ( $object_id <= 0 ) {
-			return new \WP_Error( 'llt_no_post', 'Shortcode-ul nu are object_id și nu există o postare curentă.' );
+			return new \WP_Error( 'llt_no_post', 'The shortcode has no object_id and there is no current post.' );
 		}
 
 		$post = get_post( $object_id );
 		if ( ! $post instanceof \WP_Post ) {
-			return new \WP_Error( 'llt_no_post', sprintf( 'Postarea #%d nu există.', $object_id ) );
+			return new \WP_Error( 'llt_no_post', sprintf( 'Post #%d does not exist.', $object_id ) );
 		}
 		if ( 'publish' !== $post->post_status ) {
-			return new \WP_Error( 'llt_not_published', sprintf( 'Postarea #%d nu este publicată.', $object_id ) );
+			return new \WP_Error( 'llt_not_published', sprintf( 'Post #%d is not published.', $object_id ) );
 		}
 
 		$value = get_post_meta( $object_id, self::META_KEY, true );
@@ -36,7 +36,7 @@ final class RecipientResolver {
 		$email = (string) apply_filters( 'llt_recipient_email', $email, $post );
 
 		if ( ! is_email( $email ) ) {
-			return new \WP_Error( 'llt_no_email', sprintf( 'Postarea #%d nu are un câmp „email” valid.', $object_id ) );
+			return new \WP_Error( 'llt_no_email', sprintf( 'Post #%d does not have a valid "email" field.', $object_id ) );
 		}
 
 		return array(

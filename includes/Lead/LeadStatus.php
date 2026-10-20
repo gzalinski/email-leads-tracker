@@ -1,6 +1,6 @@
 <?php
 /**
- * Stările leadului și regulile de tranziție ale livrării.
+ * Lead statuses and delivery transition rules.
  *
  * @package LocationLeadTracker
  */
@@ -23,7 +23,7 @@ final class LeadStatus {
 	const BOUNCED   = 'bounced';
 
 	/**
-	 * Stările din care se poate ajunge într-o stare de livrare. `delivered` și `bounced` sunt finale.
+	 * The statuses a delivery status can be reached from. `delivered` and `bounced` are final.
 	 *
 	 * @return string[]
 	 */

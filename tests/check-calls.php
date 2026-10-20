@@ -1,7 +1,7 @@
 <?php
 /**
- * Verificare statică: fiecare apel `Clasă::metodă(` și `array( Clasă::class, 'metodă' )` din plugin
- * trebuie să indice o clasă și o metodă care există. Rulare: php tests/check-calls.php
+ * Static check: every `Class::method(` call and `array( Class::class, 'method' )` callback in the plugin
+ * must point to a class and a method that exist. Usage: php tests/check-calls.php
  *
  * @package LocationLeadTracker
  */
@@ -21,8 +21,8 @@ foreach ( $files as $file ) {
 	$imports   = array();
 	if ( preg_match_all( '/^use\s+([^;]+);/m', $code, $uses ) ) {
 		foreach ( $uses[1] as $use ) {
-			$parts                        = explode( '\\', trim( $use ) );
-			$imports[ end( $parts ) ]     = ltrim( trim( $use ), '\\' );
+			$parts                    = explode( '\\', trim( $use ) );
+			$imports[ end( $parts ) ] = ltrim( trim( $use ), '\\' );
 		}
 	}
 
@@ -40,9 +40,9 @@ foreach ( $files as $file ) {
 		return ( $namespace ? $namespace . '\\' : '' ) . $name;
 	};
 
-	// Clasă::metodă(
+	// Class::method(
 	preg_match_all( '/(\\\\?[A-Z][A-Za-z_\\\\]*)::([a-z_][A-Za-z0-9_]*)\s*\(/', $code, $calls, PREG_SET_ORDER );
-	// array( Clasă::class, 'metodă' )
+	// array( Class::class, 'method' )
 	preg_match_all( "/array\(\s*(\\\\?[A-Z][A-Za-z_\\\\]*)::class\s*,\s*'([A-Za-z0-9_]+)'\s*\)/", $code, $callbacks, PREG_SET_ORDER );
 
 	foreach ( array_merge( $calls, $callbacks ) as $call ) {
@@ -52,14 +52,14 @@ foreach ( $files as $file ) {
 		}
 		++$checks;
 		if ( 0 !== strpos( $class, 'LocationLeadTracker\\' ) ) {
-			continue; // Clase din WordPress sau PHP.
+			continue; // WordPress or PHP classes.
 		}
 		if ( ! class_exists( $class ) ) {
-			$errors[] = basename( $file ) . ": clasa {$class} nu există";
+			$errors[] = basename( $file ) . ": class {$class} does not exist";
 			continue;
 		}
 		if ( ! method_exists( $class, $call[2] ) ) {
-			$errors[] = basename( $file ) . ": metoda {$class}::{$call[2]} nu există";
+			$errors[] = basename( $file ) . ": method {$class}::{$call[2]} does not exist";
 		}
 	}
 }
@@ -78,5 +78,5 @@ function glob_recursive( string $dir ): array {
 foreach ( $errors as $error ) {
 	fwrite( STDERR, $error . "\n" );
 }
-printf( "%d apeluri verificate, %d probleme\n", $checks, count( $errors ) );
+printf( "%d calls checked, %d problems\n", $checks, count( $errors ) );
 exit( $errors ? 1 : 0 );

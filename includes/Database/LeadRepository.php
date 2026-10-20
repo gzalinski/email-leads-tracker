@@ -1,6 +1,6 @@
 <?php
 /**
- * Accesul la tabelul `location_leads`.
+ * Access to the `location_leads` table.
  *
  * @package LocationLeadTracker
  */
@@ -28,11 +28,11 @@ final class LeadRepository {
 	}
 
 	/**
-	 * Actualizează un lead; `updated_at` se setează automat.
+	 * Updates a lead; `updated_at` is set automatically.
 	 *
-	 * @param array      $data  Coloane => valori (null = NULL).
-	 * @param array|null $where Condiții suplimentare (coloană => valoare).
-	 * @return int Număr de rânduri modificate.
+	 * @param array      $data  Columns => values (null = NULL).
+	 * @param array|null $where Additional conditions (column => value).
+	 * @return int Number of rows changed.
 	 */
 	public static function update( int $id, array $data, ?array $where = null ): int {
 		global $wpdb;
@@ -43,7 +43,7 @@ final class LeadRepository {
 	}
 
 	/**
-	 * Leadurile `pending` scadente, cele mai vechi primele.
+	 * Due `pending` leads, oldest first.
 	 *
 	 * @return int[]
 	 */
@@ -63,7 +63,7 @@ final class LeadRepository {
 	}
 
 	/**
-	 * Numărul de leaduri pe stări.
+	 * Number of leads per status.
 	 *
 	 * @return array{send:array<string,int>,delivery:array<string,int>,total:int}
 	 */
@@ -84,7 +84,7 @@ final class LeadRepository {
 			$where[]  = 'object_id = %d';
 			$params[] = $object_id;
 		}
-		$sql = "SELECT send_status, delivery_status, COUNT(*) AS n FROM {$table} WHERE " . implode( ' AND ', $where ) . ' GROUP BY send_status, delivery_status';
+		$sql  = "SELECT send_status, delivery_status, COUNT(*) AS n FROM {$table} WHERE " . implode( ' AND ', $where ) . ' GROUP BY send_status, delivery_status';
 		$rows = $wpdb->get_results( $params ? $wpdb->prepare( $sql, $params ) : $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		$result = array(
@@ -102,17 +102,17 @@ final class LeadRepository {
 			'total'    => 0,
 		);
 		foreach ( (array) $rows as $row ) {
-			$n                                         = (int) $row->n;
-			$result['send'][ $row->send_status ]       = ( $result['send'][ $row->send_status ] ?? 0 ) + $n;
+			$n                                           = (int) $row->n;
+			$result['send'][ $row->send_status ]         = ( $result['send'][ $row->send_status ] ?? 0 ) + $n;
 			$result['delivery'][ $row->delivery_status ] = ( $result['delivery'][ $row->delivery_status ] ?? 0 ) + $n;
-			$result['total']                          += $n;
+			$result['total']                            += $n;
 		}
 		return $result;
 	}
 
 	/**
-	 * Leaduri blocate: `pending` și scadente înainte de momentul dat, dar neprocesate.
-	 * Leadurile care așteaptă un retry programat (ex.: peste 6 ore) nu sunt blocate.
+	 * Stuck leads: `pending` and due before the given time, but not processed.
+	 * Leads waiting for a scheduled retry (e.g. in 6 hours) are not stuck.
 	 */
 	public static function count_stuck( string $due_before ): int {
 		global $wpdb;
@@ -121,7 +121,7 @@ final class LeadRepository {
 	}
 
 	/**
-	 * Căutare pentru CLI și admin.
+	 * Search for WP-CLI and the admin.
 	 *
 	 * @param array $filters status, delivery, since, until, object_id, limit, offset.
 	 * @return object[]

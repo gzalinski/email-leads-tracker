@@ -1,6 +1,6 @@
 <?php
 /**
- * Integrare: creare lead → trimitere → retry → eșec → retrimitere → retenție, pe SQLite.
+ * Integration: create lead → send → retry → failure → resend → retention, on SQLite.
  */
 // phpcs:ignoreFile
 require_once dirname( __DIR__ ) . '/wpdb-sqlite.php';
@@ -22,85 +22,85 @@ global $wpdb;
 $wpdb = new LLT_Test_WPDB();
 
 reset_settings( array( 'postmark_token' => SecretStore::encrypt( 'tok' ), 'alert_threshold' => 2 ) );
-$GLOBALS['llt_test_options']['llt_state'] = array();
-$GLOBALS['llt_test_options']['admin_email'] = 'admin@example.md';
+$GLOBALS['llt_test_options']['llt_state']   = array();
+$GLOBALS['llt_test_options']['admin_email'] = 'admin@example.com';
 
-$data = array( 'name' => 'Ion', 'email' => 'ion@example.md', 'phone' => '', 'message' => 'Salut' );
+$data = array( 'name' => 'John', 'email' => 'john@example.com', 'phone' => '', 'message' => 'Hello' );
 
 function llt_make_due( int $id ): void {
 	global $wpdb;
 	$wpdb->query( "UPDATE wp_location_leads SET next_retry_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
 }
 
-// 1. Creare.
-$id   = LeadService::create( $data, 245, 'centru@example.md' );
+// 1. Creation.
+$id   = LeadService::create( $data, 245, 'downtown@example.com' );
 $lead = LeadRepository::find( $id );
-same( 'lead creat pending', 'pending', $lead->send_status );
+same( 'lead created pending', 'pending', $lead->send_status );
 same( 'delivery unknown', 'unknown', $lead->delivery_status );
-check( 'conținut salvat', null !== MessageRepository::find( $id ) );
-same( 'telefon gol → NULL', null, MessageRepository::find( $id )->sender_phone );
+check( 'content saved', null !== MessageRepository::find( $id ) );
+same( 'empty phone → NULL', null, MessageRepository::find( $id )->sender_phone );
 
-// 2. Lock: al doilea claim eșuează.
+// 2. Lock: the second claim fails.
 $token = Lock::claim( $id );
-check( 'claim reușit', null !== $token );
-same( 'al doilea claim eșuează', null, Lock::claim( $id ) );
+check( 'claim succeeded', null !== $token );
+same( 'second claim fails', null, Lock::claim( $id ) );
 Lock::release( $id, $token );
 
-// 3. Trimitere acceptată.
+// 3. Accepted send.
 $GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-1' ) ) );
 SendWorker::process_lead( $id );
 $lead = LeadRepository::find( $id );
-same( 'acceptat', 'accepted', $lead->send_status );
-same( 'MessageID salvat', 'pm-1', $lead->postmark_message_id );
-check( 'sent_at setat', null !== $lead->sent_at );
-same( 'lock eliberat', null, $lead->lock_token );
+same( 'accepted', 'accepted', $lead->send_status );
+same( 'MessageID saved', 'pm-1', $lead->postmark_message_id );
+check( 'sent_at set', null !== $lead->sent_at );
+same( 'lock released', null, $lead->lock_token );
 $payload = json_decode( $GLOBALS['llt_http_log'][0][2]['body'], true );
 same( 'metadata lead id', (string) $id, $payload['Metadata']['llt_lead_id'] );
-same( 'ReplyTo vizitator', 'ion@example.md', $payload['ReplyTo'] );
-same( 'To locație', 'centru@example.md', $payload['To'] );
+same( 'ReplyTo is the visitor', 'john@example.com', $payload['ReplyTo'] );
+same( 'To is the location', 'downtown@example.com', $payload['To'] );
 same( 'stream', 'outbound', $payload['MessageStream'] );
 
-// 4. Lead acceptat nu se mai trimite.
+// 4. An accepted lead is not sent again.
 $GLOBALS['llt_http_log'] = array();
 SendWorker::process_lead( $id );
-same( 'acceptat nu se retrimite', 0, count( $GLOBALS['llt_http_log'] ) );
+same( 'accepted is not resent', 0, count( $GLOBALS['llt_http_log'] ) );
 
-// 5. Eroare temporară → retry programat.
-$id2 = LeadService::create( $data, 245, 'centru@example.md' );
+// 5. Temporary error → retry scheduled.
+$id2 = LeadService::create( $data, 245, 'downtown@example.com' );
 $GLOBALS['llt_http_queue'] = array( llt_http( 503, array( 'ErrorCode' => 100, 'Message' => 'Maintenance' ) ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
-same( 'temporar rămâne pending', 'pending', $lead->send_status );
+same( 'temporary stays pending', 'pending', $lead->send_status );
 same( 'retry_count 1', 1, (int) $lead->retry_count );
-check( 'next_retry_at în viitor', $lead->next_retry_at > Util::now() );
-same( 'cod eroare', 'pm_100', $lead->last_error_code );
+check( 'next_retry_at in the future', $lead->next_retry_at > Util::now() );
+same( 'error code', 'pm_100', $lead->last_error_code );
 $GLOBALS['llt_http_log'] = array();
 SendWorker::process_lead( $id2 );
-same( 'nescadent nu se trimite', 0, count( $GLOBALS['llt_http_log'] ) );
+same( 'not due, not sent', 0, count( $GLOBALS['llt_http_log'] ) );
 
-// 6. Timeout ambiguu → căutare în Postmark → găsit → acceptat fără retrimitere.
+// 6. Ambiguous timeout → search in Postmark → found → accepted without resending.
 llt_make_due( $id2 );
 $GLOBALS['llt_http_queue'] = array( new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out after 15001 milliseconds with 0 bytes received' ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
-same( 'ambiguu rămâne pending', 'pending', $lead->send_status );
-same( 'cod ambiguous_timeout', 'ambiguous_timeout', $lead->last_error_code );
-check( 'ambiguu: pauză ≥ 5 min', strtotime( $lead->next_retry_at . ' UTC' ) - time() >= 295 );
+same( 'ambiguous stays pending', 'pending', $lead->send_status );
+same( 'ambiguous_timeout code', 'ambiguous_timeout', $lead->last_error_code );
+check( 'ambiguous: pause ≥ 5 min', strtotime( $lead->next_retry_at . ' UTC' ) - time() >= 295 );
 
 llt_make_due( $id2 );
 $GLOBALS['llt_http_log']   = array();
 $GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'TotalCount' => 1, 'Messages' => array( array( 'MessageID' => 'pm-2' ) ) ) ) );
 SendWorker::process_lead( $id2 );
 $lead = LeadRepository::find( $id2 );
-same( 'găsit în Postmark → acceptat', 'accepted', $lead->send_status );
-same( 'MessageID din căutare', 'pm-2', $lead->postmark_message_id );
-same( 'o singură cerere (GET), fără retrimitere', 1, count( $GLOBALS['llt_http_log'] ) );
-same( 'cererea a fost căutarea', 'GET', $GLOBALS['llt_http_log'][0][0] );
-check( 'căutare după metadata', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'metadata_llt_lead_id=' . $id2 ) );
-check( 'căutare cu stream', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'messagestream=outbound' ) );
+same( 'found in Postmark → accepted', 'accepted', $lead->send_status );
+same( 'MessageID from the search', 'pm-2', $lead->postmark_message_id );
+same( 'a single request (GET), no resend', 1, count( $GLOBALS['llt_http_log'] ) );
+same( 'the request was the search', 'GET', $GLOBALS['llt_http_log'][0][0] );
+check( 'search by metadata', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'metadata_llt_lead_id=' . $id2 ) );
+check( 'search with the stream', false !== strpos( $GLOBALS['llt_http_log'][0][1], 'messagestream=outbound' ) );
 
-// 7. Ambiguu → negăsit → se retrimite.
-$id3 = LeadService::create( $data, 245, 'centru@example.md' );
+// 7. Ambiguous → not found → resent.
+$id3 = LeadService::create( $data, 245, 'downtown@example.com' );
 $wpdb->query( "UPDATE wp_location_leads SET last_error_code = 'ambiguous_timeout' WHERE id = {$id3}" );
 $GLOBALS['llt_http_log']   = array();
 $GLOBALS['llt_http_queue'] = array(
@@ -108,113 +108,113 @@ $GLOBALS['llt_http_queue'] = array(
 	llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-3' ) ),
 );
 SendWorker::process_lead( $id3 );
-same( 'negăsit → trimis', 'pm-3', LeadRepository::find( $id3 )->postmark_message_id );
-same( 'căutare + trimitere', array( 'GET', 'POST' ), array_column( $GLOBALS['llt_http_log'], 0 ) );
+same( 'not found → sent', 'pm-3', LeadRepository::find( $id3 )->postmark_message_id );
+same( 'search + send', array( 'GET', 'POST' ), array_column( $GLOBALS['llt_http_log'], 0 ) );
 
-// 8. Eroare permanentă → failed + alertă la prag.
+// 8. Permanent error → failed + alert at the threshold.
 $GLOBALS['llt_mail_log'] = array();
-$id4 = LeadService::create( $data, 245, 'centru@example.md' );
-$GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 406, 'Message' => 'Inactive recipient centru@example.md' ) ) );
+$id4 = LeadService::create( $data, 245, 'downtown@example.com' );
+$GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 406, 'Message' => 'Inactive recipient downtown@example.com' ) ) );
 SendWorker::process_lead( $id4 );
 $lead = LeadRepository::find( $id4 );
 same( '406 → failed', 'failed', $lead->send_status );
-same( '406 cod', 'pm_406', $lead->last_error_code );
-check( 'email mascat în eroare', false === strpos( (string) $lead->last_error_message, '@' ) );
-same( 'sub prag: fără alertă', 0, count( $GLOBALS['llt_mail_log'] ) );
+same( '406 code', 'pm_406', $lead->last_error_code );
+check( 'email masked in the error', false === strpos( (string) $lead->last_error_message, '@' ) );
+same( 'below the threshold: no alert', 0, count( $GLOBALS['llt_mail_log'] ) );
 
-$id5 = LeadService::create( $data, 245, 'centru@example.md' );
+$id5 = LeadService::create( $data, 245, 'downtown@example.com' );
 $GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
 SendWorker::process_lead( $id5 );
-same( 'la prag: alertă trimisă', 1, count( $GLOBALS['llt_mail_log'] ) );
-check( 'alerta conține ID-urile', false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id4 ) && false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id5 ) );
-check( 'alerta fără datele vizitatorului', false === strpos( $GLOBALS['llt_mail_log'][0][2], 'ion@example.md' ) );
-same( 'alerta la adresa de alertă', 'admin@example.md', $GLOBALS['llt_mail_log'][0][0] );
+same( 'at the threshold: alert sent', 1, count( $GLOBALS['llt_mail_log'] ) );
+check( 'the alert contains the IDs', false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id4 ) && false !== strpos( $GLOBALS['llt_mail_log'][0][2], '#' . $id5 ) );
+check( 'the alert has no visitor data', false === strpos( $GLOBALS['llt_mail_log'][0][2], 'john@example.com' ) );
+same( 'the alert goes to the alert address', 'admin@example.com', $GLOBALS['llt_mail_log'][0][0] );
 
-// Limitare: a doua alertă de același tip nu pleacă.
-$id6 = LeadService::create( $data, 245, 'centru@example.md' );
+// Rate limiting: a second alert of the same type is not sent.
+$id6 = LeadService::create( $data, 245, 'downtown@example.com' );
 $GLOBALS['llt_http_queue'] = array( llt_http( 422, array( 'ErrorCode' => 300, 'Message' => 'Invalid' ) ) );
 SendWorker::process_lead( $id6 );
-same( 'alertă limitată în timp', 1, count( $GLOBALS['llt_mail_log'] ) );
+same( 'alert rate-limited', 1, count( $GLOBALS['llt_mail_log'] ) );
 
-// Revenire: o trimitere reușită trimite notificarea „funcționează din nou”.
-$id7 = LeadService::create( $data, 245, 'centru@example.md' );
+// Recovery: a successful send triggers the "works again" notification.
+$id7 = LeadService::create( $data, 245, 'downtown@example.com' );
 $GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-7' ) ) );
 SendWorker::process_lead( $id7 );
-same( 'alertă de revenire', 2, count( $GLOBALS['llt_mail_log'] ) );
-check( 'subiect revenire', false !== strpos( $GLOBALS['llt_mail_log'][1][1], 'din nou' ) );
-same( 'contor resetat', 0, (int) State::get( 'consecutive_failures' ) );
+same( 'recovery alert', 2, count( $GLOBALS['llt_mail_log'] ) );
+check( 'recovery subject', false !== strpos( $GLOBALS['llt_mail_log'][1][1], 'works again' ) );
+same( 'counter reset', 0, (int) State::get( 'consecutive_failures' ) );
 
-// 9. Eroare de configurare → alertă imediată.
+// 9. Configuration error → immediate alert.
 $GLOBALS['llt_mail_log'] = array();
-$id8 = LeadService::create( $data, 245, 'centru@example.md' );
+$id8 = LeadService::create( $data, 245, 'downtown@example.com' );
 $GLOBALS['llt_http_queue'] = array( llt_http( 401, array( 'ErrorCode' => 10, 'Message' => 'Bad token' ) ) );
 SendWorker::process_lead( $id8 );
 same( 'config → failed', 'failed', LeadRepository::find( $id8 )->send_status );
-same( 'config → alertă imediată', 1, count( $GLOBALS['llt_mail_log'] ) );
+same( 'config → immediate alert', 1, count( $GLOBALS['llt_mail_log'] ) );
 
-// 10. Retry-uri epuizate.
+// 10. Retries exhausted.
 reset_settings( array( 'postmark_token' => SecretStore::encrypt( 'tok' ), 'retry_schedule' => '1, 5', 'max_retries' => 2 ) );
-$id9 = LeadService::create( $data, 245, 'centru@example.md' );
-same( 'max_retries din setări', 2, (int) LeadRepository::find( $id9 )->max_retries );
+$id9 = LeadService::create( $data, 245, 'downtown@example.com' );
+same( 'max_retries from the settings', 2, (int) LeadRepository::find( $id9 )->max_retries );
 for ( $i = 0; $i < 3; $i++ ) {
 	llt_make_due( $id9 );
 	$GLOBALS['llt_http_queue'] = array( llt_http( 500, '' ) );
 	SendWorker::process_lead( $id9 );
 }
 $lead = LeadRepository::find( $id9 );
-same( 'epuizat → failed', 'failed', $lead->send_status );
-same( 'epuizat cod', 'retries_exhausted', $lead->last_error_code );
-same( 'încercări: 1 inițială + 2 retry', 2, (int) $lead->retry_count );
+same( 'exhausted → failed', 'failed', $lead->send_status );
+same( 'exhausted code', 'retries_exhausted', $lead->last_error_code );
+same( 'attempts: 1 initial + 2 retries', 2, (int) $lead->retry_count );
 
-// 11. Retrimitere manuală.
+// 11. Manual resend.
 MessageRepository::delete( $id5 );
 $result = LeadActions::resend( array( $id4, $id5, $id ), 7 );
-same( 'retrimitere: puse în coadă', 1, $result['queued'] );
-same( 'retrimitere: fără conținut', array( $id5 ), $result['no_content'] );
-same( 'retrimitere: nu sunt failed', array( $id ), $result['not_failed'] );
+same( 'resend: queued', 1, $result['queued'] );
+same( 'resend: no content', array( $id5 ), $result['no_content'] );
+same( 'resend: not failed', array( $id ), $result['not_failed'] );
 $lead = LeadRepository::find( $id4 );
-same( 'retrimis → pending', 'pending', $lead->send_status );
-same( 'retry_count resetat', 0, (int) $lead->retry_count );
+same( 'resent → pending', 'pending', $lead->send_status );
+same( 'retry_count reset', 0, (int) $lead->retry_count );
 same( 'manual_resend_count', 1, (int) $lead->manual_resend_count );
 same( 'last_resend_by', 7, (int) $lead->last_resend_by );
-same( 'a doua retrimitere nu dublează', 0, LeadActions::resend( array( $id4 ) )['queued'] );
+same( 'a second resend does not duplicate', 0, LeadActions::resend( array( $id4 ) )['queued'] );
 
-// Ignoră / restaurează.
-same( 'ignoră', 1, LeadActions::dismiss( array( $id8 ), 7 ) );
-check( 'dismissed_at setat', null !== LeadRepository::find( $id8 )->dismissed_at );
+// Dismiss / restore.
+same( 'dismiss', 1, LeadActions::dismiss( array( $id8 ), 7 ) );
+check( 'dismissed_at set', null !== LeadRepository::find( $id8 )->dismissed_at );
 LeadActions::restore( array( $id8 ) );
-same( 'restaurat', null, LeadRepository::find( $id8 )->dismissed_at );
+same( 'restored', null, LeadRepository::find( $id8 )->dismissed_at );
 
-// 12. Coada procesează doar leadurile scadente.
+// 12. The queue only processes due leads.
 $GLOBALS['llt_http_queue'] = array( llt_http( 200, array( 'ErrorCode' => 0, 'MessageID' => 'pm-4' ) ) );
 SendWorker::process_queue();
-same( 'coada a trimis leadul retrimis', 'accepted', LeadRepository::find( $id4 )->send_status );
+same( 'the queue sent the resent lead', 'accepted', LeadRepository::find( $id4 )->send_status );
 check( 'heartbeat', (int) State::get( 'worker_heartbeat' ) > 0 );
-same( 'lock global eliberat', false, get_option( 'llt_worker_lock' ) );
+same( 'global lock released', false, get_option( 'llt_worker_lock' ) );
 
-// 13. Retenție (fără confirmarea livrării).
+// 13. Retention (without delivery confirmation).
 reset_settings( array( 'retention_accepted_hours' => 24, 'retention_failed_days' => 14 ) );
 $wpdb->query( "UPDATE wp_location_leads SET sent_at = '2000-01-01 00:00:00' WHERE id = {$id}" );
 $wpdb->query( "UPDATE wp_location_lead_messages SET created_at = '2000-01-01 00:00:00' WHERE lead_id = {$id8}" );
 $dry = RetentionService::run( true );
-same( 'dry-run accepted', 1, $dry['accepted'] );
-same( 'dry-run failed', 1, $dry['failed'] );
-check( 'dry-run nu șterge', null !== MessageRepository::find( $id ) );
+same( 'dry run accepted', 1, $dry['accepted'] );
+same( 'dry run failed', 1, $dry['failed'] );
+check( 'dry run does not delete', null !== MessageRepository::find( $id ) );
 RetentionService::run();
-same( 'accepted vechi șters', null, MessageRepository::find( $id ) );
-same( 'failed vechi șters', null, MessageRepository::find( $id8 ) );
-check( 'accepted recent păstrat', null !== MessageRepository::find( $id7 ) );
-check( 'failed recent păstrat', null !== MessageRepository::find( $id6 ) );
-check( 'leadul minimal rămâne', null !== LeadRepository::find( $id ) );
+same( 'old accepted deleted', null, MessageRepository::find( $id ) );
+same( 'old failed deleted', null, MessageRepository::find( $id8 ) );
+check( 'recent accepted kept', null !== MessageRepository::find( $id7 ) );
+check( 'recent failed kept', null !== MessageRepository::find( $id6 ) );
+check( 'the minimal lead stays', null !== LeadRepository::find( $id ) );
 
 // 14. GDPR.
-$export = PersonalDataExporter::export( 'ion@example.md', 1 );
-check( 'export găsește mesajele', count( $export['data'] ) > 0 && $export['done'] );
-same( 'export: valoare email', 'ion@example.md', $export['data'][0]['data'][2]['value'] );
-$erase = PersonalDataEraser::erase( 'ion@example.md', 1 );
-check( 'ștergere GDPR', $erase['items_removed'] && $erase['done'] );
-same( 'nimic rămas după ștergere', 0, count( PersonalDataExporter::export( 'ion@example.md', 1 )['data'] ) );
+$export = PersonalDataExporter::export( 'john@example.com', 1 );
+check( 'export finds the messages', count( $export['data'] ) > 0 && $export['done'] );
+same( 'export: email value', 'john@example.com', $export['data'][0]['data'][2]['value'] );
+$erase = PersonalDataEraser::erase( 'john@example.com', 1 );
+check( 'GDPR erasure', $erase['items_removed'] && $erase['done'] );
+same( 'nothing left after erasure', 0, count( PersonalDataExporter::export( 'john@example.com', 1 )['data'] ) );
 
-// 15. Statistici.
+// 15. Statistics.
 $counts = LeadRepository::counts();
-same( 'total leaduri', 9, $counts['total'] );
+same( 'total leads', 9, $counts['total'] );

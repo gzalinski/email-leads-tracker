@@ -1,6 +1,6 @@
 <?php
 /**
- * Activare, dezactivare, migrații și programarea evenimentelor cron.
+ * Activation, deactivation, migrations and cron scheduling.
  *
  * @package LocationLeadTracker
  */
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 final class Installer {
 
 	/**
-	 * Evenimente recurente: hook => recurență.
+	 * Recurring events: hook => recurrence.
 	 *
 	 * @return array<string,string>
 	 */
@@ -30,7 +30,7 @@ final class Installer {
 	}
 
 	/**
-	 * Toate hookurile cron folosite de plugin (inclusiv cele unice).
+	 * All cron hooks used by the plugin (including single events).
 	 *
 	 * @return string[]
 	 */
@@ -39,22 +39,22 @@ final class Installer {
 	}
 
 	/**
-	 * Adaugă intervalul de un minut.
+	 * Adds the one-minute interval.
 	 *
-	 * @param array $schedules Intervale existente.
+	 * @param array $schedules Existing intervals.
 	 */
 	public static function cron_schedules( $schedules ): array {
 		$schedules = is_array( $schedules ) ? $schedules : array();
 		if ( ! isset( $schedules['llt_every_minute'] ) ) {
 			$schedules['llt_every_minute'] = array(
 				'interval' => MINUTE_IN_SECONDS,
-				'display'  => 'Location Lead Tracker: la fiecare minut',
+				'display'  => 'Location Lead Tracker: every minute',
 			);
 		}
 		if ( ! isset( $schedules['weekly'] ) ) {
 			$schedules['weekly'] = array(
 				'interval' => WEEK_IN_SECONDS,
-				'display'  => 'Săptămânal',
+				'display'  => 'Once weekly',
 			);
 		}
 		return $schedules;
@@ -76,7 +76,7 @@ final class Installer {
 	}
 
 	/**
-	 * Rulează migrațiile când versiunea schemei s-a schimbat și repară evenimentele cron lipsă.
+	 * Runs migrations when the schema version changed and restores missing cron events.
 	 */
 	public static function maybe_upgrade(): void {
 		if ( get_option( 'llt_db_version' ) !== LLT_DB_VERSION ) {

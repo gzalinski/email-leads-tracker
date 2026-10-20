@@ -1,8 +1,8 @@
 <?php
 /**
- * Randarea template-urilor, cu posibilitate de override din temă.
+ * Template rendering, with theme overrides.
  *
- * Tema poate suprascrie un template copiindu-l în `location-lead-tracker/<fișier>`.
+ * A theme can override a template by copying it to `location-lead-tracker/<file>`.
  *
  * @package LocationLeadTracker
  */
@@ -14,8 +14,8 @@ defined( 'ABSPATH' ) || exit;
 final class Template {
 
 	/**
-	 * @param string $name Numele fișierului din `templates/`.
-	 * @param array  $llt  Variabilele disponibile în template ca `$llt`.
+	 * @param string $name File name inside `templates/`.
+	 * @param array  $llt  Variables available in the template as `$llt`.
 	 */
 	public static function render( string $name, array $llt ): string {
 		$name  = basename( $name );

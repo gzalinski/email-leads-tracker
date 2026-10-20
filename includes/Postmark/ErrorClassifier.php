@@ -1,6 +1,6 @@
 <?php
 /**
- * Clasificarea răspunsurilor Postmark (verificat în documentația Postmark, octombrie 2026).
+ * Classification of Postmark responses (checked against the official Postmark documentation, October 2026).
  *
  * @package LocationLeadTracker
  */
@@ -13,39 +13,39 @@ defined( 'ABSPATH' ) || exit;
 
 final class ErrorClassifier {
 
-	/** ErrorCode-uri care afectează toate leadurile. */
+	/** ErrorCodes that affect all leads. */
 	const CONFIG_CODES = array( 10, 400, 402, 403, 412, 413, 422, 1235, 1236, 1480 );
 
-	/** ErrorCode-uri care țin doar de leadul curent. */
+	/** ErrorCodes that concern only the current lead. */
 	const PERMANENT_CODES = array( 300, 406 );
 
-	/** Coduri cURL care apar înainte ca cererea să fie trimisă (sigur de reîncercat). */
+	/** cURL codes raised before the request is sent (safe to retry). */
 	const CONNECT_CURL_CODES = array( 5, 6, 7, 35, 51, 58, 59, 60, 77, 83 );
 
-	/** Explicații în română pentru administrator. */
+	/** Explanations for the administrator. */
 	const DESCRIPTIONS = array(
-		'pm_10'             => 'Tokenul Postmark este invalid sau nu este un Server API Token.',
-		'pm_100'            => 'Postmark este în mentenanță.',
-		'pm_101'            => 'Eroare internă Postmark.',
-		'pm_300'            => 'Postmark a respins mesajul: adresă invalidă sau limită depășită.',
-		'pm_400'            => 'Semnătura expeditorului nu a fost găsită în Postmark.',
-		'pm_402'            => 'Cererea către Postmark nu este un JSON valid (eroare în plugin).',
-		'pm_403'            => 'Câmpuri invalide în cerere; de obicei adresa expeditorului nu este verificată în Postmark.',
-		'pm_406'            => 'Destinatarul este inactiv în Postmark (după un bounce sau o plângere de spam). Reactivează adresa din Postmark înainte de retrimitere.',
-		'pm_412'            => 'Contul Postmark este încă în aprobare: poți trimite doar către adrese de pe domeniul expeditorului.',
-		'pm_413'            => 'Contul Postmark nu este aprobat pentru trimitere.',
-		'pm_422'            => 'Serverul Postmark este invalid.',
-		'pm_1235'           => 'Message Stream-ul configurat nu există pe acest server Postmark.',
-		'pm_1236'           => 'Message Stream-ul configurat nu permite trimiterea; folosește un stream tranzacțional.',
-		'pm_1480'           => 'IP-ul serverului nu are voie să trimită prin acest cont Postmark.',
-		'http_413'          => 'Mesajul depășește limita de mărime a Postmark.',
-		'http_429'          => 'Limita de cereri Postmark a fost depășită.',
-		'no_token'          => 'Tokenul Postmark nu este configurat.',
-		'transport'         => 'Serverul nu a putut contacta Postmark.',
-		'ambiguous_timeout' => 'Postmark nu a răspuns la timp; mesajul poate să fi fost trimis.',
-		'retries_exhausted' => 'Toate reîncercările automate au eșuat.',
-		'content_missing'   => 'Conținutul mesajului nu mai există.',
-		'search_failed'     => 'Verificarea în Postmark a eșuat.',
+		'pm_10'             => 'The Postmark token is invalid or is not a Server API Token.',
+		'pm_100'            => 'Postmark is down for maintenance.',
+		'pm_101'            => 'Internal Postmark error.',
+		'pm_300'            => 'Postmark rejected the message: invalid address or a limit was exceeded.',
+		'pm_400'            => 'The sender signature was not found in Postmark.',
+		'pm_402'            => 'The request to Postmark is not valid JSON (plugin error).',
+		'pm_403'            => 'Invalid request fields; usually the sender address is not verified in Postmark.',
+		'pm_406'            => 'The recipient is inactive in Postmark (after a bounce or a spam complaint). Reactivate the address in Postmark before resending.',
+		'pm_412'            => 'The Postmark account is still pending approval: you can only send to addresses on the sender\'s domain.',
+		'pm_413'            => 'The Postmark account is not approved for sending.',
+		'pm_422'            => 'The Postmark server is invalid.',
+		'pm_1235'           => 'The configured Message Stream does not exist on this Postmark server.',
+		'pm_1236'           => 'The configured Message Stream does not allow sending; use a transactional stream.',
+		'pm_1480'           => 'The server\'s IP is not allowed to send through this Postmark account.',
+		'http_413'          => 'The message exceeds the Postmark size limit.',
+		'http_429'          => 'The Postmark request limit was exceeded.',
+		'no_token'          => 'The Postmark token is not configured.',
+		'transport'         => 'The server could not reach Postmark.',
+		'ambiguous_timeout' => 'Postmark did not respond in time; the message may have been sent.',
+		'retries_exhausted' => 'All automatic retries failed.',
+		'content_missing'   => 'The message content no longer exists.',
+		'search_failed'     => 'The check in Postmark failed.',
 	);
 
 	public static function describe( string $code ): string {
@@ -53,13 +53,13 @@ final class ErrorClassifier {
 			return self::DESCRIPTIONS[ $code ];
 		}
 		if ( 0 === strpos( $code, 'http_5' ) ) {
-			return 'Postmark a întors o eroare de server.';
+			return 'Postmark returned a server error.';
 		}
-		return 'Eroare Postmark: ' . $code;
+		return 'Postmark error: ' . $code;
 	}
 
 	/**
-	 * @param string|array $retry_after Valoarea headerului Retry-After.
+	 * @param string|array $retry_after Value of the Retry-After header.
 	 */
 	public static function from_response( int $http, string $body, $retry_after = '' ): SendResult {
 		$json    = json_decode( $body, true );
@@ -71,8 +71,8 @@ final class ErrorClassifier {
 			return SendResult::accepted( (string) $json['MessageID'] );
 		}
 		if ( 200 === $http ) {
-			// Răspuns 200 fără MessageID: nu știm sigur ce s-a întâmplat.
-			return SendResult::failure( SendResult::AMBIGUOUS, 'ambiguous_timeout', 'Răspuns Postmark fără MessageID.' );
+			// A 200 response without a MessageID: we do not know for sure what happened.
+			return SendResult::failure( SendResult::AMBIGUOUS, 'ambiguous_timeout', 'Postmark response without a MessageID.' );
 		}
 
 		$wait = self::retry_after( $retry_after );
@@ -96,14 +96,14 @@ final class ErrorClassifier {
 		return SendResult::failure(
 			SendResult::PERMANENT,
 			$key,
-			$message ?: sprintf( 'Răspuns neașteptat de la Postmark (HTTP %d).', $http )
+			$message ?: sprintf( 'Unexpected response from Postmark (HTTP %d).', $http )
 		);
 	}
 
 	/**
-	 * Erorile de transport (fără răspuns HTTP).
-	 * Dacă eroarea a apărut înainte de trimiterea cererii, reîncercarea este sigură;
-	 * altfel cererea poate să fi ajuns la Postmark, deci rezultatul este ambiguu.
+	 * Transport errors (no HTTP response).
+	 * If the error happened before the request was sent, retrying is safe;
+	 * otherwise the request may have reached Postmark, so the result is ambiguous.
 	 */
 	public static function from_transport_error( \WP_Error $error ): SendResult {
 		$message = Util::error_text( $error->get_error_message() );
@@ -120,7 +120,7 @@ final class ErrorClassifier {
 	}
 
 	/**
-	 * @param string|array $value Headerul Retry-After (secunde sau dată HTTP).
+	 * @param string|array $value The Retry-After header (seconds or an HTTP date).
 	 */
 	public static function retry_after( $value ): int {
 		if ( is_array( $value ) ) {

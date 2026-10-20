@@ -1,6 +1,6 @@
 <?php
 /**
- * Verificarea apartenenței unui IP la o rețea CIDR (IPv4 și IPv6).
+ * Checks whether an IP belongs to a CIDR network (IPv4 and IPv6).
  *
  * @package LocationLeadTracker
  */
@@ -55,7 +55,7 @@ final class Cidr {
 	}
 
 	/**
-	 * @param string[] $cidrs Rețele.
+	 * @param string[] $cidrs Networks.
 	 */
 	public static function in_any( array $cidrs, string $ip ): bool {
 		foreach ( $cidrs as $cidr ) {

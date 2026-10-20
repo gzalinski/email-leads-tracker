@@ -1,6 +1,6 @@
 <?php
 /**
- * Definiția tabelelor pluginului.
+ * Plugin table definitions.
  *
  * @package LocationLeadTracker
  */
@@ -22,8 +22,8 @@ final class Schema {
 	}
 
 	/**
-	 * Creează sau actualizează tabelele prin dbDelta.
-	 * Schema conține de la început coloanele folosite în v2 și v3.
+	 * Creates or updates the tables with dbDelta.
+	 * The schema includes the v2 and v3 columns from the start.
 	 */
 	public static function install(): void {
 		global $wpdb;

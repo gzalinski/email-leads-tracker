@@ -1,9 +1,9 @@
 <?php
 /**
- * Alerte pentru administrator (ARCHITECTURE.md §10).
+ * Administrator alerts (ARCHITECTURE.md §10).
  *
- * Alertele merg prin wp_mail(), nu prin Postmark, ca să ajungă și când problema este chiar Postmark.
- * Nu conțin date personale ale vizitatorilor.
+ * Alerts go through wp_mail(), not Postmark, so they still arrive when Postmark itself is the problem.
+ * They contain no personal data of the visitors.
  *
  * @package LocationLeadTracker
  */
@@ -26,7 +26,7 @@ final class AdminNotifier {
 	private static $mail_error = null;
 
 	/**
-	 * Un lead a devenit `failed`.
+	 * A lead became `failed`.
 	 */
 	public static function lead_failed( int $lead_id, SendResult $result ): void {
 		$state                         = State::all();
@@ -50,7 +50,7 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * O trimitere a fost acceptată: contorul se resetează; dacă exista o alertă activă, se anunță revenirea.
+	 * A send was accepted: the counter resets; if an alert was active, the recovery is announced.
 	 */
 	public static function send_succeeded(): void {
 		$state = State::all();
@@ -66,29 +66,29 @@ final class AdminNotifier {
 
 		if ( $was_alerting ) {
 			self::deliver(
-				'Trimiterea funcționează din nou',
-				"Location Lead Tracker a trimis cu succes un lead după eșecurile semnalate anterior.\n\n"
-				. "Leadurile eșuate între timp nu se retrimit automat. Verifică-le:\n"
+				'Sending works again',
+				"Location Lead Tracker successfully sent a lead after the failures reported earlier.\n\n"
+				. "Leads that failed in the meantime are not resent automatically. Review them:\n"
 				. self::resolution_hint()
 			);
 		}
 	}
 
 	/**
-	 * Alertă pentru leaduri blocate în `pending` (cron oprit sau Postmark indisponibil).
+	 * Alert for leads stuck in `pending` (cron stopped or Postmark unavailable).
 	 */
 	public static function stuck_leads( int $count ): void {
 		self::alert(
 			'stuck',
-			sprintf( '%d leaduri nu au fost trimise la timp', $count ),
-			sprintf( "%d leaduri trebuiau trimise acum mai mult de o oră și sunt încă în coadă.\n\n", $count )
-			. "Cauze posibile: cronul serverului nu rulează sau Postmark nu răspunde.\n"
-			. "Verifică tabul Stare din Setări → Location Lead Tracker sau rulează: wp llt status\n"
+			sprintf( '%d leads were not sent on time', $count ),
+			sprintf( "%d leads were due more than an hour ago and are still in the queue.\n\n", $count )
+			. "Possible causes: the server cron is not running or Postmark is not responding.\n"
+			. "Check the Status tab in Settings → Location Lead Tracker or run: wp llt status\n"
 		);
 	}
 
 	/**
-	 * Un email a fost respins definitiv (v2). Alertele de bounce se grupează și pleacă la verificarea orară.
+	 * An email was permanently rejected (v2). Bounce alerts are grouped and sent by the hourly check.
 	 */
 	public static function bounce_recorded( int $lead_id, string $code ): void {
 		if ( ! Settings::get( 'alert_on_bounce' ) ) {
@@ -103,7 +103,7 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Trimite alerta grupată pentru bounce-urile acumulate (hook `llt_health_check_run`).
+	 * Sends the grouped alert for the accumulated bounces (hook `llt_health_check_run`).
 	 */
 	public static function flush_bounces(): void {
 		$pending = (array) State::get( 'pending_bounces', array() );
@@ -116,11 +116,11 @@ final class AdminNotifier {
 		}
 		$sent = self::alert(
 			'bounce',
-			sprintf( '%d emailuri respinse de serverul destinatarului', count( $pending ) ),
-			"Următoarele leaduri nu au ajuns la locație, pentru că serverul destinatarului a respins emailul:\n\n"
+			sprintf( '%d emails rejected by the recipient server', count( $pending ) ),
+			"The following leads did not reach the location, because the recipient server rejected the email:\n\n"
 			. implode( "\n", $lines )
-			. "\n\nVerifică adresa din câmpul „email” al locației. Dacă Postmark a dezactivat adresa, reactiveaz-o din Postmark → Suppressions.\n"
-			. "Datele vizitatorilor se păstrează temporar; le poți vedea cu: wp llt leads show <id> --with-content\n"
+			. "\n\nCheck the address in the location's \"email\" field. If Postmark deactivated the address, reactivate it in Postmark → Suppressions.\n"
+			. "The visitors' data is kept temporarily; you can view it with: wp llt leads show <id> --with-content\n"
 		);
 		if ( $sent ) {
 			State::set( 'pending_bounces', array() );
@@ -128,20 +128,20 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Reconcilierea a găsit livrări, dar webhookul nu a mai trimis nimic de o zi (v2).
+	 * Reconciliation found deliveries, but the webhook has not sent anything for a day (v2).
 	 */
 	public static function webhook_silent( int $recovered ): void {
 		self::alert(
 			'webhook_silent',
-			'Webhookul Postmark pare oprit',
-			sprintf( "Reconcilierea orară a găsit %d confirmări de livrare pe care webhookul nu le-a trimis, iar ultimul webhook a sosit acum mai mult de o zi.\n\n", $recovered )
-			. "Postmark oprește un tip de eveniment după eșecuri repetate. Verifică-l în Postmark → Server → Message Stream → Webhooks și apasă Verify.\n"
-			. "Până atunci, reconcilierea confirmă livrările cu o întârziere de cel mult o oră.\n"
+			'The Postmark webhook seems to be stopped',
+			sprintf( "The hourly reconciliation found %d delivery confirmations that the webhook did not send, and the last webhook arrived more than a day ago.\n\n", $recovered )
+			. "Postmark pauses an event type after repeated failures. Check it in Postmark → Server → Message Stream → Webhooks and click Verify.\n"
+			. "Until then, reconciliation confirms deliveries with a delay of up to an hour.\n"
 		);
 	}
 
 	/**
-	 * Trimite o alertă, cu limitare în timp pe tip.
+	 * Sends an alert, rate-limited per type.
 	 */
 	public static function alert( string $type, string $subject, string $body ): bool {
 		$interval = max( 1, (int) Settings::get( 'alert_interval_hours' ) ) * HOUR_IN_SECONDS;
@@ -159,15 +159,15 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Alertă de test, fără limitare.
+	 * Test alert, without rate limiting.
 	 *
 	 * @return array{ok:bool,error:string,to:string}
 	 */
 	public static function test(): array {
 		$ok = self::deliver(
-			'Alertă de test',
-			"Acesta este un email de test trimis din Setări → Location Lead Tracker → Alerte.\n\n"
-			. "Dacă l-ai primit, alertele despre leadurile eșuate vor ajunge la această adresă.\n"
+			'Test alert',
+			"This is a test email sent from Settings → Location Lead Tracker → Alerts.\n\n"
+			. "If you received it, alerts about failed leads will reach this address.\n"
 		);
 		return array(
 			'ok'    => $ok,
@@ -177,9 +177,9 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Capturează eroarea wp_mail() (hookul `wp_mail_failed`).
+	 * Captures the wp_mail() error (hook `wp_mail_failed`).
 	 *
-	 * @param \WP_Error $error Eroarea.
+	 * @param \WP_Error $error The error.
 	 */
 	public static function capture_mail_error( $error ): void {
 		if ( $error instanceof \WP_Error ) {
@@ -200,27 +200,27 @@ final class AdminNotifier {
 		$count = count( $ids );
 
 		$subject = 'config' === $type
-			? 'Trimiterea leadurilor nu funcționează'
-			: sprintf( '%d leaduri nu au putut fi trimise', $count );
+			? 'Lead sending is not working'
+			: sprintf( '%d leads could not be sent', $count );
 
 		$lines   = array();
-		$lines[] = 'Postmark a respins trimiterea: ' . ErrorClassifier::describe( $code ) . ( $code ? " ({$code})" : '' );
+		$lines[] = 'Postmark rejected the send: ' . ErrorClassifier::describe( $code ) . ( $code ? " ({$code})" : '' );
 		if ( ! empty( $error['message'] ) ) {
-			$lines[] = 'Detalii: ' . $error['message'];
+			$lines[] = 'Details: ' . $error['message'];
 		}
 		if ( 'config' === $type ) {
-			$lines[] = 'Verifică setările din Setări → Location Lead Tracker → Postmark și trimite un email de test.';
+			$lines[] = 'Check the settings in Settings → Location Lead Tracker → Postmark and send a test email.';
 		}
 		$lines[] = '';
 		if ( $ids ) {
-			$lines[] = 'Leaduri afectate: #' . implode( ', #', $ids );
+			$lines[] = 'Affected leads: #' . implode( ', #', $ids );
 		}
 		if ( ! empty( $state['first_failure_at'] ) ) {
-			$lines[] = 'Primul eșec: ' . gmdate( 'd.m.Y H:i', (int) $state['first_failure_at'] ) . ' UTC';
+			$lines[] = 'First failure: ' . gmdate( 'Y-m-d H:i', (int) $state['first_failure_at'] ) . ' UTC';
 		}
 		$lines[] = '';
-		$lines[] = sprintf( 'Conținutul acestor mesaje se păstrează %d zile.', (int) Settings::get( 'retention_failed_days' ) );
-		$lines[] = 'După remediere, retrimite-le din:';
+		$lines[] = sprintf( 'The content of these messages is kept for %d days.', (int) Settings::get( 'retention_failed_days' ) );
+		$lines[] = 'Once fixed, resend them from:';
 		$lines[] = self::resolution_hint();
 
 		if ( self::alert( $type, $subject, implode( "\n", $lines ) . "\n" ) ) {
@@ -232,11 +232,11 @@ final class AdminNotifier {
 	}
 
 	/**
-	 * Unde se rezolvă leadurile eșuate: lista din admin (v3) și/sau WP-CLI.
+	 * Where failed leads are handled: the admin list (v3) and/or WP-CLI.
 	 */
 	public static function resolution_hint(): string {
 		$hint = (string) apply_filters( 'llt_alert_admin_link', '' );
-		return ( '' !== $hint ? $hint . "\nsau rulează:  " : '' ) . 'wp llt retry --failed';
+		return ( '' !== $hint ? $hint . "\nor run:  " : '' ) . 'wp llt retry --failed';
 	}
 
 	private static function deliver( string $subject, string $body ): bool {
@@ -262,7 +262,7 @@ final class AdminNotifier {
 				);
 				$sent = $result->is( SendResult::ACCEPTED );
 				if ( ! $sent ) {
-					self::$mail_error = trim( self::$mail_error . ' Fallback Postmark: ' . ErrorClassifier::describe( $result->code ) );
+					self::$mail_error = trim( self::$mail_error . ' Postmark fallback: ' . ErrorClassifier::describe( $result->code ) );
 				}
 			}
 		}
@@ -280,7 +280,7 @@ final class AdminNotifier {
 				'last_alert_failure',
 				array(
 					'at'    => time(),
-					'error' => self::$mail_error ?: 'wp_mail() a eșuat fără un mesaj de eroare.',
+					'error' => self::$mail_error ?: 'wp_mail() failed without an error message.',
 				)
 			);
 		}

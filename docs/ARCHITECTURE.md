@@ -1,154 +1,154 @@
-# Location Lead Tracker — Arhitectură
+# Location Lead Tracker — Architecture
 
-Document de arhitectură pentru pluginul WordPress „Location Lead Tracker”.
-Versiune finală: **doar Postmark**, trimitere asincronă, destinatar preluat din post meta `email`, alerte pentru administrator, WP-CLI, captcha opțional, consimțământ GDPR, detectarea IP-ului real, listă de leaduri eșuate în admin. Livrarea este împărțită în **v1**, **v2** și **v3**.
+Architecture document for the "Location Lead Tracker" WordPress plugin.
+Final version: **Postmark only**, asynchronous sending, recipient taken from the `email` post meta, administrator alerts, WP-CLI, optional captcha, GDPR consent, real IP detection, and a failed-leads list in the admin. Delivery is split into **v1**, **v2** and **v3**.
 
 ---
 
-## 1. Decizii
+## 1. Decisions
 
-| # | Decizie |
+| # | Decision |
 | --- | --- |
-| 1 | Nu există `manual_review`. Eșecurile se semnalează prin **email către administrator**, iar intervenția se face prin **WP-CLI** (v1) și din **lista de leaduri eșuate** din pagina pluginului (v3). |
-| 2 | Trimiterea este **asincronă**: formularul salvează leadul și răspunde imediat, emailul se trimite imediat după. |
-| 3 | Furnizor unic: **Postmark** (API pentru trimitere, webhook pentru livrare reală). Fără SMTP generic și fără alți furnizori. |
-| 4 | Emailul destinatarului **nu apare în HTML**. Se citește pe server din post meta cu cheia fixă **`email`** a postării. Cheia nu este configurabilă și nu există restricție după tipul postării. |
-| 5 | Formularul public **nu folosește nonce** (incompatibil cu cache-ul de pagină). Protecție: context semnat, honeypot, time-trap, rate limiting și **captcha opțional** (Cloudflare Turnstile). |
-| 6 | Checkbox de consimțământ GDPR cu text editabil din setări; integrare cu uneltele WordPress de export/ștergere a datelor personale. |
-| 7 | **v1** = trimitere, retry, retenție, setări, alerte, CLI, GDPR, captcha, detectarea IP-ului. **v2** = webhook de livrare Postmark + reconciliere. **v3** = listă de leaduri eșuate în admin, cu selecție și retrimitere în masă, doar pentru administratori. Rămânem doar pe Postmark. |
-| 8 | Rate limiting-ul folosește **IP-ul real** al vizitatorului, detectat automat pe orice tip de hosting (direct, Cloudflare, proxy). |
+| 1 | There is no `manual_review`. Failures are reported by **email to the administrator**, and are handled through **WP-CLI** (v1) and the **failed-leads list** on the plugin page (v3). |
+| 2 | Sending is **asynchronous**: the form saves the lead and responds immediately; the email is sent right after. |
+| 3 | A single provider: **Postmark** (API for sending, webhook for real delivery). No generic SMTP and no other providers. |
+| 4 | The recipient email **never appears in the HTML**. It is read on the server from the post meta with the fixed key **`email`**. The key is not configurable and there is no restriction by post type. |
+| 5 | The public form **does not use a nonce** (incompatible with page caching). Protection: signed context, honeypot, time-trap, rate limiting and an **optional captcha** (Cloudflare Turnstile). |
+| 6 | A GDPR consent checkbox with text editable in the settings; integration with the WordPress personal-data export/erase tools. |
+| 7 | **v1** = sending, retry, retention, settings, alerts, CLI, GDPR, captcha, IP detection. **v2** = Postmark delivery webhook + reconciliation. **v3** = failed-leads list in the admin, with selection and bulk resend, administrators only. Postmark only. |
+| 8 | Rate limiting uses the visitor's **real IP**, detected automatically on any hosting setup (direct, Cloudflare, proxy). |
 
 ---
 
-## 2. Etape de livrare
+## 2. Delivery stages
 
-### v1 — Trimitere fiabilă
+### v1 — Reliable sending
 
-- Shortcode + formular (destinatar din post meta, nimic sensibil în HTML).
-- Salvare lead + conținut, apoi trimitere asincronă prin Postmark API.
-- Retry automat cu backoff pentru erori temporare.
-- Verificare anti-duplicat pentru timeout-uri ambigue (căutare în Postmark).
-- Retenție: conținutul se șterge la un număr de ore după acceptare.
-- Pagina de setări.
-- Alerte email pentru administrator.
-- Comenzi WP-CLI.
-- Captcha opțional (Turnstile), checkbox GDPR, export/ștergere date personale.
+- Shortcode + form (recipient from post meta, nothing sensitive in the HTML).
+- Save lead + content, then send asynchronously through the Postmark API.
+- Automatic retry with backoff for temporary errors.
+- Duplicate-send protection for ambiguous timeouts (search in Postmark).
+- Retention: content is deleted a number of hours after acceptance.
+- Settings page.
+- Email alerts for the administrator.
+- WP-CLI commands.
+- Optional captcha (Turnstile), GDPR checkbox, personal-data export/erase.
 
-**Rezultat v1**: fiecare lead este salvat, trimis și, la eșec, semnalat. Se știe câte leaduri au fost **acceptate** de Postmark.
+**v1 outcome**: every lead is saved, sent and, on failure, reported. We know how many leads were **accepted** by Postmark.
 
-### v2 — Confirmarea livrării
+### v2 — Delivery confirmation
 
-- Endpoint webhook pentru evenimentele Postmark **Delivery** și **Bounce**.
+- Webhook endpoint for the Postmark **Delivery** and **Bounce** events.
 - `delivery_status`: `delivered`, `bounced`, `deferred`.
-- Conținutul se șterge **imediat după livrarea confirmată**.
-- Reconciliere orară prin Messages API pentru evenimentele de webhook ratate.
-- Alertă la bounce și alertă când webhookul pare oprit.
-- Statistici CLI: leaduri livrate / respinse.
+- Content is deleted **right after confirmed delivery**.
+- Hourly reconciliation through the Messages API for missed webhook events.
+- Bounce alert and an alert when the webhook seems to be stopped.
+- CLI statistics: delivered / bounced leads.
 
-**Rezultat v2**: se știe câte emailuri au fost **livrate** efectiv.
+**v2 outcome**: we know how many emails were actually **delivered**.
 
-### v3 — Leaduri eșuate în admin
+### v3 — Failed leads in the admin
 
-- Tab **„Leaduri eșuate”** în pagina pluginului, vizibil doar pentru administratori.
-- Listă cu filtre, paginare și selecție (inclusiv „selectează toate”).
-- Acțiuni în masă: **Retrimite**, **Ignoră**, **Șterge conținutul**.
-- Detaliile mesajului se pot vedea la cerere, pentru contact manual cu vizitatorul.
-- Număr de leaduri eșuate afișat în meniul admin.
+- A **"Failed leads"** tab on the plugin page, visible to administrators only.
+- A list with filters, pagination and selection (including "select all").
+- Bulk actions: **Resend**, **Dismiss**, **Delete content**.
+- Message details can be viewed on demand, to contact the visitor manually.
+- The number of failed leads shown in the admin menu.
 
-**Rezultat v3**: eșecurile se rezolvă din wp-admin, fără WP-CLI. Comenzile CLI rămân disponibile.
+**v3 outcome**: failures are resolved from wp-admin, without WP-CLI. The CLI commands remain available.
 
-Schema bazei de date include coloanele pentru v2 și v3 încă din v1, ca să nu fie nevoie de migrare.
+The database schema includes the v2 and v3 columns from v1 onwards, so no migration is needed.
 
 ---
 
-## 3. Structura fișierelor
+## 3. File structure
 
-Structura implementată (repo `gzalinski/email-leads-tracker`):
+The implemented structure (repo `gzalinski/email-leads-tracker`):
 
 ```
-location-lead-tracker.php              # Bootstrap: header, autoload PSR-4, activare/dezactivare
-uninstall.php                          # Ștergere date (dacă e bifat în setări)
+location-lead-tracker.php              # Bootstrap: header, PSR-4 autoload, activation/deactivation
+uninstall.php                          # Data removal (if enabled in the settings)
 includes/
-├── Plugin.php                         # Înregistrează toate componentele
-├── Installer.php                      # dbDelta, versiune schemă, evenimente cron
-├── State.php                          # Starea internă (opțiunea llt_state)
-├── Template.php                       # Randare template-uri, override din temă
-├── Util.php                           # Date UTC, mascare emailuri, ID-uri
+├── Plugin.php                         # Registers all components
+├── Installer.php                      # dbDelta, schema version, cron events
+├── State.php                          # Internal state (the llt_state option)
+├── Template.php                       # Template rendering, theme overrides
+├── Util.php                           # UTC dates, email masking, IDs
 ├── Settings/
-│   ├── Settings.php                   # Citire setări + valori implicite
-│   ├── SettingsFields.php             # Taburi și câmpuri (extensibile prin filtrul llt_settings_tabs)
-│   ├── SettingsPage.php               # Pagina Setări → Location Lead Tracker
-│   ├── SettingsSanitizer.php          # Validare la salvare (doar tabul curent)
-│   ├── SecretStore.php                # Criptare libsodium
-│   ├── TestActions.php                # Email de test, alertă de test, diagnostic IP
-│   ├── StatusTab.php                  # Tabul Stare
-│   └── AdminNotice.php                # Mesaje după acțiuni
+│   ├── Settings.php                   # Reading settings + defaults
+│   ├── SettingsFields.php             # Tabs and fields (extensible via the llt_settings_tabs filter)
+│   ├── SettingsPage.php               # The Settings → Location Lead Tracker page
+│   ├── SettingsSanitizer.php          # Validation on save (current tab only)
+│   ├── SecretStore.php                # libsodium encryption
+│   ├── TestActions.php                # Test email, test alert, IP diagnostics
+│   ├── StatusTab.php                  # The Status tab
+│   └── AdminNotice.php                # Messages after actions
 ├── Shortcode/
 │   ├── ContactShortcode.php           # [location_contact]
-│   ├── RecipientResolver.php          # object_id → post meta „email”
-│   └── ContextSigner.php              # HMAC pentru object_id + momentul randării
+│   ├── RecipientResolver.php          # object_id → "email" post meta
+│   └── ContextSigner.php              # HMAC for object_id + render time
 ├── Form/
 │   ├── SubmissionHandler.php          # admin-post.php?action=llt_submit
-│   ├── Validator.php                  # Câmpuri + consimțământ
-│   ├── RateLimiter.php                # Limită pe IP (hash HMAC)
-│   ├── Messages.php                   # Mesajele pentru vizitator
-│   └── Captcha/TurnstileVerifier.php  # Verificare server-side
+│   ├── Validator.php                  # Fields + consent
+│   ├── RateLimiter.php                # Per-IP limit (HMAC hash)
+│   ├── Messages.php                   # Messages for the visitor
+│   └── Captcha/TurnstileVerifier.php  # Server-side verification
 ├── Http/
-│   ├── ClientIp.php                   # IP-ul real (direct / Cloudflare / proxy)
-│   ├── ProxyRanges.php                # Lista Cloudflare, actualizată săptămânal
-│   └── Cidr.php                       # Apartenența IP ↔ rețea (IPv4/IPv6)
+│   ├── ClientIp.php                   # The real IP (direct / Cloudflare / proxy)
+│   ├── ProxyRanges.php                # The Cloudflare list, refreshed weekly
+│   └── Cidr.php                       # IP ↔ network membership (IPv4/IPv6)
 ├── Lead/
-│   ├── LeadService.php                # Creare lead + conținut (tranzacție)
-│   ├── LeadStatus.php                 # Stări + regula de monotonie
-│   └── LeadActions.php                # Retrimite / Ignoră / Restaurează / Șterge conținut (CLI și admin)
+│   ├── LeadService.php                # Creating lead + content (transaction)
+│   ├── LeadStatus.php                 # Statuses + the monotonic rule
+│   └── LeadActions.php                # Resend / Dismiss / Restore / Delete content (CLI and admin)
 ├── Postmark/
-│   ├── PostmarkClient.php             # POST /email, căutare după metadata, detalii mesaj, bounce
-│   ├── EmailBuilder.php               # Payload-ul emailului
+│   ├── PostmarkClient.php             # POST /email, search by metadata, message details, bounce
+│   ├── EmailBuilder.php               # The email payload
 │   ├── SendResult.php                 # accepted / temporary / ambiguous / permanent / config
-│   └── ErrorClassifier.php            # HTTP + ErrorCode + erori cURL → categorie
+│   └── ErrorClassifier.php            # HTTP + ErrorCode + cURL errors → category
 ├── Queue/
-│   ├── SendWorker.php                 # Trimitere imediată și din coadă
-│   ├── BackoffPolicy.php              # Intervale + jitter + Retry-After
-│   └── Lock.php                       # Lock pe rând și lock global de worker
+│   ├── SendWorker.php                 # Immediate and queued sending
+│   ├── BackoffPolicy.php              # Intervals + jitter + Retry-After
+│   └── Lock.php                       # Row lock and global worker lock
 ├── Alerts/
-│   ├── AdminNotifier.php              # Alerte prin wp_mail(), limitare, revenire, bounce, webhook oprit
-│   └── HealthCheck.php                # Verificare orară
-├── Retention/RetentionService.php      # Ștergerea conținutului
-├── Privacy/                           # Export, ștergere, text pentru politica de confidențialitate
+│   ├── AdminNotifier.php              # Alerts via wp_mail(), rate limiting, recovery, bounce, stopped webhook
+│   └── HealthCheck.php                # Hourly check
+├── Retention/RetentionService.php     # Content deletion
+├── Privacy/                           # Export, erasure, privacy policy text
 ├── Database/                          # Schema, LeadRepository, MessageRepository
 ├── Cli/Commands.php                   # wp llt ...
 ├── Webhook/                           # v2
 │   ├── WebhookController.php          # POST /wp-json/llt/v1/postmark
-│   ├── WebhookAuth.php                # Basic Auth + filtru IP
+│   ├── WebhookAuth.php                # Basic Auth + IP filter
 │   ├── EventProcessor.php             # Delivery / Bounce → lead
-│   ├── Reconciler.php                 # Reconciliere orară prin Messages API
-│   └── WebhookSettings.php            # Tabul Webhook, câmpurile v2, rânduri în Stare/CLI
+│   ├── Reconciler.php                 # Hourly reconciliation through the Messages API
+│   └── WebhookSettings.php            # The Webhook tab, v2 fields, rows in Status/CLI
 └── Admin/                             # v3
-    ├── FailedLeadsTab.php             # Tabul „Leaduri eșuate”
+    ├── FailedLeadsTab.php             # The "Failed leads" tab
     ├── FailedLeadsTable.php           # WP_List_Table
-    ├── FailedLeadsQuery.php           # Vizualizări, filtre, „toate după filtru”
-    ├── BulkActionHandler.php          # Acțiuni pe rând și în masă
-    ├── LeadDetailsAjax.php            # „Vezi mesajul”
-    └── MenuBadge.php                  # Contor în meniu
+    ├── FailedLeadsQuery.php           # Views, filters, "all matching the filter"
+    ├── BulkActionHandler.php          # Row and bulk actions
+    ├── LeadDetailsAjax.php            # "View message"
+    └── MenuBadge.php                  # Menu counter
 templates/   form.php, email.php
 assets/      form.js, form.css, admin.js, admin.css
-tests/       run.php, check-calls.php, cases/ (fără WordPress: stub-uri + SQLite)
+tests/       run.php, check-calls.php, cases/ (no WordPress: stubs + SQLite)
 ```
 
-Namespace: `LocationLeadTracker\`. Autoload PSR-4.
+Namespace: `LocationLeadTracker\`. PSR-4 autoload.
 
 ---
 
-## 4. Diagrama componentelor
+## 4. Component diagram
 
 ```mermaid
 flowchart LR
-    V[Vizitator] -->|POST| SH[SubmissionHandler]
-    SC[ContactShortcode] -->|formular + object_id semnat| V
+    V[Visitor] -->|POST| SH[SubmissionHandler]
+    SC[ContactShortcode] -->|form + signed object_id| V
     SH --> LS[LeadService]
-    LS --> DB[(Tabele plugin)]
-    LS -.->|după răspuns| SW[SendWorker]
-    CRON[Cron server] --> SW
+    LS --> DB[(Plugin tables)]
+    LS -.->|after the response| SW[SendWorker]
+    CRON[Server cron] --> SW
     CRON --> RS[RetentionService]
     CRON --> HC[HealthCheck]
     CRON -->|v2| REC[Reconciler]
@@ -170,337 +170,337 @@ flowchart LR
 
 ---
 
-## 5. Shortcode și destinatar
+## 5. Shortcode and recipient
 
-### 5.1. Utilizare
+### 5.1. Usage
 
 ```
 [location_contact object_id="245"]
-[location_contact]                    ← folosește postarea curentă
+[location_contact]                    ← uses the current post
 ```
 
-- `object_id` este opțional; dacă lipsește, se folosește `get_the_ID()`.
-- Atributul `email` **nu mai există**.
+- `object_id` is optional; if missing, `get_the_ID()` is used.
+- The `email` attribute **no longer exists**.
 
-### 5.2. Rezolvarea destinatarului (`RecipientResolver`)
+### 5.2. Resolving the recipient (`RecipientResolver`)
 
 ```php
 $post  = get_post( $object_id );
-$email = trim( (string) get_post_meta( $object_id, 'email', true ) );   // cheie fixă
+$email = trim( (string) get_post_meta( $object_id, 'email', true ) );   // fixed key
 ```
 
-Condiții de validitate:
+Validity conditions:
 
-1. `object_id` este un întreg pozitiv (dacă lipsește și `get_the_ID()` nu întoarce o postare, de exemplu într-un widget în afara loop-ului, condiția eșuează).
-2. Postarea există și are status `publish`.
-3. `is_email( $email )` este adevărat.
+1. `object_id` is a positive integer (if it is missing and `get_the_ID()` does not return a post, for example in a widget outside the loop, the condition fails).
+2. The post exists and has the `publish` status.
+3. `is_email( $email )` is true.
 
-Cheia meta este fixă (`email`) și nu apare în setări. Nu există restricție după tipul postării: orice postare publicată cu un câmp `email` valid poate fi destinatar. Funcționează și dacă câmpul a fost creat cu ACF, pentru că ACF salvează valoarea tot în post meta, sub aceeași cheie.
+The meta key is fixed (`email`) and does not appear in the settings. There is no restriction by post type: any published post with a valid `email` field can be a recipient. It also works if the field was created with ACF, because ACF saves the value in post meta under the same key.
 
-Condițiile se verifică **de două ori**: la randare și la submit (postarea poate fi depublicată sau emailul șters între timp).
+The conditions are checked **twice**: at render time and on submit (the post may be unpublished or the email deleted in between).
 
-- **La randare**, dacă o condiție eșuează: editorii (`edit_posts`) văd un mesaj explicativ, de exemplu „Postarea #312 nu are un câmp `email` valid”; vizitatorii nu văd formularul.
-- **La submit**, dacă o condiție eșuează: leadul nu se creează, iar vizitatorul primește „Formularul nu este disponibil momentan. Te rugăm să încerci mai târziu.” Evenimentul se loghează fără date personale.
+- **At render time**, if a condition fails: editors (`edit_posts`) see an explanatory message, for example "Post #312 does not have a valid "email" field."; visitors see no form.
+- **On submit**, if a condition fails: no lead is created, and the visitor gets "The form is not available right now. Please try again later." The event is logged without personal data.
 
-Notă: deoarece nu există restricție de tip, `object_id` din shortcode trebuie să indice postarea corectă. Un ID greșit care indică o altă postare cu câmp `email` valid va trimite mesajele acolo. Vizitatorii nu pot schimba ID-ul (este semnat, §5.3); riscul ține doar de configurarea shortcode-ului de către editori.
+Note: since there is no type restriction, the `object_id` in the shortcode must point to the right post. A wrong ID that points to another post with a valid `email` field will send messages there. Visitors cannot change the ID (it is signed, §5.3); the risk is only in how editors configure the shortcode.
 
-### 5.3. Ce ajunge în HTML
+### 5.3. What ends up in the HTML
 
-| Câmp ascuns | Conținut |
+| Hidden field | Content |
 | --- | --- |
-| `llt_ctx` | `object_id` + momentul randării, codificat base64url |
+| `llt_ctx` | `object_id` + render time, base64url-encoded |
 | `llt_sig` | `HMAC-SHA256(llt_ctx, secret)` |
-| `llt_hp` | Honeypot (gol) |
-| widget Turnstile | doar dacă este activat |
+| `llt_hp` | Honeypot (empty) |
+| Turnstile widget | only if enabled |
 
-**Emailul destinatarului nu apare nicăieri.** La submit se recitește din post meta.
+**The recipient email appears nowhere.** On submit it is read again from post meta.
 
-Semnătura împiedică un vizitator să schimbe `object_id` pentru a trimite mesaje către altă postare. Momentul randării este tot în contextul semnat, deci un bot nu îl poate falsifica pentru a trece de time-trap. Secretul HMAC este derivat din `wp_salt( 'auth' )` și nu este expus.
+The signature prevents a visitor from changing `object_id` to send messages to another post. The render time is also in the signed context, so a bot cannot forge it to get past the time-trap. The HMAC secret is derived from `wp_salt( 'auth' )` and is never exposed.
 
-Contextul nu expiră: pe o pagină cache-uită momentul randării poate fi vechi de zile, ceea ce trece oricum de time-trap (care cere doar un minimum).
+The context does not expire: on a cached page the render time can be days old, which passes the time-trap anyway (it only requires a minimum).
 
 ### 5.4. Snapshot
 
-La crearea leadului, emailul rezolvat se salvează în `recipient_email`. Dacă meta se schimbă ulterior, retry-urile merg tot la adresa de la momentul submitului.
+When the lead is created, the resolved email is saved in `recipient_email`. If the meta changes later, retries still go to the address from the time of submission.
 
 ---
 
-## 6. Formularul
+## 6. The form
 
-| Câmp | Obligatoriu |
+| Field | Required |
 | --- | --- |
-| Full Name | Da |
-| Email | Da |
-| Phone Number | Nu |
-| Message | Da |
-| Checkbox consimțământ GDPR | Da |
-| Turnstile | Da, dacă este activat |
+| Full Name | Yes |
+| Email | Yes |
+| Phone Number | No |
+| Message | Yes |
+| GDPR consent checkbox | Yes |
+| Turnstile | Yes, if enabled |
 
-### 6.1. Consimțământ GDPR
+### 6.1. GDPR consent
 
-- Textul de lângă checkbox vine din setarea **„Text consimțământ”** (textarea).
-- HTML permis: `<a href target rel>`, `<strong>`, `<em>`, `<br>` (filtrat cu `wp_kses`).
-- La afișare, linkurile primesc automat `rel="noopener"` dacă au `target="_blank"`.
-- Submit fără checkbox bifat → eroare de validare.
-- Se salvează `consent_at` în lead, ca dovadă a consimțământului, fără date personale.
+- The text next to the checkbox comes from the **"GDPR consent text"** setting (textarea).
+- Allowed HTML: `<a href target rel>`, `<strong>`, `<em>`, `<br>` (filtered with `wp_kses`).
+- On output, links automatically get `rel="noopener"` if they have `target="_blank"`.
+- Submitting without the checkbox ticked → validation error.
+- `consent_at` is saved on the lead as proof of consent, without personal data.
 
-### 6.2. Anti-spam (fără nonce)
+### 6.2. Anti-spam (no nonce)
 
-| Măsură | Detalii |
+| Measure | Details |
 | --- | --- |
-| Context semnat | Protejează `object_id`; compatibil cu cache-ul (nu expiră) |
-| Honeypot | Câmp ascuns care trebuie să rămână gol |
-| Time-trap | Minimum N secunde între randare (din contextul semnat) și submit (setare, implicit 3) |
-| Rate limiting | Max N submit-uri / IP / oră (setare, implicit 5); cheie `hash(IP + salt)`; IP-ul real detectat conform §6.5 |
-| Captcha | Opțional, Cloudflare Turnstile |
+| Signed context | Protects `object_id`; cache-compatible (does not expire) |
+| Honeypot | A hidden field that must stay empty |
+| Time-trap | At least N seconds between render (from the signed context) and submit (setting, default 3) |
+| Rate limiting | At most N submissions / IP / hour (setting, default 5); key `hash(IP + salt)`; real IP detected as in §6.5 |
+| Captcha | Optional, Cloudflare Turnstile |
 
 ### 6.3. Captcha: Cloudflare Turnstile
 
-Ales pentru că:
+Chosen because:
 
-- funcționează cu pagini cache-uite;
-- de cele mai multe ori este invizibil pentru vizitator;
-- este gratuit și colectează mai puține date decât reCAPTCHA.
+- it works with cached pages;
+- most of the time it is invisible to the visitor;
+- it is free and collects less data than reCAPTCHA.
 
-Implementare:
+Implementation:
 
-- Scriptul Turnstile se încarcă **doar** pe paginile care conțin shortcode-ul.
-- La submit, tokenul se verifică server-side la `https://challenges.cloudflare.com/turnstile/v0/siteverify`, cu cheia secretă din setări și IP-ul real al vizitatorului (`remoteip`, din `ClientIp`, §6.5).
-- Dacă Cloudflare nu răspunde: setare **„Dacă verificarea nu este disponibilă”** → *respinge* (implicit) sau *acceptă*.
+- The Turnstile script is loaded **only** on pages that contain the shortcode.
+- On submit, the token is verified server-side at `https://challenges.cloudflare.com/turnstile/v0/siteverify`, with the secret key from the settings and the visitor's real IP (`remoteip`, from `ClientIp`, §6.5).
+- If Cloudflare does not respond: the **"If the check is unavailable"** setting → *reject* (default) or *accept*.
 
-Turnstile încarcă resurse de la Cloudflare, deci trebuie menționat în politica de confidențialitate (§11.3).
+Turnstile loads resources from Cloudflare, so it must be mentioned in the privacy policy (§11.3).
 
-### 6.4. Răspunsul pentru vizitator
+### 6.4. The response to the visitor
 
-Trimiterea este asincronă, deci mesajul nu mai pretinde că emailul a fost trimis:
+Sending is asynchronous, so the message does not claim the email was sent:
 
-> „Mulțumim! Solicitarea ta a fost înregistrată.”
+> "Thank you! Your request has been received."
 
-Textul se poate modifica din setări.
+The text can be changed in the settings.
 
-### 6.5. Detectarea IP-ului real al vizitatorului (`ClientIp`)
+### 6.5. Detecting the visitor's real IP (`ClientIp`)
 
-**Problema.** Rate limiting-ul numără mesajele pe adresă IP. Dacă site-ul stă în spatele Cloudflare, al unui load balancer sau al unui proxy nginx, cererea ajunge la WordPress de la proxy, nu direct de la vizitator. PHP vede atunci IP-ul proxy-ului, același pentru toți vizitatorii. Rezultatul: toți vizitatorii împart aceeași limită și, după 5 mesaje pe oră de la oricine, formularul se blochează pentru toată lumea.
+**The problem.** Rate limiting counts messages per IP address. If the site is behind Cloudflare, a load balancer or an nginx proxy, the request reaches WordPress from the proxy, not directly from the visitor. PHP then sees the proxy's IP, which is the same for all visitors. The result: all visitors share the same limit and, after 5 messages per hour from anyone, the form is blocked for everyone.
 
-Proxy-ul transmite IP-ul real într-un header (`CF-Connecting-IP` la Cloudflare, `X-Forwarded-For` la majoritatea celorlalte). Acele headere pot fi însă falsificate de oricine trimite cereri direct la server. Deci pluginul le citește **doar** dacă cererea vine efectiv de la un proxy cunoscut.
+The proxy passes the real IP in a header (`CF-Connecting-IP` for Cloudflare, `X-Forwarded-For` for most others). Those headers, however, can be forged by anyone who sends requests directly to the server. So the plugin reads them **only** if the request actually comes from a known proxy.
 
-**Algoritm (modul „Automat”, implicit, funcționează pe orice site):**
+**Algorithm ("Automatic" mode, the default, works on any site):**
 
-1. `$remote = $_SERVER['REMOTE_ADDR']` — adresa care s-a conectat efectiv la server.
-2. Dacă `$remote` aparține rețelelor Cloudflare → IP real = `CF-Connecting-IP`.
-3. Altfel, dacă `$remote` este o adresă privată sau locală (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `::1`, `fc00::/7`) sau aparține listei de proxy-uri suplimentare din setări → proxy pe același server sau în rețeaua internă (nginx, Docker, load balancer). IP real = prima adresă din `X-Forwarded-For` parcursă **de la dreapta la stânga** care nu este ea însăși un proxy cunoscut; dacă headerul lipsește, `X-Real-IP`.
-4. Altfel → conexiune directă; IP real = `$remote`. Headerele sunt ignorate.
-5. Orice valoare se validează cu `filter_var( $ip, FILTER_VALIDATE_IP )`; o valoare invalidă duce la folosirea lui `$remote`.
+1. `$remote = $_SERVER['REMOTE_ADDR']` — the address that actually connected to the server.
+2. If `$remote` belongs to the Cloudflare networks → real IP = `CF-Connecting-IP`.
+3. Otherwise, if `$remote` is a private or local address (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `::1`, `fc00::/7`) or belongs to the additional proxies list from the settings → a proxy on the same server or in the internal network (nginx, Docker, load balancer). Real IP = the first address in `X-Forwarded-For`, read **from right to left**, that is not itself a known proxy; if the header is missing, `X-Real-IP`.
+4. Otherwise → direct connection; real IP = `$remote`. Headers are ignored.
+5. Every value is validated with `filter_var( $ip, FILTER_VALIDATE_IP )`; an invalid value falls back to `$remote`.
 
-Astfel:
+So:
 
-| Configurație site | Ce se întâmplă |
+| Site setup | What happens |
 | --- | --- |
-| Fără proxy | Pasul 4, IP direct |
-| Cloudflare | Pasul 2, IP real din `CF-Connecting-IP` |
-| nginx / Varnish / Docker în fața PHP | Pasul 3, IP real din `X-Forwarded-For` |
-| Cloudflare + nginx local | Pasul 3, apoi parcurgerea lanțului ajunge la IP-ul Cloudflare, apoi la vizitator |
-| Atacator care trimite `CF-Connecting-IP` fals direct la server | Pasul 4, headerul este ignorat |
-| Alt CDN / load balancer cu IP public (Sucuri, AWS ALB etc.) | Administratorul adaugă rețelele lui în „Proxy-uri suplimentare”; altfel se comportă ca la pasul 4 |
+| No proxy | Step 4, direct IP |
+| Cloudflare | Step 2, real IP from `CF-Connecting-IP` |
+| nginx / Varnish / Docker in front of PHP | Step 3, real IP from `X-Forwarded-For` |
+| Cloudflare + local nginx | Step 3, then walking the chain reaches the Cloudflare IP, then the visitor |
+| Attacker sending a forged `CF-Connecting-IP` directly to the server | Step 4, the header is ignored |
+| Another CDN / load balancer with a public IP (Sucuri, AWS ALB, etc.) | The administrator adds its networks to "Additional proxies"; otherwise it behaves as in step 4 |
 
-**Lista Cloudflare (`ProxyRanges`):**
+**The Cloudflare list (`ProxyRanges`):**
 
-- Pluginul conține o copie a listei, ca să funcționeze din prima zi.
-- Un cron săptămânal o actualizează de la `https://www.cloudflare.com/ips-v4/` și `https://www.cloudflare.com/ips-v6/`. Dacă descărcarea eșuează, rămâne lista existentă.
-- Lista nu se schimbă des (ultima modificare publicată: septembrie 2023), deci riscul de a fi depășită este mic.
+- The plugin ships with a copy of the list, so it works from day one.
+- A weekly cron refreshes it from `https://www.cloudflare.com/ips-v4/` and `https://www.cloudflare.com/ips-v6/`. If the download fails, the existing list is kept.
+- The list rarely changes (last published change: September 2023), so the risk of it being outdated is low.
 
-**Setări** (tabul Anti-spam):
+**Settings** (Anti-spam tab):
 
-| Câmp | Valori | Implicit |
+| Field | Values | Default |
 | --- | --- | --- |
-| Sursa IP | Automat / Doar conexiunea directă / Doar Cloudflare | Automat |
-| Proxy-uri suplimentare | CIDR, câte unul pe linie | gol |
-| Diagnostic | doar citire, ex.: „IP-ul tău detectat: 85.x.x.x — prin Cloudflare” | — |
+| IP source | Automatic / Direct connection only / Cloudflare only | Automatic |
+| Additional proxies | CIDR, one per line | empty |
+| Diagnostics | read-only, e.g. "Your detected IP: 85.x.x.x — via Cloudflare" | — |
 
-Lista Cloudflare descărcată se păstrează în opțiunea `llt_proxy_ranges` (§14.3).
+The downloaded Cloudflare list is stored in the `llt_proxy_ranges` option (§14.3).
 
-Diagnosticul îi permite administratorului să vadă imediat dacă detectarea funcționează: dacă IP-ul afișat nu este al lui, configurația are nevoie de un proxy suplimentar.
+The diagnostics let the administrator see immediately whether detection works: if the IP shown is not theirs, the setup needs an additional proxy.
 
-Aceeași clasă este folosită și pentru filtrul opțional de IP al webhookului (§13.1).
+The same class is used for the webhook's optional IP filter (§13.1).
 
 ---
 
-## 7. Fluxul de submit și trimitere
+## 7. The submit and send flow
 
 ```mermaid
 sequenceDiagram
-    participant V as Vizitator
+    participant V as Visitor
     participant SH as SubmissionHandler
-    participant DB as Baza de date
+    participant DB as Database
     participant SW as SendWorker
     participant PM as Postmark
 
     V->>SH: POST
-    SH->>SH: HMAC context, honeypot, time-trap, rate limit, Turnstile, validare câmpuri, consimțământ
-    SH->>SH: rezolvă destinatarul din post meta (§5.2)
-    SH->>DB: TRANZACȚIE: INSERT lead (pending, next_retry_at = acum) + INSERT mesaj
-    SH-->>V: „Solicitarea ta a fost înregistrată.”
-    Note over SH,SW: după trimiterea răspunsului
+    SH->>SH: HMAC context, honeypot, time-trap, rate limit, Turnstile, field validation, consent
+    SH->>SH: resolve the recipient from post meta (§5.2)
+    SH->>DB: TRANSACTION: INSERT lead (pending, next_retry_at = now) + INSERT message
+    SH-->>V: "Your request has been received."
+    Note over SH,SW: after the response is sent
     SH->>SW: process(lead_id)
     SW->>DB: claim (lock)
     SW->>PM: POST /email
-    PM-->>SW: rezultat
-    SW->>DB: actualizare stare
+    PM-->>SW: result
+    SW->>DB: status update
 ```
 
-### 7.1. Trimiterea imediată după răspuns
+### 7.1. Sending right after the response
 
-1. Răspunsul către vizitator se trimite complet.
-2. Dacă există `fastcgi_finish_request()` (PHP-FPM, cel mai des întâlnit), conexiunea se închide și același proces trimite emailul imediat.
-3. Altfel, se programează `wp_schedule_single_event( time(), 'llt_send_lead', [ $id ] )`, iar cronul îl preia în cel mult un minut.
-4. În orice caz, workerul periodic preia orice lead `pending` scadent. Nimic nu rămâne netrimis dacă pasul 2 sau 3 eșuează.
+1. The response to the visitor is sent in full.
+2. If `fastcgi_finish_request()` exists (PHP-FPM, the most common case), the connection is closed and the same process sends the email immediately.
+3. Otherwise, `wp_schedule_single_event( time(), 'llt_send_lead', [ $id ] )` is scheduled, and cron picks it up within a minute.
+4. In any case, the periodic worker picks up any due `pending` lead. Nothing stays unsent if step 2 or 3 fails.
 
-Lock-ul (§9.3) garantează că un lead nu se trimite de două ori, chiar dacă pașii 2 și 4 rulează simultan.
+The lock (§9.3) guarantees a lead is never sent twice, even if steps 2 and 4 run at the same time.
 
-Formularul se trimite prin AJAX (`form.js`) către `admin-post.php?action=llt_submit` și primește răspuns JSON. Fără JavaScript, același endpoint face redirect înapoi la pagină cu mesajul de confirmare sau de eroare.
+The form is submitted via AJAX (`form.js`) to `admin-post.php?action=llt_submit` and gets a JSON response. Without JavaScript, the same endpoint redirects back to the page with the confirmation or error message.
 
-### 7.2. Cererea Postmark
+### 7.2. The Postmark request
 
 `POST https://api.postmarkapp.com/email`, header `X-Postmark-Server-Token`.
 
-| Câmp | Valoare |
+| Field | Value |
 | --- | --- |
-| `From` | `"{nume expeditor}" <{email expeditor}>` (semnătură verificată în Postmark) |
+| `From` | `"{sender name}" <{sender email}>` (signature verified in Postmark) |
 | `To` | `recipient_email` |
-| `ReplyTo` | emailul vizitatorului |
-| `Subject` | din setări, cu `{post_title}`, `{site_name}` |
-| `TextBody` / `HtmlBody` | din `templates/email.php`, conținut escapat; `HtmlBody` doar dacă formatul din setări este HTML |
-| `MessageStream` | din setări (implicit `outbound`) |
+| `ReplyTo` | the visitor's email |
+| `Subject` | from the settings, with `{post_title}`, `{site_name}` |
+| `TextBody` / `HtmlBody` | from `templates/email.php`, escaped content; `HtmlBody` only if the format in the settings is HTML |
+| `MessageStream` | from the settings (default `outbound`) |
 | `Tag` | `location-lead` |
 | `Metadata` | `{ "llt_lead_id": "123" }` |
 | `TrackOpens` / `TrackLinks` | `false` |
 
-`Metadata.llt_lead_id` este folosit pentru verificarea anti-duplicat (§7.4) și pentru corelarea webhookurilor (v2).
+`Metadata.llt_lead_id` is used for duplicate-send protection (§7.4) and for correlating webhooks (v2).
 
-### 7.3. Clasificarea rezultatelor (`ErrorClassifier`)
+### 7.3. Classifying results (`ErrorClassifier`)
 
-Verificat în documentația Postmark (API overview, octombrie 2026). Postmark întoarce `ErrorCode` în corpul JSON și în headerul `X-PM-ApiErrorCode`.
+Verified against the Postmark documentation (API overview, October 2026). Postmark returns `ErrorCode` in the JSON body and in the `X-PM-ApiErrorCode` header.
 
-| HTTP | `ErrorCode` | Semnificație | Categorie |
+| HTTP | `ErrorCode` | Meaning | Category |
 | --- | --- | --- | --- |
-| 200 | 0 | Acceptat | `accepted` — salvează `MessageID`, `sent_at` |
-| — | — | Conexiune eșuată înainte de trimitere (DNS, refuz, TLS) | `temporary` |
-| — | — | Timeout **după** trimiterea cererii | `ambiguous` → §7.4 |
-| 429 | — | Rate limit depășit | `temporary`, respectă `Retry-After` |
-| 500 | 101 | Eroare internă Postmark (mesajul se pierde, confirmat de Postmark) | `temporary` |
-| 503 | 100 | Mentenanță | `temporary` |
-| 401 | 10 | Token invalid sau de tip greșit | `config` |
-| 422 | 412 | Cont în aprobare: destinatarul trebuie să aibă același domeniu ca expeditorul | `config` |
-| 422 | 413 | Contul nu este aprobat pentru trimitere | `config` |
-| 422 | 422 | Server invalid | `config` |
-| 422 | 1235 / 1236 | Message Stream inexistent sau de tip greșit | `config` |
-| 422 | 1480 | IP-ul serverului nu are voie să trimită | `config` |
-| 422 | 403 | Câmpuri invalide (ex.: `From` invalid sau neverificat) | `config` |
-| 422 | 400 | Semnătură de expeditor negăsită (cod mai vechi, tratat defensiv dacă apare) | `config` |
-| 422 | 402 | JSON invalid (bug în plugin) | `config` |
-| 422 | 300 | Validare trimitere: adresă invalidă, limite de metadata sau headere | `permanent` (doar pentru acest lead) |
-| 422 | 406 | Destinatar inactiv (suprimat după bounce sau plângere de spam) | `permanent` (doar pentru acest lead) |
-| 413 | — | Mesaj prea mare (peste 10 MB) | `permanent` |
-| altele | altele | Necunoscut | `permanent` |
+| 200 | 0 | Accepted | `accepted` — save `MessageID`, `sent_at` |
+| — | — | Connection failed before sending (DNS, refused, TLS) | `temporary` |
+| — | — | Timeout **after** the request was sent | `ambiguous` → §7.4 |
+| 429 | — | Rate limit exceeded | `temporary`, respects `Retry-After` |
+| 500 | 101 | Postmark internal error (the message is lost, confirmed by Postmark) | `temporary` |
+| 503 | 100 | Maintenance | `temporary` |
+| 401 | 10 | Invalid token or wrong token type | `config` |
+| 422 | 412 | Account pending approval: the recipient must be on the sender's domain | `config` |
+| 422 | 413 | The account is not approved for sending | `config` |
+| 422 | 422 | Invalid server | `config` |
+| 422 | 1235 / 1236 | Message Stream does not exist or is of the wrong type | `config` |
+| 422 | 1480 | The server's IP is not allowed to send | `config` |
+| 422 | 403 | Invalid fields (e.g. an invalid or unverified `From`) | `config` |
+| 422 | 400 | Sender signature not found (older code, handled defensively if it appears) | `config` |
+| 422 | 402 | Invalid JSON (a plugin bug) | `config` |
+| 422 | 300 | Send validation: invalid address, metadata or header limits | `permanent` (this lead only) |
+| 422 | 406 | Inactive recipient (suppressed after a bounce or spam complaint) | `permanent` (this lead only) |
+| 413 | — | Message too large (over 10 MB) | `permanent` |
+| other | other | Unknown | `permanent` |
 
-- `temporary` = leadul rămâne `pending` și se reprogramează conform backoff-ului (§9.2).
-- `ambiguous` = leadul rămâne `pending` și se verifică înainte de retrimitere (§7.4).
-- `config` = eroare care afectează **toate** leadurile: leadul devine `failed` și se trimite **alertă imediată**, fără să se aștepte pragul.
-- `permanent` = problema ține doar de acest lead: `failed`, alertă conform pragului.
-- Textul erorii salvat în `last_error_message` este mesajul Postmark trunchiat la 255 de caractere, cu adresele de email înlocuite cu `***`.
-- Pentru 406, alerta și lista din admin (v3) explică faptul că adresa locației trebuie reactivată în Postmark (Suppressions / Bounces) înainte de retrimitere.
+- `temporary` = the lead stays `pending` and is rescheduled according to the backoff (§9.2).
+- `ambiguous` = the lead stays `pending` and is checked before resending (§7.4).
+- `config` = an error that affects **all** leads: the lead becomes `failed` and an **immediate alert** is sent, without waiting for the threshold.
+- `permanent` = the problem concerns only this lead: `failed`, alert according to the threshold.
+- The error text saved in `last_error_message` is the Postmark message truncated to 255 characters, with email addresses replaced by `***`.
+- For 406, the alert and the admin list (v3) explain that the location's address must be reactivated in Postmark (Suppressions / Bounces) before resending.
 
-### 7.3.1. Mesaj de test
+### 7.3.1. Test message
 
-Butonul „Trimite email de test” din setări folosește aceeași clasificare și afișează codul și explicația în română, de exemplu: „Contul Postmark este încă în aprobare (412): poți trimite doar către adrese de pe domeniul expeditorului.”
+The "Send test email" button in the settings uses the same classification and shows the explanation and the code, for example: "The test email was not sent: The Postmark account is still pending approval: you can only send to addresses on the sender's domain. pm_412".
 
-### 7.4. Timeout ambiguu, fără `manual_review`
+### 7.4. Ambiguous timeout, without `manual_review`
 
-Problema: cererea a plecat, dar răspunsul nu a venit. Postmark poate să fi trimis emailul sau nu.
+The problem: the request went out, but no response came back. Postmark may or may not have sent the email.
 
-Soluția, complet automată:
+The fully automatic solution:
 
-1. Leadul rămâne `pending`, cu `last_error_code = ambiguous_timeout` și `next_retry_at = acum + 5 minute`.
-2. La următoarea rulare, înainte de a retrimite, workerul caută mesajul în Postmark:
+1. The lead stays `pending`, with `last_error_code = ambiguous_timeout` and `next_retry_at = now + 5 minutes`.
+2. On the next run, before resending, the worker searches for the message in Postmark:
    `GET /messages/outbound?count=1&offset=0&messagestream={stream}&metadata_llt_lead_id={id}`
-3. **Găsit** (status `Sent`, `Processed` sau `Queued`) → `accepted`, cu `MessageID` din rezultat. Nu se retrimite.
-4. **Negăsit** → se retrimite normal.
-5. **Căutarea eșuează** → se reprogramează conform backoff-ului; numărul de încercări este tot limitat de `max_retries`.
+3. **Found** (status `Sent`, `Processed` or `Queued`) → `accepted`, with the `MessageID` from the result. Not resent.
+4. **Not found** → resent normally.
+5. **The search fails** → rescheduled according to the backoff; the number of attempts is still capped by `max_retries`.
 
-**Verificat în documentația Postmark (Messages API):**
+**Verified against the Postmark documentation (Messages API):**
 
-- Filtrul `metadata_{cheie}` există; se poate filtra după un singur câmp de metadata o dată, suficient aici.
-- `count` și `offset` sunt obligatorii.
-- Fără `messagestream`, căutarea se face doar în streamul `outbound`. Pluginul trimite mereu streamul din setări, ca verificarea să funcționeze și cu un stream personalizat.
-- Filtrele de dată folosesc fusul orar Eastern Time; pluginul nu le folosește, deci problema nu apare.
-- Mesajele rămân căutabile pe durata retenției contului Postmark (implicit 45 de zile), mult peste fereastra de verificare.
+- The `metadata_{key}` filter exists; you can filter by one metadata field at a time, which is enough here.
+- `count` and `offset` are required.
+- Without `messagestream`, the search covers only the `outbound` stream. The plugin always passes the stream from the settings, so the check also works with a custom stream.
+- Date filters use Eastern Time; the plugin does not use them, so this is not an issue.
+- Messages stay searchable for the Postmark account's retention period (45 days by default), far beyond the check window.
 
-Pauza de 5 minute lasă timp ca mesajul să apară în căutare; durata exactă de indexare nu este documentată, deci se testează pe contul real.
+The 5-minute pause gives the message time to appear in search; the exact indexing delay is not documented, so it should be tested on the real account.
 
 ---
 
-## 8. Modelul de stări
+## 8. State model
 
 ### 8.1. `send_status`
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: lead creat
-    pending --> accepted: Postmark a acceptat
-    pending --> pending: eroare temporară sau timeout ambiguu
-    pending --> failed: eroare permanentă / retry-uri epuizate
-    failed --> pending: retrimitere manuală (CLI sau admin v3)
+    [*] --> pending: lead created
+    pending --> accepted: Postmark accepted
+    pending --> pending: temporary error or ambiguous timeout
+    pending --> failed: permanent error / retries exhausted
+    failed --> pending: manual resend (CLI or admin v3)
     accepted --> [*]
 ```
 
-`failed` este singura stare care necesită atenție; administratorul este anunțat prin email și o poate relua din CLI sau, din v3, din lista de leaduri eșuate. Un lead `failed` poate fi marcat ca ignorat (`dismissed_at`) fără a-i schimba starea.
+`failed` is the only status that needs attention; the administrator is notified by email and can retry it from the CLI or, from v3, from the failed-leads list. A `failed` lead can be marked as dismissed (`dismissed_at`) without changing its status.
 
 ### 8.2. `delivery_status` (v2)
 
 ```mermaid
 stateDiagram-v2
     [*] --> unknown
-    unknown --> deferred: bounce temporar
+    unknown --> deferred: temporary bounce
     unknown --> delivered: Delivery
-    unknown --> bounced: bounce definitiv
+    unknown --> bounced: permanent bounce
     deferred --> delivered
     deferred --> bounced
     delivered --> [*]
     bounced --> [*]
 ```
 
-În v1, `delivery_status` rămâne mereu `unknown`.
+In v1, `delivery_status` always stays `unknown`.
 
-Regula de monotonie: `delivered` și `bounced` nu se suprascriu. Tranziția se face prin `UPDATE ... WHERE delivery_status IN (<stări permise>)`.
+The monotonic rule: `delivered` and `bounced` are never overwritten. The transition is done with `UPDATE ... WHERE delivery_status IN (<allowed states>)`.
 
 ---
 
-## 9. Coada de trimitere
+## 9. The send queue
 
 ### 9.1. Cron
 
-- Recomandat: `DISABLE_WP_CRON = true` + cron real pe server la fiecare minut:
-  `* * * * * wp cron event run --due-now --path=/cale/site`
-- Fără cron real, pluginul funcționează cu WP-Cron standard, dar retry-urile depind de trafic.
+- Recommended: `DISABLE_WP_CRON = true` + a real server cron every minute:
+  `* * * * * wp cron event run --due-now --path=/path/to/site`
+- Without a real cron, the plugin works with the standard WP-Cron, but retries depend on traffic.
 
-| Eveniment | Frecvență | Componentă | Etapă |
+| Event | Frequency | Component | Stage |
 | --- | --- | --- | --- |
-| `llt_send_lead` | o dată, la submit | `SendWorker` | v1 |
-| `llt_process_queue` | la 1 minut | `SendWorker` | v1 |
-| `llt_health_check` | orar | `HealthCheck` | v1 |
-| `llt_retention_cleanup` | zilnic | `RetentionService` | v1 |
-| `llt_refresh_proxy_ranges` | săptămânal | `ProxyRanges` | v1 |
-| `llt_reconcile_delivery` | orar | `Reconciler` | v2 |
+| `llt_send_lead` | once, on submit | `SendWorker` | v1 |
+| `llt_process_queue` | every minute | `SendWorker` | v1 |
+| `llt_health_check` | hourly | `HealthCheck` | v1 |
+| `llt_retention_cleanup` | daily | `RetentionService` | v1 |
+| `llt_refresh_proxy_ranges` | weekly | `ProxyRanges` | v1 |
+| `llt_reconcile_delivery` | hourly | `Reconciler` | v2 |
 
-Workerul salvează un heartbeat în `llt_state`; dacă nu a rulat de peste 15 minute, tabul **Stare** și `wp llt status` afișează avertisment, iar `HealthCheck` semnalează prin alertă leadurile blocate în `pending`.
+The worker saves a heartbeat in `llt_state`; if it has not run for more than 15 minutes, the **Status** tab and `wp llt status` show a warning, and `HealthCheck` reports leads stuck in `pending` by alert.
 
 ### 9.2. Backoff
 
-Program configurabil (implicit `1, 5, 15, 60, 360` minute), jitter ±20%, respectă `Retry-After`:
+A configurable schedule (default `1, 5, 15, 60, 360` minutes), ±20% jitter, respects `Retry-After`:
 
-`next_retry_at = now + max( interval[retry_count] × (1 ± 0,2), retry_after )`
+`next_retry_at = now + max( interval[retry_count] × (1 ± 0.2), retry_after )`
 
-După ultimul retry: `failed`, `last_error_code = retries_exhausted`.
+After the last retry: `failed`, `last_error_code = retries_exhausted`.
 
 ### 9.3. Locking
 
@@ -513,226 +513,227 @@ WHERE id = %d
   AND (locked_until IS NULL OR locked_until < UTC_TIMESTAMP());
 ```
 
-`rows_affected = 1` → workerul deține leadul. Lock-ul expiră singur dacă procesul moare.
+`rows_affected = 1` → the worker owns the lead. The lock expires on its own if the process dies.
 
-### 9.4. Algoritm
+### 9.4. Algorithm
 
-1. Selectează până la 20 de leaduri `pending` scadente, ordonate după `next_retry_at`.
-2. Pentru fiecare: claim → (dacă `ambiguous_timeout`: verificare §7.4) → încarcă mesajul → trimite → actualizează → eliberează lock-ul.
-3. Lipsa conținutului → `failed`, `content_missing`.
-4. După fiecare `failed`, se informează `AdminNotifier`.
+1. Select up to 20 due `pending` leads, ordered by `next_retry_at`.
+2. For each: claim → (if `ambiguous_timeout`: check as in §7.4) → load the message → send → update → release the lock.
+3. Missing content → `failed`, `content_missing`.
+4. After each `failed`, `AdminNotifier` is informed.
 
 ---
 
-## 10. Alerte pentru administrator (`AdminNotifier`)
+## 10. Administrator alerts (`AdminNotifier`)
 
-### 10.1. Când
+### 10.1. When
 
-| Declanșator | Moment |
+| Trigger | Timing |
 | --- | --- |
-| Eroare de configurare (categoria `config`, §7.3) | imediat |
-| N leaduri `failed` consecutive (setare, implicit 3) | la atingerea pragului |
-| Leaduri `pending` scadente de peste 1 oră, dar netrimise (cron oprit sau Postmark indisponibil); leadurile care așteaptă un retry programat nu se numără | la verificarea orară (`HealthCheck`) |
-| v2: bounce | opțional (setare), grupat |
-| v2: webhook aparent oprit (§13.5) | la verificarea orară |
-| Revenire la normal după o alertă | o singură notificare „Trimiterea funcționează din nou” |
+| Configuration error (the `config` category, §7.3) | immediately |
+| N consecutive `failed` leads (setting, default 3) | when the threshold is reached |
+| `pending` leads overdue by more than 1 hour but not sent (cron stopped or Postmark unavailable); leads waiting for a scheduled retry are not counted | at the hourly check (`HealthCheck`) |
+| v2: bounce | optional (setting), grouped |
+| v2: webhook seems to be stopped (§13.5) | at the hourly check |
+| Back to normal after an alert | a single "Sending works again" notification |
 
-Contorul de eșecuri consecutive se resetează la prima trimitere acceptată.
+The consecutive-failure counter resets on the first accepted send.
 
-### 10.2. Cum
+### 10.2. How
 
-- Canal: `wp_mail()`, **nu** Postmark. Dacă problema este chiar Postmark, alerta tot ajunge (prin mailerul implicit al serverului sau prin pluginul SMTP al site-ului).
-- Risc: multe hostinguri blochează funcția `mail()` din PHP. Fără un plugin SMTP configurat, `wp_mail()` poate eșua în tăcere și alertele nu ajung. De aceea:
-  - tabul **Alerte** are butonul **„Trimite alertă de test”**, care trimite prin exact același canal și afișează dacă `wp_mail()` a raportat eroare (hookul `wp_mail_failed`);
-  - dacă trimiterea unei alerte eșuează, eșecul se salvează în `llt_state` și apare în tabul **Stare** și în `wp llt status`;
-  - din v3, contorul din meniul admin semnalează leadurile eșuate chiar dacă emailul de alertă nu a ajuns.
-- Opțiune în tabul Alerte: **„Trimite alertele prin Postmark dacă `wp_mail()` eșuează”**. Utilă când serverul nu poate trimite email, dar Postmark funcționează (ex.: un singur lead cu adresă invalidă). Nu ajută când problema este chiar contul Postmark.
-- Destinatar: setarea **„Email pentru alerte”** (implicit `admin_email`).
-- Limitare: cel mult o alertă de același tip la X ore (setare, implicit 6); evenimentele din interval se cumulează în următoarea alertă.
-- Conținut **fără date personale**: număr de leaduri afectate, ID-uri, cod și mesaj de eroare, data primului și ultimului eșec, plus comenzile CLI recomandate.
+- Channel: `wp_mail()`, **not** Postmark. If the problem is Postmark itself, the alert still gets through (via the server's default mailer or the site's SMTP plugin).
+- Risk: many hosts block PHP's `mail()` function. Without a configured SMTP plugin, `wp_mail()` can fail silently and alerts don't arrive. Therefore:
+  - the **Alerts** tab has a **"Send test alert"** button, which sends through exactly the same channel and shows whether `wp_mail()` reported an error (the `wp_mail_failed` hook);
+  - if sending an alert fails, the failure is saved in `llt_state` and shown in the **Status** tab and in `wp llt status`;
+  - from v3, the counter in the admin menu flags failed leads even if the alert email did not arrive.
+- An option in the Alerts tab: **"Fallback"** — send alerts through Postmark if `wp_mail()` fails. Useful when the server cannot send email but Postmark works (e.g. a single lead with an invalid address). It does not help when the problem is the Postmark account itself.
+- Recipient: the **"Alert email"** setting (default `admin_email`).
+- Rate limiting: at most one alert of the same type every X hours (setting, default 6); events in that interval are accumulated into the next alert.
+- Content **without personal data**: the number of affected leads, IDs, error code and message, the date of the first and last failure, plus the recommended CLI commands.
 
-Exemplu:
+Example:
 
 ```
-Subiect: [Site] 3 leaduri nu au putut fi trimise
+Subject: [Site] 3 leads could not be sent
 
-Postmark a respins trimiterea: tokenul API este invalid (ErrorCode 10).
-Verifică tokenul în Setări → Location Lead Tracker → Postmark.
-Leaduri afectate: #812, #813, #814 (primul eșec: 20.10.2026 14:02 UTC).
+Postmark rejected the send: the API token is invalid (ErrorCode 10).
+Check the token in Settings → Location Lead Tracker → Postmark.
+Affected leads: #812, #813, #814 (first failure: 2026-10-20 14:02 UTC).
 
-Conținutul acestor mesaje se păstrează 14 zile.
-După remediere, retrimite-le din:
-https://domeniu.md/wp-admin/options-general.php?page=location-lead-tracker&tab=failed
-sau rulează:  wp llt retry --failed
+The content of these messages is kept for 14 days.
+After fixing the problem, resend them from:
+https://example.com/wp-admin/options-general.php?page=location-lead-tracker&tab=failed
+or run:  wp llt retry --failed
 ```
 
-Linkul către lista de leaduri eșuate apare din v3; în v1 alerta conține doar comanda CLI.
+The link to the failed-leads list appears from v3; in v1 the alert contains only the CLI command.
 
 ---
 
-## 11. Confidențialitate și GDPR
+## 11. Privacy and GDPR
 
-### 11.1. Ce sunt „exporters / erasers”
+### 11.1. What "exporters / erasers" are
 
-WordPress are două unelte în **Unelte → Exportă date personale** și **Unelte → Șterge date personale**. Când o persoană cere datele ei (drept garantat de GDPR), administratorul introduce adresa ei de email, iar WordPress întreabă fiecare plugin ce date deține despre ea.
+WordPress has two tools under **Tools → Export Personal Data** and **Tools → Erase Personal Data**. When a person requests their data (a right guaranteed by the GDPR), the administrator enters their email address, and WordPress asks every plugin what data it holds about them.
 
-Pluginul se înregistrează la aceste unelte:
+The plugin registers with these tools:
 
-- **Export** (`PersonalDataExporter`): găsește în `location_lead_messages` mesajele cu `sender_email` = adresa cerută și le include în arhiva generată de WordPress (nume, email, telefon, mesaj, dată).
-- **Ștergere** (`PersonalDataEraser`): șterge aceste mesaje. Leadul minimal rămâne, deoarece nu conține date ale vizitatorului.
+- **Export** (`PersonalDataExporter`): finds the messages in `location_lead_messages` with `sender_email` = the requested address and includes them in the archive generated by WordPress (name, email, phone, message, date).
+- **Erasure** (`PersonalDataEraser`): deletes those messages. The minimal lead remains, since it contains no visitor data.
 
-Astfel, o cerere GDPR se rezolvă din interfața standard WordPress, fără acces la baza de date.
+So a GDPR request is handled from the standard WordPress interface, without database access.
 
-### 11.2. Ce date se păstrează
+### 11.2. What data is kept
 
-| Date | Unde | Cât timp |
+| Data | Where | How long |
 | --- | --- | --- |
-| Nume, email, telefon, mesaj vizitator | `location_lead_messages` | Temporar (§12) |
-| ID postare, email destinatar (locație), stări, date | `location_leads` | Permanent (istoric) |
-| Data consimțământului | `location_leads.consent_at` | Permanent |
-| IP vizitator | Doar hash, în transient de rate limiting | 1 oră |
-| Copia emailului trimis | Postmark (Activity) | Retenția contului Postmark (implicit 45 de zile, recomandat 7–14) |
+| Visitor name, email, phone, message | `location_lead_messages` | Temporarily (§12) |
+| Post ID, recipient email (location), statuses, dates | `location_leads` | Permanently (history) |
+| Consent date | `location_leads.consent_at` | Permanently |
+| Visitor IP | Only a hash, in the rate-limiting transient | 1 hour |
+| Copy of the sent email | Postmark (Activity) | The Postmark account's retention (45 days by default, 7–14 recommended) |
 
-### 11.3. Text pentru politica de confidențialitate
+### 11.3. Privacy policy text
 
-Prin `wp_add_privacy_policy_content()`, pluginul propune în **Setări → Confidențialitate** un text care descrie: datele colectate, scopul, trimiterea prin Postmark, Cloudflare Turnstile (dacă este activ), perioadele de păstrare. Administratorul îl copiază în pagina proprie.
+Through `wp_add_privacy_policy_content()`, the plugin suggests a text under **Settings → Privacy** that describes: the data collected, the purpose, sending through Postmark, Cloudflare Turnstile (if enabled), and the retention periods. The administrator copies it into their own page.
 
 ---
 
-## 12. Retenție (`RetentionService`)
+## 12. Retention (`RetentionService`)
 
-| Situație | Conținut în `lead_messages` | Etapă |
+| Situation | Content in `lead_messages` | Stage |
 | --- | --- | --- |
-| `pending` (retry în curs) | păstrat | v1 |
-| `accepted` | șters după X ore (setare, implicit 24) | v1 |
-| `failed` | șters după Y zile (setare, implicit 14) | v1 |
-| `delivered` | **șters imediat** de `EventProcessor` | v2 |
-| `accepted` + `unknown` / `deferred` (nicio confirmare) | șters după Z zile (setare, implicit 7) | v2 |
-| `bounced` | șters după Y zile | v2 |
-| Oricând | șters manual (CLI, admin v3) sau la o cerere GDPR (§11.1) | v1 |
+| `pending` (retry in progress) | kept | v1 |
+| `accepted` | deleted after X hours (setting, default 24) | v1 |
+| `failed` | deleted after Y days (setting, default 14) | v1 |
+| `delivered` | **deleted immediately** by `EventProcessor` | v2 |
+| `accepted` + `unknown` / `deferred` (no confirmation) | deleted after Z days (setting, default 7) | v2 |
+| `bounced` | deleted after Y days | v2 |
+| Any time | deleted manually (CLI, admin v3) or on a GDPR request (§11.1) | v1 |
 
-În v2, regula „X ore după acceptare” se înlocuiește cu „imediat după livrare / Z zile fără confirmare”.
+In v2, the "X hours after acceptance" rule is replaced by "immediately after delivery / Z days without confirmation".
 
-Ștergerea rulează zilnic, în loturi de 500. Leadul minimal nu se șterge automat.
+Deletion runs daily, in batches of 500. The minimal lead is never deleted automatically.
 
-Leadurile `failed` pot fi retrimise doar cât timp conținutul există (Y zile). Dacă este nevoie de mai mult timp pentru remediere, se mărește Y din setări.
+`failed` leads can be resent only while their content exists (Y days). If more time is needed to fix the problem, increase Y in the settings.
 
-Backupurile, logurile serverului și copiile păstrate de Postmark nu sunt afectate și se menționează în politica de confidențialitate. Postmark păstrează mesajele (inclusiv conținutul) pe durata retenției contului: implicit 45 de zile, configurabilă între 7 și 365 de zile din contul Postmark. Pentru minimizarea datelor, retenția Postmark se poate reduce la 7 zile; verificarea anti-duplicat (§7.4) și reconcilierea (§13.5) au nevoie doar de câteva zile.
+Backups, server logs and the copies kept by Postmark are not affected, and are mentioned in the privacy policy. Postmark keeps messages (including content) for the account's retention period: 45 days by default, configurable between 7 and 365 days in the Postmark account. For data minimization, Postmark retention can be reduced to 7 days; duplicate-send protection (§7.4) and reconciliation (§13.5) only need a few days.
 
 ---
 
-## 13. Webhook de livrare (v2)
+## 13. Delivery webhook (v2)
 
 ### 13.1. Endpoint
 
 ```
-POST https://domeniu.md/wp-json/llt/v1/postmark
+POST https://example.com/wp-json/llt/v1/postmark
 ```
 
-Configurare în Postmark (Server → Message Stream → Webhooks): evenimentele **Delivery** și **Bounce**, URL cu Basic Auth:
+Configuration in Postmark (Server → Message Stream → Webhooks): the **Delivery** and **Bounce** events, a URL with Basic Auth:
 
 ```
-https://{user}:{parolă}@domeniu.md/wp-json/llt/v1/postmark
+https://{user}:{password}@example.com/wp-json/llt/v1/postmark
 ```
 
-Utilizatorul și parola se generează din pagina de setări; URL-ul complet se copiază cu un buton.
+The user and password are generated on the settings page; the full URL is copied with a button.
 
-**Verificat în documentația Postmark:**
+**Verified against the Postmark documentation:**
 
-- Postmark **nu semnează** webhookurile (fără HMAC). Metodele recomandate sunt exact Basic Auth + HTTPS + opțional filtrarea după IP.
-- La crearea sau editarea webhookului, Postmark trimite câte o cerere de test pentru fiecare tip de eveniment și așteaptă `200`. Endpointul trebuie deci să răspundă `200` și la payload-urile de test (evenimente necorelate → `200`).
-- Delivery și Bounce se activează separat, pe același URL.
+- Postmark **does not sign** webhooks (no HMAC). The recommended methods are exactly Basic Auth + HTTPS + optional IP filtering.
+- When a webhook is created or edited, Postmark sends a test request for each event type and expects `200`. So the endpoint must also respond `200` to test payloads (uncorrelated events → `200`).
+- Delivery and Bounce are enabled separately, on the same URL.
 
-**Application Passwords:** pe site-urile care folosesc parole de aplicație, WordPress ar încerca să autentifice credențialele Basic Auth ale Postmark ca utilizator WordPress și ar respinge cererea cu 401 înainte să ajungă la plugin. Pluginul exclude doar ruta webhookului din această verificare (filtrul `application_password_is_api_request`).
+**Application Passwords:** on sites that use application passwords, WordPress would try to authenticate Postmark's Basic Auth credentials as a WordPress user and reject the request with 401 before it reaches the plugin. The plugin excludes only the webhook route from this check (the `application_password_is_api_request` filter).
 
-**Filtru opțional de IP** (setare, dezactivat implicit): acceptă cereri doar de la IP-urile de webhook publicate de Postmark (`3.134.147.250`, `50.31.156.6`, `50.31.156.77`, `18.217.206.57` la data verificării). IP-ul sursă se determină cu `ClientIp` (§6.5), deci funcționează și în spatele Cloudflare. Este dezactivat implicit pentru că Postmark poate schimba IP-urile, iar Basic Auth este suficient.
+**Optional IP filter** (setting, off by default): accepts requests only from the webhook IPs published by Postmark (`3.134.147.250`, `50.31.156.6`, `50.31.156.77`, `18.217.206.57` at the time of checking). The source IP is determined with `ClientIp` (§6.5), so it also works behind Cloudflare. It is off by default because Postmark may change the IPs, and Basic Auth is enough.
 
-### 13.2. Procesare
+### 13.2. Processing
 
 ```mermaid
 sequenceDiagram
     participant PM as Postmark
     participant WC as WebhookController
     participant EP as EventProcessor
-    participant DB as Baza de date
+    participant DB as Database
 
     PM->>WC: POST JSON
-    WC->>WC: Basic Auth (hash_equals), filtru IP opțional, limită body
-    alt autentificare eșuată
+    WC->>WC: Basic Auth (hash_equals), optional IP filter, body limit
+    alt authentication failed
         WC-->>PM: 401
     end
     WC->>EP: handle(payload)
-    EP->>DB: caută după MessageID, apoi Metadata.llt_lead_id
-    EP->>DB: UPDATE cu regulă de monotonie
-    alt Delivery aplicat
-        EP->>DB: DELETE conținut temporar
+    EP->>DB: look up by MessageID, then Metadata.llt_lead_id
+    EP->>DB: UPDATE with the monotonic rule
+    alt Delivery applied
+        EP->>DB: DELETE temporary content
     end
-    alt eroare internă
-        WC-->>PM: 500 (Postmark reîncearcă)
+    alt internal error
+        WC-->>PM: 500 (Postmark retries)
     else
         WC-->>PM: 200
     end
 ```
 
-### 13.3. Maparea evenimentelor
+### 13.3. Event mapping
 
-Verificat în documentația Postmark (Bounce API → Bounce types, Bounce webhook). Payload-ul Bounce conține `Type`, `TypeCode`, `Inactive` (adresa a fost dezactivată de Postmark), `CanActivate`, `BouncedAt`, `MessageID` și `Metadata`. Plângerile de spam și dezactivările manuale au în mod normal webhookuri separate; dacă totuși apar pe acest endpoint, se tratează conform tabelului.
+Verified against the Postmark documentation (Bounce API → Bounce types, Bounce webhook). The Bounce payload contains `Type`, `TypeCode`, `Inactive` (Postmark deactivated the address), `CanActivate`, `BouncedAt`, `MessageID` and `Metadata`. Spam complaints and manual deactivations normally have separate webhooks; if they do arrive at this endpoint, they are handled according to the table.
 
-**Regula principală:** dacă `Inactive = true`, Postmark a suprimat adresa, deci rezultatul este definitiv → `bounced`, indiferent de tip.
+**The main rule:** if `Inactive = true`, Postmark has suppressed the address, so the result is final → `bounced`, regardless of type.
 
-Altfel, după `TypeCode`:
+Otherwise, by `TypeCode`:
 
 | `Type` (`TypeCode`) | `delivery_status` |
 | --- | --- |
-| `Delivery` (eveniment separat) | `delivered`, `delivered_at = DeliveredAt` |
+| `Delivery` (a separate event) | `delivered`, `delivered_at = DeliveredAt` |
 | `HardBounce` (1), `BadEmailAddress` (100000), `Blocked` (100006), `DMARCPolicy` (100009), `SMTPApiError` (100007), `ManuallyDeactivated` (100002) | `bounced` |
-| `Transient` (2), `DnsError` (256), `SoftBounce` (4096), `Unknown` (2048) | `deferred` — Postmark poate încă livra; se așteaptă `Delivery` sau un bounce definitiv |
-| `AutoResponder` (64), `SpamNotification` (512) | ignorat — mesajul a fost de fapt livrat (răspuns automat / filtrat ca spam la destinatar); se așteaptă `Delivery` |
-| `Unsubscribe`, `Subscribe`, `AddressChange`, `OpenRelayTest`, `VirusNotification`, `ChallengeVerification` și orice alt tip | ignorat |
+| `Transient` (2), `DnsError` (256), `SoftBounce` (4096), `Unknown` (2048) | `deferred` — Postmark may still deliver; waiting for `Delivery` or a final bounce |
+| `AutoResponder` (64), `SpamNotification` (512) | ignored — the message was actually delivered (auto-reply / filtered as spam at the recipient); waiting for `Delivery` |
+| `Unsubscribe`, `Subscribe`, `AddressChange`, `OpenRelayTest`, `VirusNotification`, `ChallengeVerification` and any other type | ignored |
 
-Tipul bounce-ului se salvează în `last_error_code` (ex.: `bounce:HardBounce`), iar `Inactive` în `last_error_message`, pentru a fi afișate în lista din admin (v3).
+The bounce type is saved in `last_error_code` (e.g. `bounce:HardBounce`), and `Inactive` in `last_error_message`, so they can be shown in the admin list (v3).
 
-### 13.4. Reguli
+### 13.4. Rules
 
-**Coduri de răspuns** (verificat: Postmark reîncearcă doar la 5xx, 408, 429 și erori de rețea; orice alt 4xx înseamnă că evenimentul este abandonat):
+**Response codes** (verified: Postmark retries only on 5xx, 408, 429 and network errors; any other 4xx means the event is dropped):
 
-| Situație | Răspuns |
+| Situation | Response |
 | --- | --- |
-| Basic Auth greșit / IP nepermis | `401` (Postmark nu reîncearcă — corect, cererea nu e de la Postmark sau configurația e greșită) |
-| Eveniment procesat, duplicat, necorelat sau de tip ignorat | `200` |
-| Eroare de bază de date sau altă eroare internă | `500` — Postmark reîncearcă |
-| Payload invalid (nu e JSON, lipsește `RecordType`) | `200` + log, ca un eveniment stricat să nu blocheze trimiterile |
+| Wrong Basic Auth / IP not allowed | `401` (Postmark does not retry — correct, the request is not from Postmark or the setup is wrong) |
+| Event processed, duplicate, uncorrelated or of an ignored type | `200` |
+| Database error or another internal error | `500` — Postmark retries |
+| Invalid payload (not JSON, missing `RecordType`) | `200` + log, so a broken event does not block sending |
+| Payload too large | `413` |
 
-**Idempotență:** actualizarea condiționată (`UPDATE ... WHERE delivery_status NOT IN ('delivered','bounced')`) face ca un eveniment repetat să nu aibă efect. Postmark trimite și headerul `X-PM-Webhook-Trace-Id`, stabil între reîncercări; se salvează în log pentru depanare, dar nu este necesar pentru corectitudine.
+**Idempotency:** the conditional update (`UPDATE ... WHERE delivery_status NOT IN ('delivered','bounced')`) makes a repeated event have no effect. Postmark also sends the `X-PM-Webhook-Trace-Id` header, stable across retries; it is logged for debugging but is not needed for correctness.
 
-**Alte reguli:**
+**Other rules:**
 
-- Webhookul nu creează leaduri.
-- Webhook sosit înaintea salvării `MessageID` (posibil, deoarece trimiterea e asincronă) → corelare prin `Metadata.llt_lead_id`, iar `postmark_message_id` se completează atunci.
-- Handler rapid, fără apeluri externe.
+- The webhook never creates leads.
+- A webhook arriving before `MessageID` is saved (possible, because sending is asynchronous) → correlated through `Metadata.llt_lead_id`, and `postmark_message_id` is filled in then. Metadata pointing to a lead that already has a different `MessageID` is not correlated.
+- Fast handler, no external calls.
 
-### 13.5. Reconcilierea evenimentelor ratate (`Reconciler`)
+### 13.5. Reconciling missed events (`Reconciler`)
 
-**De ce:** documentația Postmark arată că un eveniment eșuat se reîncearcă de 6 ori, la 1, 5, 10, 10, 10 și 15 minute (aproximativ 50 de minute în total), apoi este abandonat. Dacă endpointul eșuează repetat, Postmark marchează tipul de eveniment ca neverificat și **oprește** trimiterea lui până la o nouă verificare manuală. Un site căzut o oră sau o actualizare greșită ar duce la pierderea definitivă a confirmărilor.
+**Why:** the Postmark documentation states that a failed event is retried 6 times, at 1, 5, 10, 10, 10 and 15 minutes (about 50 minutes in total), and then dropped. If the endpoint fails repeatedly, Postmark marks the event type as unverified and **stops** sending it until it is manually verified again. A site down for an hour or a bad update would mean confirmations are lost for good.
 
-**Soluția:** un job orar verifică direct în Postmark leadurile rămase fără confirmare.
+**The solution:** an hourly job checks directly in Postmark the leads still without confirmation.
 
-1. Selectează până la 50 de leaduri cu `send_status = 'accepted'`, `delivery_status IN ('unknown','deferred')`, `sent_at` mai vechi de 2 ore și mai noi de Z zile.
-2. Pentru fiecare: `GET /messages/outbound/{MessageID}/details`.
-3. Din `MessageEvents`:
-   - `Delivered` → `delivered`, cu `ReceivedAt` ca `delivered_at`;
-   - `Bounced` → evenimentul conține doar `BounceID`, deci se cere `GET /bounces/{BounceID}` pentru `TypeCode` și `Inactive`, apoi se aplică maparea din §13.3;
+1. Select up to 50 leads with `send_status = 'accepted'`, `delivery_status IN ('unknown','deferred')`, `sent_at` older than 2 hours and newer than Z days.
+2. For each: `GET /messages/outbound/{MessageID}/details`.
+3. From `MessageEvents`:
+   - `Delivered` → `delivered`, with `ReceivedAt` as `delivered_at`;
+   - `Bounced` → the event contains only `BounceID`, so `GET /bounces/{BounceID}` is requested for `TypeCode` and `Inactive`, then the mapping from §13.3 is applied;
    - `Transient` → `deferred`.
-4. Actualizarea folosește același `EventProcessor`, deci aceleași reguli de monotonie și de ștergere a conținutului.
-5. Cererile se fac secvențial, cu cel mult 50 de leaduri pe rulare, pentru a nu atinge rate limit-ul Postmark; un răspuns 429 oprește rularea curentă.
+4. The update goes through the same `EventProcessor`, so the same monotonic and content-deletion rules apply.
+5. Requests are sequential, at most 50 leads per run, so as not to hit the Postmark rate limit; a 429 response stops the current run. A lead with no events is moved to the end of the line (its `updated_at` is refreshed).
 
-**Alertă de webhook oprit:** dacă există leaduri acceptate în ultimele 24 de ore, dar niciun webhook nu a fost primit în acest interval, iar reconcilierea găsește livrări, `AdminNotifier` trimite: „Webhookul Postmark pare oprit. Verifică-l în Postmark → Server → Message Stream → Webhooks și apasă Verify.”
+**Stopped-webhook alert:** if there are leads accepted in the last 24 hours, but no webhook was received in that interval, and reconciliation finds deliveries, `AdminNotifier` sends "The Postmark webhook seems to be stopped", asking the administrator to check it in Postmark → Server → Message Stream → Webhooks and click Verify.
 
-Reconcilierea transformă webhookul din singura sursă de adevăr într-o optimizare: confirmarea vine în câteva secunde când webhookul merge și în cel mult o oră când nu merge.
+Reconciliation turns the webhook from the single source of truth into an optimization: confirmation arrives within seconds when the webhook works and within an hour at most when it doesn't.
 
 ---
 
-## 14. Modelul de date
+## 14. Data model
 
 ### 14.1. `{prefix}location_leads`
 
@@ -773,10 +774,10 @@ CREATE TABLE {prefix}location_leads (
 );
 ```
 
-- `UNIQUE` pe `postmark_message_id` acceptă mai multe valori `NULL` în MySQL/MariaDB, deci este unic doar când are valoare.
-- Toate datele se salvează în UTC; se afișează în fusul orar al site-ului.
+- `UNIQUE` on `postmark_message_id` allows multiple `NULL` values in MySQL/MariaDB, so it is unique only when it has a value.
+- All dates are stored in UTC and displayed in the site's time zone.
 
-Coloane adăugate față de specificația inițială: `locked_until`, `lock_token` (locking), `consent_at` (dovada consimțământului), `manual_resend_count`, `last_resend_by`, `last_resend_at` (urma retrimiterilor manuale, v3), `dismissed_at`, `dismissed_by` (leaduri ignorate, v3). `*_by` conțin ID-ul utilizatorului WordPress.
+Columns added compared to the initial specification: `locked_until`, `lock_token` (locking), `consent_at` (proof of consent), `manual_resend_count`, `last_resend_by`, `last_resend_at` (trail of manual resends, v3), `dismissed_at`, `dismissed_by` (dismissed leads, v3). The `*_by` columns hold the WordPress user ID.
 
 ### 14.2. `{prefix}location_lead_messages`
 
@@ -794,352 +795,355 @@ CREATE TABLE {prefix}location_lead_messages (
 );
 ```
 
-Indexul pe `sender_email` servește exportului/ștergerii GDPR.
+The index on `sender_email` serves GDPR export/erasure.
 
-### 14.3. Opțiuni
+### 14.3. Options
 
-| Opțiune | Conținut | Autoload |
+| Option | Content | Autoload |
 | --- | --- | --- |
-| `llt_settings` | Toate setările; secretele criptate | nu |
-| `llt_db_version` | Versiune schemă | da |
-| `llt_state` | Heartbeat cron, contor eșecuri consecutive, ultima alertă pe tip, ultima alertă eșuată, ultimul webhook primit, ultima reconciliere | nu |
-| `llt_proxy_ranges` | Lista IP-urilor Cloudflare + data actualizării | nu |
+| `llt_settings` | All settings; secrets encrypted | no |
+| `llt_db_version` | Schema version | yes |
+| `llt_state` | Cron heartbeat, consecutive-failure counter, last alert per type, last failed alert, last webhook received, last reconciliation | no |
+| `llt_proxy_ranges` | The Cloudflare IP list + update date | no |
 
 ---
 
-## 15. Pagina de setări
+## 15. Settings page
 
-**Setări → Location Lead Tracker**, capabilitate `manage_options`, Settings API.
+**Settings → Location Lead Tracker**, capability `manage_options`, Settings API.
 
-| Tab | Câmpuri | Etapă |
+| Tab | Fields | Stage |
 | --- | --- | --- |
-| **General** | Email expeditor, nume expeditor, subiect (cu `{post_title}`, `{site_name}`), format email (text / HTML) | v1 |
-| **Postmark** | Server API Token (secret), Message Stream, timeout; buton **„Trimite email de test”** | v1 |
-| **Formular** | Text consimțământ GDPR (textarea, HTML limitat), mesaj de confirmare pentru vizitator | v1 |
-| **Anti-spam** | Activează Turnstile, Site Key, Secret Key (secret), comportament dacă Turnstile nu răspunde, limită submit-uri / IP / oră, timp minim de completare, sursa IP, proxy-uri suplimentare, diagnostic IP (§6.5) | v1 |
-| **Retry** | Număr maxim de retry-uri, program în minute | v1 |
-| **Alerte** | Email pentru alerte, prag eșecuri consecutive, interval minim între alerte (ore), fallback prin Postmark, buton „Trimite alertă de test”, alertă la bounce (v2) | v1 |
-| **Retenție** | Ore după acceptare (v1), zile pentru eșuate, zile fără webhook (v2), șterge datele la dezinstalare | v1 / v2 |
-| **Webhook** | Activează, URL (doar citire, buton „Copiază”), utilizator + parolă Basic Auth (buton „Generează”), filtru IP Postmark (opțional), data ultimului webhook primit, data ultimei reconcilieri | v2 |
-| **Stare** | Ultima rulare a cronului, leaduri `pending` / `failed`, ultima alertă trimisă, ultima alertă eșuată, data listei Cloudflare (doar citire) | v1 |
-| **Leaduri eșuate** | Listă, filtre, retrimitere în masă (§17) | v3 |
+| **General** | Sender email, sender name, email subject (with `{post_title}`, `{site_name}`), email format (plain text / HTML) | v1 |
+| **Postmark** | Server API Token (secret), Message Stream, timeout; **"Send test email"** button | v1 |
+| **Form** | GDPR consent text (textarea, limited HTML), confirmation message for the visitor | v1 |
+| **Anti-spam** | Cloudflare Turnstile, Site Key, Secret Key (secret), behavior if the check is unavailable, messages per IP per hour, minimum time to fill in, IP source, additional proxies, IP diagnostics (§6.5) | v1 |
+| **Retries** | Maximum number of retries, intervals in minutes | v1 |
+| **Alerts** | Alert email, consecutive failure threshold, minimum interval between alerts (hours), Postmark fallback, "Send test alert" button, bounce alert (v2) | v1 |
+| **Retention** | Hours after acceptance (v1), days for failed leads, days without confirmation (v2), delete data on uninstall | v1 / v2 |
+| **Webhook** | Delivery confirmation (enable), URL (read-only, "Copy" button), Basic Auth user + password ("Generate credentials" button), Postmark IP filter (optional), date of the last webhook received, date of the last reconciliation | v2 |
+| **Status** | Last cron run, `pending` / `failed` leads, last alert sent, last failed alert, date of the Cloudflare list (read-only) | v1 |
+| **Failed leads** | List, filters, bulk resend (§17) | v3 |
 
-### 15.1. Secrete (`SecretStore`)
+### 15.1. Secrets (`SecretStore`)
 
-- Token Postmark, Turnstile Secret Key, parola webhook se stochează criptate (`sodium_crypto_secretbox`).
-- Cheie: `LLT_ENCRYPTION_KEY` din `wp-config.php` dacă există (opțional), altfel derivată din `wp_salt( 'secure_auth' )`.
-- Un secret salvat nu se afișează niciodată înapoi; câmpul arată `••••••••`. Câmp gol la salvare = valoarea rămâne neschimbată.
-- Dacă salturile WordPress se schimbă, secretele nu mai pot fi decriptate: pagina detectează situația și cere reintroducerea lor.
+- The Postmark token, the Turnstile Secret Key and the webhook password are stored encrypted (`sodium_crypto_secretbox`).
+- Key: `LLT_ENCRYPTION_KEY` from `wp-config.php` if it exists (optional), otherwise derived from `wp_salt( 'secure_auth' )`.
+- A saved secret is never shown back; the field shows `••••••••`. An empty field on save = the value is left unchanged.
+- If the WordPress salts change, the secrets can no longer be decrypted: the page detects this and asks for them to be re-entered.
 
-Nicio altă setare nu este hardcodată în constante.
+No other setting is hardcoded in constants.
 
-### 15.2. Validare
+### 15.2. Validation
 
-- Emailuri cu `is_email()`; programul de retry: întregi pozitivi, crescători, max. 10 valori; numărul de retry-uri nu poate depăși numărul de intervale.
-- Proxy-urile suplimentare: CIDR IPv4 sau IPv6 valid pe fiecare linie.
-- Textul GDPR trece prin `wp_kses` cu lista de taguri permise.
-- Erorile apar prin `add_settings_error()`.
+- Emails with `is_email()`; the retry schedule: positive, increasing integers, at most 10 values; the number of retries cannot exceed the number of intervals.
+- Additional proxies: a valid IPv4 or IPv6 CIDR on each line.
+- The GDPR text goes through `wp_kses` with the list of allowed tags.
+- Errors are reported with `add_settings_error()`.
 
 ---
 
 ## 16. WP-CLI
 
-Comenzile nu afișează date personale ale vizitatorilor decât la cerere explicită.
+The commands never show visitors' personal data unless explicitly requested.
 
-| Comandă | Acțiune |
+| Command | Action |
 | --- | --- |
-| `wp llt status` | Stare cron, leaduri pe stări, ultimele erori, configurare validă / invalidă |
-| `wp llt leads list [--status=failed] [--since=2026-10-01] [--format=table\|csv\|json]` | Listă leaduri (fără conținut) |
-| `wp llt leads show <id> [--with-content]` | Detalii lead; cu `--with-content` și mesajul, dacă încă există |
-| `wp llt retry <id>…` / `wp llt retry --failed` | Readuce leadurile în `pending` și resetează `retry_count` |
-| `wp llt send-test <email>` | Email de test prin Postmark |
-| `wp llt queue run` | Rulează workerul imediat |
-| `wp llt cleanup run [--dry-run]` | Rulează retenția |
-| `wp llt reconcile run` | Rulează reconcilierea imediat (v2) |
-| `wp llt content delete <id>` | Șterge manual conținutul unui lead |
-| `wp llt stats [--since] [--until] [--by=object]` | Număr de leaduri acceptate / eșuate; în v2 și livrate / respinse, opțional pe locație |
+| `wp llt status` | Cron status, leads by status, latest errors, valid / invalid configuration |
+| `wp llt leads list [--status=failed] [--since=2026-10-01] [--format=table\|csv\|json]` | Lead list (without content) |
+| `wp llt leads show <id> [--with-content]` | Lead details; with `--with-content` also the message, if it still exists |
+| `wp llt retry <id>…` / `wp llt retry --failed` | Puts the leads back into `pending` and resets `retry_count` |
+| `wp llt send-test <email>` | Test email through Postmark |
+| `wp llt queue run` | Runs the worker immediately |
+| `wp llt cleanup run [--dry-run]` | Runs retention |
+| `wp llt reconcile run` | Runs reconciliation immediately (v2) |
+| `wp llt content delete <id>` | Deletes a lead's content manually |
+| `wp llt stats [--since] [--until] [--by=object]` | Number of accepted / failed leads; in v2 also delivered / bounced, optionally per location |
 
-`retry` refuză leadurile al căror conținut a fost deja șters și explică motivul.
+`retry` refuses leads whose content was already deleted and explains why.
 
-Comenzile CLI și pagina din admin (v3) folosesc aceeași clasă `LeadActions`, deci se comportă identic.
+The CLI commands and the admin page (v3) use the same `LeadActions` class, so they behave identically.
 
 ---
 
-## 17. Leaduri eșuate în admin (v3)
+## 17. Failed leads in the admin (v3)
 
-### 17.1. Acces
+### 17.1. Access
 
-- Tab **„Leaduri eșuate”** în **Setări → Location Lead Tracker**:
+- The **"Failed leads"** tab in **Settings → Location Lead Tracker**:
   `options-general.php?page=location-lead-tracker&tab=failed`
-- Capabilitate: `manage_options` (doar administratori), verificată la afișare, la fiecare acțiune și la fiecare cerere AJAX. Editorii și alte roluri nu văd nici tabul, nici contorul.
-- Contor în meniu: **„Location Lead Tracker (3)”** — numărul de leaduri `failed`, neignorate, cu conținut disponibil. Calculul se păstrează în cache (transient de 5 minute, invalidat la orice schimbare de stare).
+- Capability: `manage_options` (administrators only), checked on display, on every action and on every AJAX request. Editors and other roles see neither the tab nor the counter.
+- Menu counter: **"Location Lead Tracker (3)"** — the number of `failed`, non-dismissed leads with content available. The count is cached (a 5-minute transient, invalidated on any status change).
 
-### 17.2. Banner de configurare
+### 17.2. Configuration banner
 
-Dacă ultimul eșec este o eroare de configurare (categoria `config`, §7.3), deasupra listei apare:
+If the last failure is a configuration error (the `config` category, §7.3), this appears above the list:
 
-> **Trimiterea nu funcționează: tokenul Postmark este invalid (ErrorCode 10).** Corectează setările din tabul Postmark și trimite un email de test înainte de a retrimite leadurile.
+> **Sending is not working: the Postmark token is invalid (pm_10).** Fix the settings in the Postmark tab and send a test email before resending the leads.
 
-Bannerul conține linkul către tabul Postmark și butonul „Trimite email de test”. Retrimiterea nu este blocată, dar fără remediere leadurile vor eșua din nou.
+The banner links to the Postmark tab. Resending is not blocked, but without a fix the leads will fail again.
 
-### 17.3. Lista (`FailedLeadsTable`, bazată pe `WP_List_Table`)
+### 17.3. The list (`FailedLeadsTable`, based on `WP_List_Table`)
 
-| Coloană | Conținut |
+| Column | Content |
 | --- | --- |
-| ☐ | Checkbox (activ pentru toate rândurile, ca leadurile fără conținut să poată fi ignorate în masă; la retrimitere sunt sărite și raportate) |
+| ☐ | Checkbox (enabled for all rows, so leads without content can be dismissed in bulk; on resend they are skipped and reported) |
 | ID | `#812` |
-| Data | `created_at`, în fusul orar al site-ului |
-| Locație | Titlul postării, cu link spre editare |
-| Destinatar | `recipient_email` |
-| Eroare | Cod + mesaj scurt; iconiță de avertizare pentru erori care probabil se repetă (adresă invalidă, destinatar inactiv în Postmark) |
-| Încercări | `retry_count` automate + `manual_resend_count` manuale |
-| Ultima încercare | `last_attempt_at` |
-| Conținut | „Disponibil — se șterge în 9 zile” sau „Șters” |
+| Date | `created_at`, in the site's time zone |
+| Location | The post title, with an edit link |
+| Recipient | `recipient_email` |
+| Error | Code + short message; a warning icon for errors that will likely repeat (invalid address, recipient inactive in Postmark) |
+| Attempts | "N automatic, M manual" (`retry_count` + `manual_resend_count`) |
+| Last attempt | `last_attempt_at` |
+| Content | "Available — deleted in 9 days" or "Deleted — cannot be resent" |
 
-**Vizualizări** (linkuri deasupra listei, cu număr):
+**Views** (links above the list, with counts):
 
-| Vizualizare | Criteriu |
+| View | Criterion |
 | --- | --- |
-| Eșuate (implicit) | `send_status = failed`, `dismissed_at IS NULL` |
-| Blocate | `send_status = pending` și `next_retry_at` depășit cu peste 1 oră |
-| Respinse (v2) | `delivery_status = bounced`, `dismissed_at IS NULL` |
-| Ignorate | `dismissed_at IS NOT NULL` |
+| Failed (default) | `send_status = failed`, `dismissed_at IS NULL` |
+| Stuck | `send_status = pending` and `next_retry_at` overdue by more than 1 hour |
+| Bounced (v2) | `delivery_status = bounced`, `dismissed_at IS NULL` |
+| Dismissed | `dismissed_at IS NOT NULL` |
 
-**Filtre**: cod de eroare (dropdown), locație (căutare după titlu), interval de date.
-**Paginare**: 20 pe pagină (configurabil din „Opțiuni ecran”). **Sortare**: dată, locație, încercări.
+**Filters**: error code (dropdown), location (search by title), date range.
+**Pagination**: 20 per page (configurable in "Screen Options"). **Sorting**: date, location, attempts.
 
-**Datele vizitatorului nu apar în listă.** Acțiunea de rând **„Vezi mesajul”** le încarcă la cerere (AJAX, nonce, `manage_options`): nume, email, telefon, mesaj. Utilă când administratorul vrea să contacteze direct vizitatorul.
+**Visitor data does not appear in the list.** The **"View message"** row action loads it on demand (AJAX, nonce, `manage_options`): name, email, phone, message. Useful when the administrator wants to contact the visitor directly.
 
-### 17.4. Selecție
+### 17.4. Selection
 
-- Checkbox-ul din antet selectează toate leadurile de pe pagina curentă (comportament standard WordPress).
-- După selecția paginii apare linkul **„Selectează toate cele 47 de leaduri care corespund filtrului”**. Acțiunea se aplică atunci pe server tuturor leadurilor care corespund filtrelor curente, nu doar celor vizibile.
+- The header checkbox selects all leads on the current page (standard WordPress behavior).
+- After the page is selected, the **"Select all 47 leads matching the filter"** link appears. The action is then applied on the server to all leads matching the current filters, not just the visible ones.
 
-### 17.5. Acțiuni
+### 17.5. Actions
 
-| Acțiune | Tip | Efect |
+| Action | Type | Effect |
 | --- | --- | --- |
-| **Retrimite** | rând + masă | Readuce leadul în coada de trimitere |
-| **Ignoră** | rând + masă | Setează `dismissed_at`, `dismissed_by`; leadul dispare din „Eșuate”, starea rămâne `failed` |
-| **Restaurează** | rând + masă (în „Ignorate”) | Golește `dismissed_at` |
-| **Șterge conținutul** | rând + masă | Șterge datele vizitatorului imediat; cere confirmare |
-| **Vezi mesajul** | rând | Afișează datele vizitatorului (§17.3) |
+| **Resend** | row + bulk | Puts the lead back into the send queue |
+| **Dismiss** | row + bulk | Sets `dismissed_at`, `dismissed_by`; the lead leaves "Failed", the status stays `failed` |
+| **Restore** | row + bulk (in "Dismissed") | Clears `dismissed_at` |
+| **Delete content** | row + bulk | Deletes the visitor's data immediately; asks for confirmation |
+| **View message** | row | Shows the visitor's data (§17.3) |
 
-Acțiuni disponibile pe vizualizare:
+Actions available per view:
 
-| Vizualizare | Acțiuni |
+| View | Actions |
 | --- | --- |
-| Eșuate | Retrimite, Ignoră, Șterge conținutul, Vezi mesajul |
-| Blocate | Vezi mesajul (leadurile sunt deja în coadă; se verifică cronul în tabul Stare) |
-| Respinse (v2) | Ignoră, Șterge conținutul, Vezi mesajul — fără Retrimite, pentru că adresa a respins mesajul; se poate contacta direct vizitatorul |
-| Ignorate | Restaurează, Șterge conținutul, Vezi mesajul |
+| Failed | Resend, Dismiss, Delete content, View message |
+| Stuck | View message (the leads are already in the queue; check cron in the Status tab) |
+| Bounced (v2) | Dismiss, Delete content, View message — no Resend, because the address rejected the message; the visitor can be contacted directly |
+| Dismissed | Restore, Delete content, View message |
 
-### 17.6. Fluxul „Retrimite”
+### 17.6. The "Resend" flow
 
 ```mermaid
 sequenceDiagram
     participant A as Administrator
     participant LA as LeadActions
-    participant DB as Baza de date
+    participant DB as Database
     participant SW as SendWorker
 
-    A->>LA: Retrimite (ID-uri sau „toate după filtru”)
+    A->>LA: Resend (IDs or "all matching the filter")
     LA->>LA: check_admin_referer, manage_options
-    LA->>DB: UPDATE … SET pending, retry_count = 0, next_retry_at = acum, manual_resend_count + 1, last_resend_by, last_resend_at, dismissed_at = NULL WHERE send_status = 'failed' AND conținut există
-    LA->>LA: programează llt_process_queue + spawn_cron()
-    LA-->>A: redirect + notice: „12 leaduri programate. 2 sărite: conținut șters.”
-    SW->>DB: preia leadurile în următorul minut
+    LA->>DB: UPDATE … SET pending, retry_count = 0, next_retry_at = now, manual_resend_count + 1, last_resend_by, last_resend_at, dismissed_at = NULL WHERE send_status = 'failed' AND content exists
+    LA->>LA: schedule llt_process_queue + spawn_cron()
+    LA-->>A: redirect + notice: "12 leads were put in the send queue… 2 skipped: their content was already deleted by retention."
+    SW->>DB: picks up the leads within the next minute
 ```
 
-Reguli:
+Rules:
 
-- Retrimiterea **nu trimite emailurile în cererea din admin**: le pune în coadă. Astfel 200 de leaduri nu blochează pagina și nu depășesc timpul maxim de execuție PHP.
-- `UPDATE ... WHERE send_status = 'failed'` este atomic: două click-uri rapide sau doi administratori simultan nu produc trimiteri duble.
-- Leadurile fără conținut sunt sărite și raportate în notice.
-- Leadurile cu erori care probabil se repetă (destinatar inactiv în Postmark) se retrimit dacă sunt selectate, dar notice-ul avertizează că pot eșua din nou. Pentru un destinatar dezactivat după bounce, adresa trebuie reactivată mai întâi în Postmark.
-- Retrimiterea resetează `retry_count`, deci leadul primește din nou ciclul complet de retry-uri automate.
-- Alertele email (§10) nu se trimit din nou pentru leadurile retrimise manual până la un nou eșec complet.
-- Un lead retrimis cu succes trece în `accepted` și urmează retenția normală.
+- Resending **does not send the emails in the admin request**: it queues them. So 200 leads don't block the page and don't exceed PHP's maximum execution time.
+- `UPDATE ... WHERE send_status = 'failed'` is atomic: two quick clicks or two administrators at once do not cause double sends.
+- Leads without content are skipped and reported in the notice.
+- Leads with errors that will likely repeat (recipient inactive in Postmark) are resent if selected, but the notice warns that they may fail again. For a recipient deactivated after a bounce, the address must first be reactivated in Postmark.
+- Resending resets `retry_count`, so the lead gets the full automatic retry cycle again.
+- Email alerts (§10) are not sent again for manually resent leads until a new complete failure.
+- A successfully resent lead moves to `accepted` and follows normal retention.
 
-### 17.7. Notice-uri după acțiuni
+### 17.7. Notices after actions
 
-Rezultatul fiecărei acțiuni se păstrează într-un transient per utilizator și se afișează ca admin notice după redirect, cu filtrele curente păstrate. Leadurile retrimise apar în vizualizarea „Blocate” doar dacă nu sunt trimise la peste o oră după ce au devenit scadente.
+The result of each action is kept in a per-user transient and shown as an admin notice after the redirect, with the current filters preserved. Resent leads appear in the "Stuck" view only if they are not sent more than an hour after becoming due.
 
 ---
 
-## 18. Securitate
+## 18. Security
 
-| Risc | Măsură |
+| Risk | Measure |
 | --- | --- |
-| Expunerea emailului destinatarului | Nu apare în HTML; citit server-side din post meta |
-| Trimitere către altă postare | `object_id` semnat HMAC; recitit și validat la submit |
-| Bot care ocolește time-trap-ul | Momentul randării este în contextul semnat |
-| Spam | Honeypot, time-trap, rate limiting, Turnstile opțional |
-| IP fals în headere (`CF-Connecting-IP`, `X-Forwarded-For`) | Headerele se citesc doar dacă conexiunea vine de la un proxy cunoscut (§6.5) |
-| Blocarea formularului pentru toți vizitatorii în spatele unui proxy | Detectarea automată a IP-ului real (§6.5) + diagnostic în setări |
-| Formular cache-uit | Fără nonce; context semnat fără expirare |
-| Acces la setări | `manage_options` + nonce în admin |
-| Secrete | Criptate în baza de date; niciodată afișate sau logate |
+| Exposing the recipient email | Not in the HTML; read server-side from post meta |
+| Sending to another post | `object_id` HMAC-signed; re-read and validated on submit |
+| A bot bypassing the time-trap | The render time is in the signed context |
+| Spam | Honeypot, time-trap, rate limiting, optional Turnstile |
+| Forged IP in headers (`CF-Connecting-IP`, `X-Forwarded-For`) | Headers are read only if the connection comes from a known proxy (§6.5) |
+| Blocking the form for all visitors behind a proxy | Automatic real-IP detection (§6.5) + diagnostics in the settings |
+| Cached form | No nonce; a signed context that does not expire |
+| Access to settings | `manage_options` + nonce in the admin |
+| Secrets | Encrypted in the database; never shown or logged |
 | SQL injection | `$wpdb->prepare()`, `insert()`, `update()` |
-| XSS | Escapare în template-uri și email; `wp_kses` pe textul GDPR |
-| Header injection | Eliminare `\r\n` din nume și subiect |
-| Webhook fals (v2) | Basic Auth constant-time, HTTPS, limită body, filtru IP Postmark opțional (Postmark nu semnează webhookurile) |
-| Date personale în loguri / alerte | Doar ID-uri, coduri de eroare, stări |
-| Acces la leaduri în admin (v3) | `manage_options` la afișare, acțiuni și AJAX; datele vizitatorului doar la cerere |
-| CSRF în admin (v3) | `check_admin_referer` pentru acțiuni în masă, nonce pentru AJAX |
-| Trimiteri duble din admin (v3) | `UPDATE` condiționat de `send_status = 'failed'` + lock-ul cozii |
+| XSS | Escaping in templates and email; `wp_kses` on the GDPR text |
+| Header injection | Stripping `\r\n` from the name and subject |
+| Forged webhook (v2) | Constant-time Basic Auth, HTTPS, body limit, optional Postmark IP filter (Postmark does not sign webhooks) |
+| Personal data in logs / alerts | Only IDs, error codes, statuses |
+| Access to leads in the admin (v3) | `manage_options` on display, actions and AJAX; visitor data only on demand |
+| CSRF in the admin (v3) | `check_admin_referer` for bulk actions, nonce for AJAX |
+| Double sends from the admin (v3) | `UPDATE` conditioned on `send_status = 'failed'` + the queue lock |
 
 ---
 
-## 19. Hooks WordPress
+## 19. WordPress hooks
 
-| Hook | Componentă |
+| Hook | Component |
 | --- | --- |
 | `init` | Shortcode |
-| `wp_enqueue_scripts` | `form.js` + Turnstile doar pe pagini cu shortcode |
-| `admin_menu`, `admin_init` | Pagina de setări |
-| `admin_post_llt_test_email` | Email de test |
-| `admin_post_llt_test_alert` | Alertă de test |
+| `wp_enqueue_scripts` | `form.js` + Turnstile only on pages with the shortcode |
+| `admin_menu`, `admin_init` | Settings page |
+| `admin_post_llt_test_email` | Test email |
+| `admin_post_llt_test_alert` | Test alert |
 | `admin_post_nopriv_llt_submit`, `admin_post_llt_submit` | Submit |
 | `llt_send_lead`, `llt_process_queue`, `llt_health_check`, `llt_retention_cleanup` | Cron (§9.1) |
-| `wp_mail_failed` | Detectarea alertelor netrimise |
+| `wp_mail_failed` | Detecting unsent alerts |
 | `wp_privacy_personal_data_exporters`, `wp_privacy_personal_data_erasers` | GDPR |
-| `admin_init` → `wp_add_privacy_policy_content` | Text politică |
+| `admin_init` → `wp_add_privacy_policy_content` | Policy text |
 | `rest_api_init` | Webhook (v2) |
-| `llt_reconcile_delivery` (orar) | `Reconciler` (v2) |
-| `llt_refresh_proxy_ranges` (săptămânal) | `ProxyRanges` |
+| `application_password_is_api_request` | Skipping Application Passwords on the webhook route (v2) |
+| `llt_reconcile_delivery` (hourly) | `Reconciler` (v2) |
+| `llt_refresh_proxy_ranges` (weekly) | `ProxyRanges` |
 | `cli_init` / `WP_CLI::add_command` | WP-CLI |
-| `admin_post_llt_lead_action` | Acțiuni pe leaduri (v3) |
-| `wp_ajax_llt_lead_details` | „Vezi mesajul” (v3) |
-| `admin_menu` (contor) | `MenuBadge` (v3) |
-| `set-screen-option` | Număr de rânduri pe pagină (v3) |
-| activare / dezactivare | `Installer` |
+| `admin_post_llt_lead_action` | Lead actions (v3) |
+| `wp_ajax_llt_lead_details` | "View message" (v3) |
+| `admin_menu` (counter) | `MenuBadge` (v3) |
+| `set-screen-option` | Rows per page (v3) |
+| activation / deactivation | `Installer` |
 
-Filtre: `llt_email_subject`, `llt_email_body`, `llt_form_template`, `llt_recipient_email`.
+Filters: `llt_email_subject`, `llt_email_body`, `llt_form_template`, `llt_recipient_email`.
 
 ---
 
-## 20. Testare
+## 20. Testing
 
-| Nivel | v1 | v2 |
+| Level | v1 | v2 |
 | --- | --- | --- |
-| Unit | `ErrorClassifier`, `BackoffPolicy`, `ContextSigner`, `SecretStore`, `RecipientResolver`, `ClientIp` (direct, Cloudflare, proxy local, header falsificat) | Maparea evenimentelor (inclusiv `Inactive`), monotonia |
-| Destinatar | Postare fără `email`, cu `email` invalid, depublicată între randare și submit, shortcode fără `object_id` în afara loop-ului | — |
-| Reconciliere | — | Webhook oprit → leadurile ajung `delivered` / `bounced` prin Messages API; 429 oprește rularea |
-| Integrare | Submit complet cu Postmark simulat (`pre_http_request`); token de test Postmark (`POSTMARK_API_TEST`) | Payload-uri reale Delivery / Bounce |
-| Asincron | Răspuns rapid către vizitator; trimitere după răspuns; fallback prin cron | — |
-| Timeout ambiguu | Mesaj găsit în Postmark → fără retrimitere; negăsit → retrimitere | — |
-| Concurență | Trimitere imediată + worker pe același lead → un singur email | Webhook înainte de salvarea `MessageID` |
-| Alerte | Prag, limitare în timp, alertă de revenire, livrare prin `wp_mail` când Postmark e căzut | Alertă bounce |
-| GDPR | Export și ștergere după email; checkbox obligatoriu | — |
-| Retenție | Ștergere după X ore / Y zile | Ștergere imediată după `Delivery` |
-| CLI | Toate comenzile, inclusiv `retry` pe conținut șters | `stats` cu livrate / respinse |
+| Unit | `ErrorClassifier`, `BackoffPolicy`, `ContextSigner`, `SecretStore`, `RecipientResolver`, `ClientIp` (direct, Cloudflare, local proxy, forged header) | Event mapping (including `Inactive`), monotonicity |
+| Recipient | Post without `email`, with an invalid `email`, unpublished between render and submit, shortcode without `object_id` outside the loop | — |
+| Reconciliation | — | Stopped webhook → leads become `delivered` / `bounced` through the Messages API; 429 stops the run |
+| Integration | Full submit with a mocked Postmark (`pre_http_request`); Postmark test token (`POSTMARK_API_TEST`) | Real Delivery / Bounce payloads |
+| Async | Fast response to the visitor; sending after the response; cron fallback | — |
+| Ambiguous timeout | Message found in Postmark → no resend; not found → resend | — |
+| Concurrency | Immediate send + worker on the same lead → a single email | Webhook before `MessageID` is saved |
+| Alerts | Threshold, rate limiting, recovery alert, delivery via `wp_mail` when Postmark is down | Bounce alert |
+| GDPR | Export and erasure by email; required checkbox | — |
+| Retention | Deletion after X hours / Y days | Immediate deletion after `Delivery` |
+| CLI | All commands, including `retry` on deleted content | `stats` with delivered / bounced |
 
 **v3**:
 
-| Ce se verifică | Rezultat așteptat |
+| What is checked | Expected result |
 | --- | --- |
-| Acces | Editorii nu văd tabul, contorul și nu pot apela acțiunile sau AJAX-ul |
-| Retrimitere în masă | Leadurile ajung `pending` și sunt trimise de worker; pagina răspunde rapid și la 500 de leaduri |
-| „Selectează toate după filtru” | Acțiunea se aplică exact leadurilor care corespund filtrelor |
-| Dublu click / doi administratori | O singură trimitere pe lead |
-| Conținut șters | Checkbox dezactivat; leadul este sărit și raportat |
-| Ignoră / Restaurează | Leadul dispare și reapare în vizualizări fără schimbarea stării |
-| Contor meniu | Corect după fiecare acțiune |
+| Access | Editors don't see the tab or the counter and cannot call the actions or the AJAX |
+| Bulk resend | Leads become `pending` and are sent by the worker; the page responds quickly even with 500 leads |
+| "Select all matching the filter" | The action applies exactly to the leads matching the filters |
+| Double click / two administrators | A single send per lead |
+| Deleted content | The lead is skipped and reported |
+| Dismiss / Restore | The lead disappears and reappears in the views without a status change |
+| Menu counter | Correct after every action |
+
+The automated suite (`php tests/run.php`) runs without WordPress: WordPress functions are stubbed and `$wpdb` is backed by in-memory SQLite. `php tests/check-calls.php` statically checks that every `Class::method` call resolves.
 
 ---
 
-## 21. Criterii de acceptare
+## 21. Acceptance criteria
 
 ### v1
 
-- Shortcode-ul afișează formularul; emailul destinatarului nu apare în HTML.
-- Destinatarul se citește din post meta `email` a postării indicate sau curente, la randare și din nou la submit.
-- Rate limiting-ul funcționează per vizitator și în spatele Cloudflare sau al unui proxy; headerele falsificate sunt ignorate.
-- Leadul și mesajul sunt salvate înainte de trimitere; vizitatorul primește răspuns fără să aștepte Postmark.
-- Emailul este trimis prin Postmark API, iar `MessageID` se asociază leadului.
-- Erorile temporare se reîncearcă automat; timeout-urile ambigue nu produc duplicate.
-- Administratorul primește email la eșecuri, fără date personale.
-- Leadurile eșuate se pot inspecta și relua din WP-CLI.
-- Checkbox-ul GDPR este obligatoriu, cu text din setări.
-- Datele unui vizitator se pot exporta și șterge din uneltele WordPress.
-- Turnstile funcționează când este activat.
-- Toate setările sunt în pagina de setări; secretele sunt criptate.
-- Conținutul se șterge conform retenției; leadul minimal rămâne.
+- The shortcode shows the form; the recipient email does not appear in the HTML.
+- The recipient is read from the `email` post meta of the specified or current post, at render time and again on submit.
+- Rate limiting works per visitor, also behind Cloudflare or a proxy; forged headers are ignored.
+- The lead and message are saved before sending; the visitor gets a response without waiting for Postmark.
+- The email is sent through the Postmark API, and the `MessageID` is attached to the lead.
+- Temporary errors are retried automatically; ambiguous timeouts do not cause duplicates.
+- The administrator receives an email on failures, without personal data.
+- Failed leads can be inspected and retried from WP-CLI.
+- The GDPR checkbox is required, with text from the settings.
+- A visitor's data can be exported and erased from the WordPress tools.
+- Turnstile works when enabled.
+- All settings are on the settings page; secrets are encrypted.
+- Content is deleted according to retention; the minimal lead remains.
 
 ### v2
 
-- Webhookul Postmark actualizează `delivery_status` și `delivered_at`.
-- Evenimentele duplicate sau întârziate nu modifică stările finale.
-- Conținutul se șterge imediat după `Delivery`.
-- Evenimentele ratate de webhook sunt recuperate de reconciliere în cel mult o oră.
-- `wp llt stats` raportează leaduri livrate și respinse.
+- The Postmark webhook updates `delivery_status` and `delivered_at`.
+- Duplicate or late events do not change final statuses.
+- Content is deleted right after `Delivery`.
+- Events missed by the webhook are recovered by reconciliation within an hour.
+- `wp llt stats` reports delivered and bounced leads.
 
 ### v3
 
-- Tabul „Leaduri eșuate” este vizibil doar administratorilor.
-- Leadurile eșuate se pot filtra, selecta (pe pagină sau toate după filtru) și retrimite fără WP-CLI.
-- Retrimiterea folosește coada; nu produce duplicate și nu blochează pagina.
-- Leadurile fără conținut nu pot fi retrimise și sunt semnalate clar.
-- Leadurile se pot ignora și restaura; conținutul se poate șterge manual.
-- Datele vizitatorului apar doar la cerere.
-- Meniul afișează numărul de leaduri eșuate care necesită atenție.
+- The "Failed leads" tab is visible only to administrators.
+- Failed leads can be filtered, selected (on the page or all matching the filter) and resent without WP-CLI.
+- Resending uses the queue; it causes no duplicates and does not block the page.
+- Leads without content cannot be resent and are clearly flagged.
+- Leads can be dismissed and restored; content can be deleted manually.
+- Visitor data appears only on demand.
+- The menu shows the number of failed leads that need attention.
 
 ---
 
-## 22. Instalare și cerințe
+## 22. Installation and requirements
 
-### 22.1. Cerințe
+### 22.1. Requirements
 
-| Cerință | Detalii |
+| Requirement | Details |
 | --- | --- |
 | WordPress | 6.0+ |
-| PHP | 7.4+, cu `sodium` (inclus implicit din PHP 7.2) |
-| Bază de date | MySQL 5.7+ / MariaDB 10.3+ |
-| Tip de instalare | **Site unic.** WordPress Multisite nu este suportat în această versiune (tabelele, setările și cronul ar trebui separate pe fiecare site din rețea). |
-| HTTPS | Obligatoriu pentru webhook (v2) |
-| Cron | Recomandat cron real de server la fiecare minut (§9.1) |
+| PHP | 7.4+, with `sodium` (bundled by default since PHP 7.2) |
+| Database | MySQL 5.7+ / MariaDB 10.3+ |
+| Install type | **Single site.** WordPress Multisite is not supported in this version (tables, settings and cron would have to be separated per site in the network). |
+| HTTPS | Required for the webhook (v2) |
+| Cron | A real server cron every minute is recommended (§9.1) |
 
-### 22.2. Configurare Postmark
+### 22.2. Postmark setup
 
-1. **Domeniul expeditorului** se verifică în Postmark (Sender Signatures → Domains) cu înregistrările **DKIM** și **Return-Path** adăugate în DNS. Fără ele, emailurile ajung mai ușor în spam. Webhookul raportează corect „livrat” (serverul destinatarului a acceptat mesajul), dar asta nu garantează ajungerea în Inbox — confirmat explicit în documentația Postmark.
-2. **Message Stream:** mesajele de contact sunt tranzacționale, deci se folosește streamul **`outbound`** (Default Transactional Stream), nu un stream de tip Broadcast. Pluginul verifică la „Trimite email de test” că streamul există (erorile 1235 / 1236).
-3. **Cont în aprobare:** cât timp contul Postmark nu este aprobat, se poate trimite doar către adrese de pe același domeniu ca expeditorul (eroarea 412). Testele trebuie făcute cu o adresă de pe domeniul propriu.
-4. **Retenție Postmark:** recomandat 7–14 zile, din setările serverului Postmark (§12).
-5. **Webhook (v2):** se creează pe streamul `outbound`, cu Delivery și Bounce activate, folosind URL-ul copiat din setări, apoi se apasă **Verify**.
+1. **The sender domain** is verified in Postmark (Sender Signatures → Domains) with the **DKIM** and **Return-Path** records added to DNS. Without them, emails are more likely to land in spam. The webhook correctly reports "delivered" (the recipient's server accepted the message), but that does not guarantee it reached the Inbox — explicitly confirmed in the Postmark documentation.
+2. **Message Stream:** contact messages are transactional, so the **`outbound`** stream (Default Transactional Stream) is used, not a Broadcast stream. "Send test email" checks that the stream exists (errors 1235 / 1236).
+3. **Account pending approval:** until the Postmark account is approved, you can only send to addresses on the same domain as the sender (error 412). Tests must use an address on your own domain.
+4. **Postmark retention:** 7–14 days recommended, in the Postmark server settings (§12).
+5. **Webhook (v2):** created on the `outbound` stream, with Delivery and Bounce enabled, using the URL copied from the settings, then click **Verify**.
 
-### 22.3. Mutarea site-ului (staging → producție)
+### 22.3. Moving the site (staging → production)
 
-Secretele (token Postmark, chei Turnstile, parolă webhook) sunt criptate cu o cheie derivată din salturile WordPress. Dacă site-ul este mutat pe un mediu cu alte salturi în `wp-config.php`, ele nu mai pot fi decriptate și trebuie reintroduse; pagina de setări detectează situația și afișează un avertisment.
+The secrets (Postmark token, Turnstile keys, webhook password) are encrypted with a key derived from the WordPress salts. If the site is moved to an environment with different salts in `wp-config.php`, they can no longer be decrypted and must be re-entered; the settings page detects this and shows a warning.
 
-Pentru a evita reintroducerea, se poate defini aceeași cheie pe toate mediile:
+To avoid re-entering them, the same key can be defined on all environments:
 
 ```php
-define( 'LLT_ENCRYPTION_KEY', '...' ); // 32+ caractere aleatoare, identică pe staging și producție
+define( 'LLT_ENCRYPTION_KEY', '...' ); // 32+ random characters, identical on staging and production
 ```
 
-Dacă `LLT_ENCRYPTION_KEY` se adaugă după ce secretele au fost salvate, acestea se reintroduc o singură dată.
+If `LLT_ENCRYPTION_KEY` is added after the secrets were saved, they need to be re-entered once.
 
-### 22.4. Verificare după instalare
+### 22.4. Post-installation check
 
-1. Postarea fiecărei locații are câmpul meta `email` completat cu o adresă validă.
-2. Tabul **Postmark** → „Trimite email de test”.
-3. Tabul **Alerte** → „Trimite alertă de test” (confirmă că `wp_mail()` funcționează).
-4. Tabul **Anti-spam** → diagnosticul IP afișează IP-ul real al administratorului.
-5. Tabul **Stare** → cronul a rulat în ultimele minute.
-6. (v2) Postmark → Webhooks → Verify, apoi trimiterea unui lead de test și confirmarea stării `delivered` în `wp llt leads list`.
+1. Each location's post has the `email` meta field filled in with a valid address.
+2. **Postmark** tab → "Send test email".
+3. **Alerts** tab → "Send test alert" (confirms that `wp_mail()` works).
+4. **Anti-spam** tab → the IP diagnostics show the administrator's real IP.
+5. **Status** tab → cron ran in the last few minutes.
+6. (v2) Postmark → Webhooks → Verify, then send a test lead and confirm the `delivered` status in `wp llt leads list`.
 
 ---
 
-## 23. Surse verificate
+## 23. Verified sources
 
-Comportamentul Postmark și Cloudflare descris în acest document a fost verificat în documentația oficială în octombrie 2026:
+The Postmark and Cloudflare behavior described in this document was verified against the official documentation in October 2026:
 
-- Postmark — [API overview: coduri HTTP și ErrorCode](https://postmarkapp.com/developer/api/overview)
-- Postmark — [Messages API: căutare după metadata, detalii mesaj](https://postmarkapp.com/developer/api/messages-api)
-- Postmark — [Bounce API: tipuri de bounce](https://postmarkapp.com/developer/api/bounce-api)
-- Postmark — [Webhooks overview: autentificare, reîncercări, verificare](https://postmarkapp.com/developer/webhooks/webhooks-overview)
+- Postmark — [API overview: HTTP codes and ErrorCode](https://postmarkapp.com/developer/api/overview)
+- Postmark — [Messages API: search by metadata, message details](https://postmarkapp.com/developer/api/messages-api)
+- Postmark — [Bounce API: bounce types](https://postmarkapp.com/developer/api/bounce-api)
+- Postmark — [Webhooks overview: authentication, retries, verification](https://postmarkapp.com/developer/webhooks/webhooks-overview)
 - Postmark — [Delivery webhook](https://postmarkapp.com/developer/webhooks/delivery-webhook)
 - Postmark — [Bounce webhook](https://postmarkapp.com/developer/webhooks/bounce-webhook)
-- Postmark — [IP-uri pentru firewall (webhookuri)](https://postmarkapp.com/support/article/800-ips-for-firewalls)
+- Postmark — [IPs for firewalls (webhooks)](https://postmarkapp.com/support/article/800-ips-for-firewalls)
 - Cloudflare — [IP Ranges](https://www.cloudflare.com/ips/)

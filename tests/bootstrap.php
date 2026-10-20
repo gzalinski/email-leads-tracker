@@ -1,7 +1,7 @@
 <?php
 /**
- * Mediu minimal de test: stub-uri pentru funcțiile WordPress folosite de logica testată.
- * Nu înlocuiește testarea într-un WordPress real (vezi README → Testare).
+ * Minimal test environment: stubs for the WordPress functions used by the tested logic.
+ * It does not replace testing in a real WordPress install (see README → Testing).
  *
  * @package LocationLeadTracker
  */
@@ -68,6 +68,18 @@ class WP_REST_Request {
 	}
 	public function get_body() {
 		return $this->body;
+	}
+}
+
+class WP_REST_Response {
+	public $data;
+	public $status;
+	public function __construct( $data = null, $status = 200 ) {
+		$this->data   = $data;
+		$this->status = $status;
+	}
+	public function get_status() {
+		return $this->status;
 	}
 }
 
@@ -151,13 +163,13 @@ function wp_specialchars_decode( $value, $quote = 0 ) {
 	return htmlspecialchars_decode( (string) $value, ENT_QUOTES );
 }
 function get_bloginfo( $key = '' ) {
-	return 'Site Test';
+	return 'Test Site';
 }
 function home_url( $path = '' ) {
 	return 'https://example.test' . $path;
 }
 function get_the_title( $id ) {
-	return isset( $GLOBALS['llt_test_posts'][ $id ] ) ? $GLOBALS['llt_test_posts'][ $id ]->post_title : 'Locație';
+	return isset( $GLOBALS['llt_test_posts'][ $id ] ) ? $GLOBALS['llt_test_posts'][ $id ]->post_title : 'Location';
 }
 function get_post( $id ) {
 	return $GLOBALS['llt_test_posts'][ $id ] ?? null;
@@ -191,14 +203,26 @@ function wp_next_scheduled( $hook, $args = array() ) {
 	return false;
 }
 function spawn_cron() {}
+function esc_sql( $value ) {
+	return addslashes( (string) $value );
+}
+function rest_url( $path = '' ) {
+	return 'https://example.test/wp-json/' . ltrim( $path, '/' );
+}
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
+}
+function register_rest_route( ...$args ) {
+	return true;
+}
 
-// HTTP simulat: răspunsurile se pun în $GLOBALS['llt_http_queue'], apelurile se înregistrează în $GLOBALS['llt_http_log'].
+// Simulated HTTP: responses go into $GLOBALS['llt_http_queue'], calls are recorded in $GLOBALS['llt_http_log'].
 $GLOBALS['llt_http_queue'] = array();
 $GLOBALS['llt_http_log']   = array();
 function llt_test_http( $method, $url, $args ) {
 	$GLOBALS['llt_http_log'][] = array( $method, $url, $args );
 	if ( ! $GLOBALS['llt_http_queue'] ) {
-		throw new RuntimeException( "Cerere HTTP neașteptată: {$method} {$url}" );
+		throw new RuntimeException( "Unexpected HTTP request: {$method} {$url}" );
 	}
 	return array_shift( $GLOBALS['llt_http_queue'] );
 }
@@ -225,31 +249,7 @@ function llt_http( int $code, $body = '', array $headers = array() ) {
 	);
 }
 
-function esc_sql( $value ) {
-	return addslashes( (string) $value );
-}
-function rest_url( $path = '' ) {
-	return 'https://example.test/wp-json/' . ltrim( $path, '/' );
-}
-function wp_parse_url( $url ) {
-	return parse_url( $url );
-}
-function register_rest_route( ...$args ) {
-	return true;
-}
-class WP_REST_Response {
-	public $data;
-	public $status;
-	public function __construct( $data = null, $status = 200 ) {
-		$this->data   = $data;
-		$this->status = $status;
-	}
-	public function get_status() {
-		return $this->status;
-	}
-}
-
-// Email simulat.
+// Simulated email.
 $GLOBALS['llt_mail_log']  = array();
 $GLOBALS['llt_mail_fail'] = false;
 function wp_mail( $to, $subject, $body ) {

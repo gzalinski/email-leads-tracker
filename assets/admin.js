@@ -1,12 +1,12 @@
 /**
- * Location Lead Tracker — pagina de setări și lista de leaduri eșuate.
+ * Location Lead Tracker — settings page and failed leads list.
  */
 ( function () {
 	'use strict';
 
 	var config = window.lltAdmin || {};
 
-	// Butoanele „Copiază”: <button data-llt-copy="#id-element">.
+	// "Copy" buttons: <button data-llt-copy="#element-id">.
 	document.addEventListener( 'click', function ( event ) {
 		var button = event.target.closest && event.target.closest( '[data-llt-copy]' );
 		if ( ! button ) {
@@ -20,7 +20,7 @@
 		var text = source.value || source.textContent || '';
 		var done = function () {
 			var label = button.textContent;
-			button.textContent = 'Copiat';
+			button.textContent = 'Copied';
 			setTimeout( function () {
 				button.textContent = label;
 			}, 1500 );
@@ -38,7 +38,7 @@
 		}
 	} );
 
-	// Confirmare pentru linkurile de ștergere: <a data-llt-confirm="Mesaj">.
+	// Confirmation for delete links: <a data-llt-confirm="Message">.
 	document.addEventListener( 'click', function ( event ) {
 		var link = event.target.closest && event.target.closest( '[data-llt-confirm]' );
 		if ( link && ! window.confirm( link.getAttribute( 'data-llt-confirm' ) ) ) {
@@ -62,13 +62,13 @@
 	function resetAllMatching() {
 		allInput.value = '';
 		if ( banner ) {
-			banner.querySelector( '.llt-select-all-text' ).textContent = 'Toate leadurile de pe această pagină sunt selectate.';
+			banner.querySelector( '.llt-select-all-text' ).textContent = 'All leads on this page are selected.';
 			var link = banner.querySelector( '.llt-select-all-link' );
 			link.hidden = false;
 		}
 	}
 
-	// „Selectează toate cele N leaduri care corespund filtrului”: apare când toată pagina este bifată.
+	// "Select all N leads matching the filter": shown when the whole page is checked.
 	form.addEventListener( 'change', function () {
 		var checks = rowChecks();
 		var allChecked = checks.length > 0 && checks.every( function ( c ) {
@@ -89,19 +89,19 @@
 		banner.querySelector( '.llt-select-all-link' ).addEventListener( 'click', function ( event ) {
 			event.preventDefault();
 			allInput.value = '1';
-			banner.querySelector( '.llt-select-all-text' ).textContent = 'Sunt selectate toate cele ' + total + ' leaduri care corespund filtrului.';
+			banner.querySelector( '.llt-select-all-text' ).textContent = 'All ' + total + ' leads matching the filter are selected.';
 			this.hidden = true;
 		} );
 	}
 
-	// Confirmare pentru ștergerea în masă.
+	// Confirmation for bulk deletion.
 	form.addEventListener( 'submit', function ( event ) {
 		var top = form.querySelector( 'select[name="llt_do"]' );
 		var bottom = form.querySelector( 'select[name="llt_do_bottom"]' );
 		var action = ( top && top.value ) || ( bottom && bottom.value ) || '';
 		if ( ! action ) {
 			event.preventDefault();
-			window.alert( 'Alege o acțiune.' );
+			window.alert( 'Choose an action.' );
 			return;
 		}
 		var count = allInput.value ? total : rowChecks().filter( function ( c ) {
@@ -109,15 +109,15 @@
 		} ).length;
 		if ( ! count ) {
 			event.preventDefault();
-			window.alert( 'Selectează cel puțin un lead.' );
+			window.alert( 'Select at least one lead.' );
 			return;
 		}
-		if ( 'delete_content' === action && ! window.confirm( 'Ștergi definitiv datele vizitatorilor pentru ' + count + ' leaduri? Leadurile nu vor mai putea fi retrimise.' ) ) {
+		if ( 'delete_content' === action && ! window.confirm( 'Permanently delete the visitors\' data for ' + count + ' leads? They can no longer be resent.' ) ) {
 			event.preventDefault();
 		}
 	} );
 
-	// „Vezi mesajul”: datele vizitatorului se încarcă la cerere.
+	// "View message": the visitor's data is loaded on request.
 	var dialog = document.getElementById( 'llt-message-dialog' );
 	document.addEventListener( 'click', function ( event ) {
 		var link = event.target.closest && event.target.closest( '.llt-view-message' );
@@ -126,7 +126,7 @@
 		}
 		event.preventDefault();
 		var body = dialog.querySelector( '.llt-dialog-body' );
-		body.textContent = 'Se încarcă…';
+		body.textContent = 'Loading…';
 		if ( dialog.showModal ) {
 			dialog.showModal();
 		} else {
@@ -145,17 +145,17 @@
 			.then( function ( result ) {
 				body.textContent = '';
 				if ( ! result.success ) {
-					body.textContent = ( result.data && result.data.message ) || 'Mesajul nu a putut fi încărcat.';
+					body.textContent = ( result.data && result.data.message ) || 'The message could not be loaded.';
 					return;
 				}
 				var d = result.data;
 				var list = document.createElement( 'dl' );
 				[
 					[ 'Lead', '#' + d.lead ],
-					[ 'Data', d.date ],
-					[ 'Nume', d.name ],
+					[ 'Date', d.date ],
+					[ 'Name', d.name ],
 					[ 'Email', d.email ],
-					[ 'Telefon', d.phone || '—' ],
+					[ 'Phone', d.phone || '—' ],
 				].forEach( function ( pair ) {
 					var dt = document.createElement( 'dt' );
 					var dd = document.createElement( 'dd' );
@@ -171,7 +171,7 @@
 				body.appendChild( message );
 			} )
 			.catch( function () {
-				body.textContent = 'Mesajul nu a putut fi încărcat.';
+				body.textContent = 'The message could not be loaded.';
 			} );
 	} );
 } )();

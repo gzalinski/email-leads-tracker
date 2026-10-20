@@ -1,6 +1,6 @@
 <?php
 /**
- * Trimite leadurile: imediat după submit și periodic, din coadă (ARCHITECTURE.md §7, §9).
+ * Sends leads: right after the submission and periodically from the queue (ARCHITECTURE.md §7, §9).
  *
  * @package LocationLeadTracker
  */
@@ -26,7 +26,7 @@ final class SendWorker {
 	const BATCH = 20;
 
 	/**
-	 * Procesează leadurile scadente. Rulat de cron la fiecare minut.
+	 * Processes due leads. Run by cron every minute.
 	 */
 	public static function process_queue(): void {
 		State::set( 'worker_heartbeat', time() );
@@ -43,9 +43,9 @@ final class SendWorker {
 	}
 
 	/**
-	 * Trimite un lead. Nu face nimic dacă leadul nu este scadent sau este procesat de alt worker.
+	 * Sends a lead. Does nothing if the lead is not due or is being processed by another worker.
 	 *
-	 * @param int|string $lead_id ID-ul leadului.
+	 * @param int|string $lead_id Lead ID.
 	 */
 	public static function process_lead( $lead_id ): void {
 		$lead_id = (int) $lead_id;
@@ -61,7 +61,7 @@ final class SendWorker {
 			}
 			$client = new PostmarkClient();
 
-			// Timeout ambiguu anterior: verificăm în Postmark înainte de a retrimite (§7.4).
+			// Previous ambiguous timeout: check in Postmark before resending (§7.4).
 			if ( 'ambiguous_timeout' === $lead->last_error_code && $client->has_token() ) {
 				$found = $client->find_by_lead( $lead_id );
 				if ( is_wp_error( $found ) ) {
@@ -99,7 +99,7 @@ final class SendWorker {
 		$table = \LocationLeadTracker\Database\Schema::leads();
 		$now   = Util::now();
 
-		// Webhookul (v2) poate fi ajuns deja și poate fi completat postmark_message_id; COALESCE îl păstrează.
+		// The webhook (v2) may have arrived first and set postmark_message_id; COALESCE keeps it.
 		$set_message = '' !== $message_id ? 'postmark_message_id = COALESCE(postmark_message_id, %s), ' : '';
 		$params      = '' !== $message_id ? array( $message_id ) : array();
 		$params      = array_merge( $params, array( $now, $now, $now, (int) $lead->id ) );

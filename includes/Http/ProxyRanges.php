@@ -1,8 +1,8 @@
 <?php
 /**
- * Rețelele Cloudflare. Lista inclusă funcționează din prima zi; un cron săptămânal o actualizează.
+ * Cloudflare networks. The bundled list works from day one; a weekly cron refreshes it.
  *
- * Sursa: https://www.cloudflare.com/ips/
+ * Source: https://www.cloudflare.com/ips/
  *
  * @package LocationLeadTracker
  */
@@ -76,7 +76,7 @@ final class ProxyRanges {
 	}
 
 	/**
-	 * Descarcă lista curentă. Dacă descărcarea eșuează, lista existentă rămâne neschimbată.
+	 * Downloads the current list. If the download fails, the existing list stays unchanged.
 	 */
 	public static function refresh(): bool {
 		$lists = array();

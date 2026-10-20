@@ -1,13 +1,13 @@
 <?php
 /**
- * Rezultatul normalizat al unei cereri de trimitere.
+ * The normalized result of a send request.
  *
- * Categorii (ARCHITECTURE.md §7.3):
- * - accepted  — Postmark a acceptat mesajul;
- * - temporary — se reîncearcă după backoff;
- * - ambiguous — cererea poate să fi ajuns; se verifică înainte de retrimitere;
- * - permanent — problema ține doar de acest lead;
- * - config    — problema afectează toate leadurile (alertă imediată).
+ * Categories (ARCHITECTURE.md §7.3):
+ * - accepted  — Postmark accepted the message;
+ * - temporary — retried after a backoff;
+ * - ambiguous — the request may have reached Postmark; checked before resending;
+ * - permanent — the problem concerns only this lead;
+ * - config    — the problem affects all leads (immediate alert).
  *
  * @package LocationLeadTracker
  */
@@ -32,7 +32,7 @@ final class SendResult {
 	public $code = '';
 	/** @var string */
 	public $message = '';
-	/** @var int Secunde, din headerul Retry-After. */
+	/** @var int Seconds, from the Retry-After header. */
 	public $retry_after = 0;
 
 	private function __construct( string $category ) {
@@ -58,7 +58,7 @@ final class SendResult {
 	}
 
 	/**
-	 * Eșec final pentru acest lead (permanent sau de configurare).
+	 * Final failure for this lead (permanent or configuration).
 	 */
 	public function is_final_failure(): bool {
 		return self::PERMANENT === $this->category || self::CONFIG === $this->category;

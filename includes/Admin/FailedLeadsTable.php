@@ -1,8 +1,8 @@
 <?php
 /**
- * Lista de leaduri din admin (v3), pe baza WP_List_Table.
+ * The admin lead list (v3), based on WP_List_Table.
  *
- * Datele vizitatorilor nu apar în listă; se încarcă la cerere („Vezi mesajul”).
+ * Visitors' data does not appear in the list; it is loaded on request ("View message").
  *
  * @package LocationLeadTracker
  */
@@ -23,7 +23,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 
 	const PER_PAGE_OPTION = 'llt_leads_per_page';
 
-	/** Erori care probabil se repetă la retrimitere. */
+	/** Errors that will probably repeat on resend. */
 	const REPEATING = array( 'pm_300', 'pm_406', 'content_missing' );
 
 	/** @var string */
@@ -47,13 +47,13 @@ final class FailedLeadsTable extends \WP_List_Table {
 		return array(
 			'cb'           => '<input type="checkbox">',
 			'id'           => 'ID',
-			'created'      => 'Data',
-			'location'     => 'Locație',
-			'recipient'    => 'Destinatar',
-			'error'        => 'Eroare',
-			'attempts'     => 'Încercări',
-			'last_attempt' => 'Ultima încercare',
-			'content'      => 'Conținut',
+			'created'      => 'Date',
+			'location'     => 'Location',
+			'recipient'    => 'Recipient',
+			'error'        => 'Error',
+			'attempts'     => 'Attempts',
+			'last_attempt' => 'Last attempt',
+			'content'      => 'Content',
 		);
 	}
 
@@ -73,7 +73,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 	public function prepare_items() {
 		$per_page = (int) $this->get_items_per_page( self::PER_PAGE_OPTION, 20 );
 		$page     = $this->get_pagenum();
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- doar sortare.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- sorting only.
 		$orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'id';
 		$order   = isset( $_GET['order'] ) ? sanitize_key( wp_unslash( $_GET['order'] ) ) : 'desc';
 		// phpcs:enable
@@ -92,13 +92,13 @@ final class FailedLeadsTable extends \WP_List_Table {
 	}
 
 	public function no_items() {
-		echo 'Nu există leaduri în această vizualizare.';
+		echo 'There are no leads in this view.';
 	}
 
 	/**
-	 * Selectul de acțiuni în masă folosește numele `llt_do`, ca să nu intre în conflict cu `action` din admin-post.php.
+	 * The bulk action select uses the name `llt_do`, so it does not conflict with `action` from admin-post.php.
 	 *
-	 * @param string $which top sau bottom.
+	 * @param string $which top or bottom.
 	 */
 	protected function bulk_actions( $which = '' ) {
 		$actions = BulkActionHandler::actions_for( $this->view );
@@ -106,18 +106,18 @@ final class FailedLeadsTable extends \WP_List_Table {
 			return;
 		}
 		$id = 'llt-bulk-' . esc_attr( $which );
-		echo '<label for="' . esc_attr( $id ) . '" class="screen-reader-text">Acțiuni în masă</label>';
+		echo '<label for="' . esc_attr( $id ) . '" class="screen-reader-text">Bulk actions</label>';
 		echo '<select name="' . ( 'top' === $which ? 'llt_do' : 'llt_do_bottom' ) . '" id="' . esc_attr( $id ) . '" class="llt-bulk-select">';
-		echo '<option value="">Acțiuni în masă</option>';
+		echo '<option value="">Bulk actions</option>';
 		foreach ( $actions as $action ) {
 			printf( '<option value="%s">%s</option>', esc_attr( $action ), esc_html( BulkActionHandler::LABELS[ $action ] ) );
 		}
 		echo '</select>';
-		submit_button( 'Aplică', 'action', '', false, array( 'id' => 'llt-apply-' . $which ) );
+		submit_button( 'Apply', 'action', '', false, array( 'id' => 'llt-apply-' . $which ) );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_cb( $item ) {
 		if ( ! BulkActionHandler::actions_for( $this->view ) ) {
@@ -127,7 +127,7 @@ final class FailedLeadsTable extends \WP_List_Table {
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_id( $item ) {
 		$id      = (int) $item->id;
@@ -139,25 +139,25 @@ final class FailedLeadsTable extends \WP_List_Table {
 			$actions[ $action ] = sprintf(
 				'<a href="%s"%s>%s</a>',
 				esc_url( BulkActionHandler::row_url( $action, $this->view, $id ) ),
-				'delete_content' === $action ? ' data-llt-confirm="Ștergi definitiv datele vizitatorului pentru acest lead?"' : '',
+				'delete_content' === $action ? ' data-llt-confirm="Permanently delete the visitor\'s data for this lead?"' : '',
 				esc_html( BulkActionHandler::LABELS[ $action ] )
 			);
 		}
 		if ( $item->has_content ) {
-			$actions['view'] = sprintf( '<a href="#" class="llt-view-message" data-lead="%d">Vezi mesajul</a>', $id );
+			$actions['view'] = sprintf( '<a href="#" class="llt-view-message" data-lead="%d">View message</a>', $id );
 		}
 		return '<strong>#' . $id . '</strong>' . $this->row_actions( $actions );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_created( $item ) {
 		return esc_html( Util::local_date( (string) $item->created_at ) );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_location( $item ) {
 		$title = '' !== (string) $item->location_title ? (string) $item->location_title : '#' . (int) $item->object_id;
@@ -166,14 +166,14 @@ final class FailedLeadsTable extends \WP_List_Table {
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_recipient( $item ) {
 		return esc_html( (string) $item->recipient_email );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_error( $item ) {
 		$code = (string) $item->last_error_code;
@@ -181,43 +181,43 @@ final class FailedLeadsTable extends \WP_List_Table {
 			return '—';
 		}
 		$repeating = in_array( $code, self::REPEATING, true ) || 0 === strpos( $code, 'bounce:' );
-		$text      = 0 === strpos( $code, 'bounce:' ) ? 'Respins de serverul destinatarului (' . substr( $code, 7 ) . ')' : ErrorClassifier::describe( $code );
+		$text      = 0 === strpos( $code, 'bounce:' ) ? 'Rejected by the recipient server (' . substr( $code, 7 ) . ')' : ErrorClassifier::describe( $code );
 		return sprintf(
 			'%s%s<br><code>%s</code>',
-			$repeating ? '<span class="dashicons dashicons-warning llt-warning" title="Probabil se va repeta la retrimitere"></span> ' : '',
+			$repeating ? '<span class="dashicons dashicons-warning llt-warning" title="This will probably repeat on resend"></span> ' : '',
 			esc_html( $text ),
 			esc_html( $code )
 		);
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_attempts( $item ) {
 		$auto   = (int) $item->retry_count + 1;
 		$manual = (int) $item->manual_resend_count;
-		return esc_html( $auto . ' automate' . ( $manual ? ', ' . $manual . ' manuale' : '' ) );
+		return esc_html( $auto . ' automatic' . ( $manual ? ', ' . $manual . ' manual' : '' ) );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_last_attempt( $item ) {
 		return esc_html( Util::local_date( $item->last_attempt_at ? (string) $item->last_attempt_at : null ) );
 	}
 
 	/**
-	 * @param object $item Rândul.
+	 * @param object $item The row.
 	 */
 	public function column_content( $item ) {
 		if ( ! $item->has_content ) {
-			return '<span class="llt-muted">Șters — nu poate fi retrimis</span>';
+			return '<span class="llt-muted">Deleted — cannot be resent</span>';
 		}
 		if ( in_array( $this->view, array( 'failed', 'bounced', 'dismissed' ), true ) && $item->content_created_at ) {
 			$expires = strtotime( $item->content_created_at . ' UTC' ) + DAY_IN_SECONDS * max( 1, (int) Settings::get( 'retention_failed_days' ) );
 			$days    = max( 0, (int) ceil( ( $expires - time() ) / DAY_IN_SECONDS ) );
-			return esc_html( 0 === $days ? 'Disponibil — se șterge azi' : sprintf( 'Disponibil — se șterge în %d %s', $days, 1 === $days ? 'zi' : 'zile' ) );
+			return esc_html( 0 === $days ? 'Available — deleted today' : sprintf( 'Available — deleted in %d %s', $days, 1 === $days ? 'day' : 'days' ) );
 		}
-		return 'Disponibil';
+		return 'Available';
 	}
 }

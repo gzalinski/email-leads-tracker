@@ -1,8 +1,8 @@
 <?php
 /**
- * Acțiunile din lista de leaduri (v3): Retrimite, Ignoră, Restaurează, Șterge conținutul.
+ * Actions in the lead list (v3): Resend, Dismiss, Restore, Delete content.
  *
- * Primește ID-uri bifate sau „toate după filtru”; logica este aceeași ca în WP-CLI (LeadActions).
+ * Accepts checked IDs or "all matching the filter"; the logic is the same as in WP-CLI (LeadActions).
  *
  * @package LocationLeadTracker
  */
@@ -18,10 +18,10 @@ defined( 'ABSPATH' ) || exit;
 
 final class BulkActionHandler {
 
-	// Același nonce pe care WP_List_Table îl afișează în formular (bulk-{plural}).
+	// The same nonce that WP_List_Table prints in the form (bulk-{plural}).
 	const NONCE = 'bulk-leads';
 
-	/** Acțiunile permise pe fiecare vizualizare. */
+	/** Actions allowed in each view. */
 	const ACTIONS = array(
 		'failed'    => array( 'resend', 'dismiss', 'delete_content' ),
 		'stuck'     => array(),
@@ -30,10 +30,10 @@ final class BulkActionHandler {
 	);
 
 	const LABELS = array(
-		'resend'         => 'Retrimite',
-		'dismiss'        => 'Ignoră',
-		'restore'        => 'Restaurează',
-		'delete_content' => 'Șterge conținutul',
+		'resend'         => 'Resend',
+		'dismiss'        => 'Dismiss',
+		'restore'        => 'Restore',
+		'delete_content' => 'Delete content',
 	);
 
 	public static function register(): void {
@@ -49,11 +49,11 @@ final class BulkActionHandler {
 
 	public static function handle(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( 'Nu ai permisiunea necesară.', 403 );
+			wp_die( 'You do not have the required permission.', 403 );
 		}
 		check_admin_referer( self::NONCE );
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- nonce verificat mai sus.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- nonce checked above.
 		$request = wp_unslash( $_REQUEST );
 		// phpcs:enable
 		$view    = FailedLeadsQuery::sanitize_view( sanitize_key( (string) ( $request['llt_view'] ?? 'failed' ) ) );
@@ -83,45 +83,45 @@ final class BulkActionHandler {
 	}
 
 	/**
-	 * Execută acțiunea și întoarce mesajul pentru administrator.
+	 * Runs the action and returns the message for the administrator.
 	 *
-	 * @param int[] $ids ID-uri.
-	 * @return array{0:string,1:string} [tip notice, mesaj]
+	 * @param int[] $ids IDs.
+	 * @return array{0:string,1:string} [notice type, message]
 	 */
 	public static function perform( string $action, string $view, array $ids, int $user_id ): array {
 		if ( ! in_array( $action, self::actions_for( $view ), true ) ) {
-			return array( 'error', 'Acțiunea nu este disponibilă în această vizualizare.' );
+			return array( 'error', 'This action is not available in this view.' );
 		}
 		if ( ! $ids ) {
-			return array( 'warning', 'Nu ai selectat niciun lead.' );
+			return array( 'warning', 'No lead was selected.' );
 		}
 
 		switch ( $action ) {
 			case 'resend':
 				$result  = LeadActions::resend( $ids, $user_id );
-				$message = sprintf( '%d leaduri au fost puse în coada de trimitere și vor pleca în următorul minut.', $result['queued'] );
+				$message = sprintf( '%d leads were put in the send queue and will go out within the next minute.', $result['queued'] );
 				if ( $result['no_content'] ) {
-					$message .= sprintf( '<br>%d sărite: conținutul a fost deja șters de retenție (#%s).', count( $result['no_content'] ), implode( ', #', array_slice( $result['no_content'], 0, 20 ) ) );
+					$message .= sprintf( '<br>%d skipped: their content was already deleted by retention (#%s).', count( $result['no_content'] ), implode( ', #', array_slice( $result['no_content'], 0, 20 ) ) );
 				}
 				if ( $result['not_failed'] ) {
-					$message .= sprintf( '<br>%d sărite: nu mai sunt în starea „eșuat”.', count( $result['not_failed'] ) );
+					$message .= sprintf( '<br>%d skipped: they are no longer in the "failed" status.', count( $result['not_failed'] ) );
 				}
 				return array( $result['queued'] ? 'success' : 'warning', $message );
 
 			case 'dismiss':
-				return array( 'success', sprintf( '%d leaduri ignorate. Le găsești în vizualizarea „Ignorate”.', LeadActions::dismiss( $ids, $user_id ) ) );
+				return array( 'success', sprintf( '%d leads dismissed. You can find them in the "Dismissed" view.', LeadActions::dismiss( $ids, $user_id ) ) );
 
 			case 'restore':
-				return array( 'success', sprintf( '%d leaduri restaurate.', LeadActions::restore( $ids ) ) );
+				return array( 'success', sprintf( '%d leads restored.', LeadActions::restore( $ids ) ) );
 
 			case 'delete_content':
-				return array( 'success', sprintf( 'Datele vizitatorilor au fost șterse pentru %d leaduri. Leadurile minimale rămân în evidență.', LeadActions::delete_content( $ids ) ) );
+				return array( 'success', sprintf( 'The visitors\' data was deleted for %d leads. The minimal leads stay on record.', LeadActions::delete_content( $ids ) ) );
 		}
-		return array( 'error', 'Acțiune necunoscută.' );
+		return array( 'error', 'Unknown action.' );
 	}
 
 	/**
-	 * URL pentru o acțiune pe un singur rând.
+	 * URL for an action on a single row.
 	 */
 	public static function row_url( string $action, string $view, int $id ): string {
 		return wp_nonce_url(

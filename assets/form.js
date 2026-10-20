@@ -1,6 +1,6 @@
 /**
- * Location Lead Tracker — trimiterea formularului prin AJAX.
- * Fără JavaScript, formularul funcționează normal (redirect înapoi la pagină cu mesajul).
+ * Location Lead Tracker — submits the form via AJAX.
+ * Without JavaScript the form still works (redirect back to the page with the message).
  */
 ( function () {
 	'use strict';
@@ -86,7 +86,7 @@
 				}
 			} )
 			.catch( function () {
-				setStatus( form, false, 'A apărut o eroare de conexiune. Te rugăm să încerci din nou.' );
+				setStatus( form, false, 'A connection error occurred. Please try again.' );
 			} )
 			.then( function () {
 				if ( button ) {

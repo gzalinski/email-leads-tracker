@@ -1,6 +1,6 @@
 <?php
 /**
- * Dezinstalare: datele se șterg doar dacă opțiunea „Șterge tabelele și setările la dezinstalare” este bifată.
+ * Uninstall: the data is deleted only if "Delete the tables and settings when the plugin is uninstalled" is checked.
  *
  * @package LocationLeadTracker
  */

@@ -1,8 +1,8 @@
 <?php
 /**
- * Criptarea secretelor (token Postmark, chei Turnstile, parolă webhook) cu libsodium.
+ * Encryption of secrets (Postmark token, Turnstile keys, webhook password) with libsodium.
  *
- * Cheia: `LLT_ENCRYPTION_KEY` din wp-config.php dacă există, altfel derivată din salturile WordPress.
+ * Key: `LLT_ENCRYPTION_KEY` from wp-config.php if defined, otherwise derived from the WordPress salts.
  *
  * @package LocationLeadTracker
  */
@@ -28,7 +28,7 @@ final class SecretStore {
 	}
 
 	/**
-	 * @return string|null Textul decriptat sau null dacă valoarea nu poate fi decriptată.
+	 * @return string|null The decrypted text, or null if the value cannot be decrypted.
 	 */
 	public static function decrypt( string $stored ): ?string {
 		if ( 0 !== strpos( $stored, self::PREFIX ) ) {

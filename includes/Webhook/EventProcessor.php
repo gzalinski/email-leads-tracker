@@ -1,11 +1,11 @@
 <?php
 /**
- * Aplică evenimentele de livrare Postmark (Delivery / Bounce) pe leaduri (ARCHITECTURE.md §13).
+ * Applies Postmark delivery events (Delivery / Bounce) to leads (ARCHITECTURE.md §13).
  *
- * Folosit de webhook și de reconciliere, deci regulile sunt aceleași în ambele cazuri:
- * - nu se creează leaduri noi;
- * - `delivered` și `bounced` sunt finale (regula de monotonie);
- * - la `delivered`, conținutul temporar se șterge imediat.
+ * Used by both the webhook and the reconciliation, so the rules are the same in both cases:
+ * - no new leads are created;
+ * - `delivered` and `bounced` are final (monotonic rule);
+ * - on `delivered`, the temporary content is deleted immediately.
  *
  * @package LocationLeadTracker
  */
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class EventProcessor {
 
-	/** TypeCode-uri definitive (Bounce API → Bounce types). */
+	/** Permanent TypeCodes (Bounce API → Bounce types). */
 	const FINAL_BOUNCES = array(
 		1      => 'HardBounce',
 		100000 => 'BadEmailAddress',
@@ -33,7 +33,7 @@ final class EventProcessor {
 		100009 => 'DMARCPolicy',
 	);
 
-	/** TypeCode-uri temporare: Postmark poate încă livra. */
+	/** Temporary TypeCodes: Postmark may still deliver. */
 	const TEMPORARY_BOUNCES = array(
 		2    => 'Transient',
 		256  => 'DnsError',
@@ -47,9 +47,9 @@ final class EventProcessor {
 	const RESULT_IGNORED      = 'ignored';
 
 	/**
-	 * Procesează payload-ul unui webhook Postmark.
+	 * Processes the payload of a Postmark webhook.
 	 *
-	 * @return string Unul dintre RESULT_*.
+	 * @return string One of RESULT_*.
 	 */
 	public static function handle( array $payload ): string {
 		$type       = (string) ( $payload['RecordType'] ?? '' );
@@ -78,7 +78,7 @@ final class EventProcessor {
 				$target,
 				Util::iso_to_mysql( (string) ( $payload['BouncedAt'] ?? '' ) ),
 				'bounce:' . ( '' !== $name ? $name : (string) $code ),
-				! empty( $payload['Inactive'] ) ? 'Adresa a fost dezactivată în Postmark.' : (string) ( $payload['Description'] ?? '' )
+				! empty( $payload['Inactive'] ) ? 'The address was deactivated in Postmark.' : (string) ( $payload['Description'] ?? '' )
 			);
 		}
 
@@ -86,8 +86,8 @@ final class EventProcessor {
 	}
 
 	/**
-	 * Starea de livrare pentru un bounce, sau null dacă evenimentul se ignoră.
-	 * Dacă Postmark a dezactivat adresa (Inactive), rezultatul este definitiv indiferent de tip.
+	 * The delivery status for a bounce, or null if the event is ignored.
+	 * If Postmark deactivated the address (Inactive), the result is final regardless of the type.
 	 */
 	public static function classify_bounce( int $type_code, bool $inactive ): ?string {
 		if ( $inactive || isset( self::FINAL_BOUNCES[ $type_code ] ) ) {
@@ -96,7 +96,7 @@ final class EventProcessor {
 		if ( isset( self::TEMPORARY_BOUNCES[ $type_code ] ) ) {
 			return LeadStatus::DEFERRED;
 		}
-		// AutoResponder, SpamNotification (mesajul a fost livrat), Unsubscribe etc.
+		// AutoResponder, SpamNotification (the message was delivered), Unsubscribe, etc.
 		return null;
 	}
 
@@ -105,12 +105,12 @@ final class EventProcessor {
 	}
 
 	/**
-	 * Aplică o stare de livrare, respectând regula de monotonie.
+	 * Applies a delivery status, following the monotonic rule.
 	 *
-	 * @param string      $message_id MessageID Postmark.
-	 * @param int         $lead_hint  ID-ul leadului din Metadata (corelare când MessageID nu este încă salvat).
+	 * @param string      $message_id Postmark MessageID.
+	 * @param int         $lead_hint  Lead ID from Metadata (correlation when the MessageID is not saved yet).
 	 * @param string      $target     delivered | bounced | deferred.
-	 * @param string|null $at         Momentul evenimentului (UTC, MySQL).
+	 * @param string|null $at         Time of the event (UTC, MySQL).
 	 */
 	public static function apply( string $message_id, int $lead_hint, string $target, ?string $at, string $code = '', string $message = '' ): string {
 		global $wpdb;
@@ -130,10 +130,10 @@ final class EventProcessor {
 		$set    = array( 'delivery_status = %s', 'updated_at = %s' );
 		$params = array( $target, Util::now() );
 
-		// Evenimentul confirmă că Postmark a acceptat mesajul, chiar dacă răspunsul API nu a fost salvat (timeout, webhook sosit primul).
-		$set[] = "send_status = 'accepted'";
-		$set[] = 'next_retry_at = NULL';
-		$set[] = 'sent_at = COALESCE(sent_at, %s)';
+		// The event confirms that Postmark accepted the message, even if the API response was not saved (timeout, webhook arrived first).
+		$set[]    = "send_status = 'accepted'";
+		$set[]    = 'next_retry_at = NULL';
+		$set[]    = 'sent_at = COALESCE(sent_at, %s)';
 		$params[] = $at;
 
 		if ( '' !== $message_id ) {
@@ -173,8 +173,8 @@ final class EventProcessor {
 	}
 
 	/**
-	 * Corelarea: întâi după MessageID, apoi după `llt_lead_id` din Metadata.
-	 * Corelarea după Metadata se acceptă doar dacă leadul nu are deja alt MessageID.
+	 * Correlation: first by MessageID, then by `llt_lead_id` from Metadata.
+	 * Correlation by Metadata is accepted only if the lead does not already have a different MessageID.
 	 */
 	private static function find_lead( string $message_id, int $lead_hint ): ?object {
 		if ( '' !== $message_id ) {

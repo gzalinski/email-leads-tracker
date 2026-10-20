@@ -1,6 +1,6 @@
 <?php
 /**
- * „Vezi mesajul” (v3): datele vizitatorului se încarcă doar la cerere, doar pentru administratori.
+ * "View message" (v3): the visitor's data is loaded only on request, only for administrators.
  *
  * @package LocationLeadTracker
  */
@@ -20,14 +20,14 @@ final class LeadDetailsAjax {
 
 	public static function handle(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => 'Nu ai permisiunea necesară.' ), 403 );
+			wp_send_json_error( array( 'message' => 'You do not have the required permission.' ), 403 );
 		}
 		check_ajax_referer( 'llt_admin', 'nonce' );
 
 		$lead_id = isset( $_POST['lead'] ) ? absint( wp_unslash( $_POST['lead'] ) ) : 0;
 		$message = $lead_id ? MessageRepository::find( $lead_id ) : null;
 		if ( ! $message ) {
-			wp_send_json_error( array( 'message' => 'Conținutul acestui lead nu mai există.' ), 404 );
+			wp_send_json_error( array( 'message' => 'The content of this lead no longer exists.' ), 404 );
 		}
 
 		wp_send_json_success(

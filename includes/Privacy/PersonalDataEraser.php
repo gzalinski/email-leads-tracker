@@ -1,8 +1,8 @@
 <?php
 /**
- * Integrarea cu Unelte → Șterge date personale.
+ * Integration with Tools → Erase Personal Data.
  *
- * Se șterge conținutul (nume, email, telefon, mesaj). Leadul minimal rămâne: nu conține date ale vizitatorului.
+ * The content is deleted (name, email, phone, message). The minimal lead stays: it contains no visitor data.
  *
  * @package LocationLeadTracker
  */
@@ -18,7 +18,7 @@ final class PersonalDataEraser {
 	const PER_PAGE = 50;
 
 	/**
-	 * @param array $erasers Ștergătorii existenți.
+	 * @param array $erasers Existing erasers.
 	 */
 	public static function register( $erasers ): array {
 		$erasers                          = is_array( $erasers ) ? $erasers : array();
@@ -30,8 +30,8 @@ final class PersonalDataEraser {
 	}
 
 	/**
-	 * @param string $email Adresa persoanei.
-	 * @param int    $page  Pagina (nefolosită: fiecare apel șterge următorul lot).
+	 * @param string $email The person's address.
+	 * @param int    $page  Page (unused: each call deletes the next batch).
 	 */
 	public static function erase( $email, $page = 1 ): array {
 		$deleted = MessageRepository::delete_by_sender( (string) $email, self::PER_PAGE );

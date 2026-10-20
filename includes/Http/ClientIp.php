@@ -1,9 +1,9 @@
 <?php
 /**
- * Detectarea IP-ului real al vizitatorului (ARCHITECTURE.md §6.5).
+ * Detects the visitor's real IP (ARCHITECTURE.md §6.5).
  *
- * Headerele de proxy se citesc doar când conexiunea vine de la un proxy cunoscut,
- * altfel ar putea fi falsificate de oricine trimite cereri direct la server.
+ * Proxy headers are read only when the connection comes from a known proxy;
+ * otherwise anyone sending requests directly to the server could forge them.
  *
  * @package LocationLeadTracker
  */
@@ -17,10 +17,10 @@ defined( 'ABSPATH' ) || exit;
 final class ClientIp {
 
 	const METHOD_LABELS = array(
-		'direct'     => 'conexiune directă',
-		'cloudflare' => 'prin Cloudflare',
-		'proxy'      => 'prin proxy',
-		'unknown'    => 'necunoscut',
+		'direct'     => 'direct connection',
+		'cloudflare' => 'via Cloudflare',
+		'proxy'      => 'via proxy',
+		'unknown'    => 'unknown',
 	);
 
 	/** @var array{0:string,1:string}|null */
@@ -35,7 +35,7 @@ final class ClientIp {
 	}
 
 	/**
-	 * @return array{0:string,1:string} [ip, metodă]
+	 * @return array{0:string,1:string} [ip, method]
 	 */
 	public static function detect(): array {
 		if ( null === self::$cached ) {
@@ -49,11 +49,11 @@ final class ClientIp {
 	}
 
 	/**
-	 * Logica de detectare, fără stare (testabilă).
+	 * The detection logic, stateless (testable).
 	 *
-	 * @param array    $server Variabilele $_SERVER.
+	 * @param array    $server The $_SERVER variables.
 	 * @param string   $mode   auto | direct | cloudflare.
-	 * @param string[] $extra  Proxy-uri suplimentare (CIDR).
+	 * @param string[] $extra  Additional proxies (CIDR).
 	 * @return array{0:string,1:string}
 	 */
 	public static function resolve( array $server, string $mode, array $extra = array() ): array {
@@ -65,7 +65,7 @@ final class ClientIp {
 			return array( $remote, 'direct' );
 		}
 
-		// Pasul 2: conexiunea vine de la Cloudflare.
+		// Step 2: the connection comes from Cloudflare.
 		if ( ProxyRanges::is_cloudflare( $remote ) ) {
 			$cf = isset( $server['HTTP_CF_CONNECTING_IP'] ) ? trim( (string) $server['HTTP_CF_CONNECTING_IP'] ) : '';
 			return self::valid( $cf ) ? array( $cf, 'cloudflare' ) : array( $remote, 'cloudflare' );
@@ -74,7 +74,7 @@ final class ClientIp {
 			return array( $remote, 'direct' );
 		}
 
-		// Pasul 3: proxy local, intern sau declarat în setări.
+		// Step 3: local, internal or configured proxy.
 		if ( self::is_trusted_proxy( $remote, $extra ) ) {
 			$forwarded = isset( $server['HTTP_X_FORWARDED_FOR'] ) ? (string) $server['HTTP_X_FORWARDED_FOR'] : '';
 			if ( '' !== $forwarded ) {
@@ -96,7 +96,7 @@ final class ClientIp {
 			return array( $remote, 'proxy' );
 		}
 
-		// Pasul 4: conexiune directă; headerele sunt ignorate.
+		// Step 4: direct connection; the headers are ignored.
 		return array( $remote, 'direct' );
 	}
 
@@ -105,9 +105,9 @@ final class ClientIp {
 	}
 
 	/**
-	 * Adresă privată/locală sau proxy declarat în setări.
+	 * A private/local address or a proxy configured in the settings.
 	 *
-	 * @param string[] $extra Proxy-uri suplimentare.
+	 * @param string[] $extra Additional proxies.
 	 */
 	public static function is_trusted_proxy( string $ip, array $extra = array() ): bool {
 		if ( ! self::valid( $ip ) ) {
