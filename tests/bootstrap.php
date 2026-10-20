@@ -222,6 +222,30 @@ function llt_http( int $code, $body = '', array $headers = array() ) {
 	);
 }
 
+function esc_sql( $value ) {
+	return addslashes( (string) $value );
+}
+function rest_url( $path = '' ) {
+	return 'https://example.test/wp-json/' . ltrim( $path, '/' );
+}
+function wp_parse_url( $url ) {
+	return parse_url( $url );
+}
+function register_rest_route( ...$args ) {
+	return true;
+}
+class WP_REST_Response {
+	public $data;
+	public $status;
+	public function __construct( $data = null, $status = 200 ) {
+		$this->data   = $data;
+		$this->status = $status;
+	}
+	public function get_status() {
+		return $this->status;
+	}
+}
+
 // Email simulat.
 $GLOBALS['llt_mail_log']  = array();
 $GLOBALS['llt_mail_fail'] = false;

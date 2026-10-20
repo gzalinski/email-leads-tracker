@@ -19,6 +19,9 @@ use LocationLeadTracker\Queue\SendWorker;
 use LocationLeadTracker\Retention\RetentionService;
 use LocationLeadTracker\Settings\SettingsPage;
 use LocationLeadTracker\Shortcode\ContactShortcode;
+use LocationLeadTracker\Webhook\Reconciler;
+use LocationLeadTracker\Webhook\WebhookController;
+use LocationLeadTracker\Webhook\WebhookSettings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,6 +48,12 @@ final class Plugin {
 
 		// Alerte.
 		add_action( 'wp_mail_failed', array( AdminNotifier::class, 'capture_mail_error' ) );
+		add_action( 'llt_health_check_run', array( AdminNotifier::class, 'flush_bounces' ) );
+
+		// Confirmarea livrării (v2).
+		add_action( 'rest_api_init', array( WebhookController::class, 'register' ) );
+		add_action( 'llt_reconcile_delivery', array( Reconciler::class, 'run' ) );
+		WebhookSettings::register();
 
 		// GDPR.
 		add_filter( 'wp_privacy_personal_data_exporters', array( PersonalDataExporter::class, 'register' ) );

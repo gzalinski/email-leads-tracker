@@ -88,6 +88,59 @@ final class AdminNotifier {
 	}
 
 	/**
+	 * Un email a fost respins definitiv (v2). Alertele de bounce se grupează și pleacă la verificarea orară.
+	 */
+	public static function bounce_recorded( int $lead_id, string $code ): void {
+		if ( ! Settings::get( 'alert_on_bounce' ) ) {
+			return;
+		}
+		$pending   = (array) State::get( 'pending_bounces', array() );
+		$pending[] = array(
+			'id'   => $lead_id,
+			'code' => $code,
+		);
+		State::set( 'pending_bounces', array_slice( $pending, -100 ) );
+	}
+
+	/**
+	 * Trimite alerta grupată pentru bounce-urile acumulate (hook `llt_health_check_run`).
+	 */
+	public static function flush_bounces(): void {
+		$pending = (array) State::get( 'pending_bounces', array() );
+		if ( ! $pending || ! Settings::get( 'alert_on_bounce' ) ) {
+			return;
+		}
+		$lines = array();
+		foreach ( $pending as $bounce ) {
+			$lines[] = sprintf( '#%d — %s', (int) $bounce['id'], str_replace( 'bounce:', '', (string) $bounce['code'] ) );
+		}
+		$sent = self::alert(
+			'bounce',
+			sprintf( '%d emailuri respinse de serverul destinatarului', count( $pending ) ),
+			"Următoarele leaduri nu au ajuns la locație, pentru că serverul destinatarului a respins emailul:\n\n"
+			. implode( "\n", $lines )
+			. "\n\nVerifică adresa din câmpul „email” al locației. Dacă Postmark a dezactivat adresa, reactiveaz-o din Postmark → Suppressions.\n"
+			. "Datele vizitatorilor se păstrează temporar; le poți vedea cu: wp llt leads show <id> --with-content\n"
+		);
+		if ( $sent ) {
+			State::set( 'pending_bounces', array() );
+		}
+	}
+
+	/**
+	 * Reconcilierea a găsit livrări, dar webhookul nu a mai trimis nimic de o zi (v2).
+	 */
+	public static function webhook_silent( int $recovered ): void {
+		self::alert(
+			'webhook_silent',
+			'Webhookul Postmark pare oprit',
+			sprintf( "Reconcilierea orară a găsit %d confirmări de livrare pe care webhookul nu le-a trimis, iar ultimul webhook a sosit acum mai mult de o zi.\n\n", $recovered )
+			. "Postmark oprește un tip de eveniment după eșecuri repetate. Verifică-l în Postmark → Server → Message Stream → Webhooks și apasă Verify.\n"
+			. "Până atunci, reconcilierea confirmă livrările cu o întârziere de cel mult o oră.\n"
+		);
+	}
+
+	/**
 	 * Trimite o alertă, cu limitare în timp pe tip.
 	 */
 	public static function alert( string $type, string $subject, string $body ): bool {

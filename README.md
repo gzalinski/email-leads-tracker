@@ -67,6 +67,25 @@ Template-urile se pot suprascrie din temă, în `location-lead-tracker/form.php`
 5. La eșecuri, administratorul primește un email (fără datele vizitatorilor).
 6. Datele personale se șterg după perioada configurată; rămâne doar evidența minimă a leadului.
 
+## Confirmarea livrării (v2)
+
+1. **Setări → Location Lead Tracker → Webhook**: apasă „Generează credențialele” și copiază URL-ul complet (parola se afișează o singură dată).
+2. În Postmark: Server → Message Stream `outbound` → Webhooks → Add webhook. Lipește URL-ul, bifează **Delivery** și **Bounce**, apasă **Verify**.
+3. Bifează „Activează webhookul” și salvează.
+
+Din acel moment:
+
+- leadurile primesc starea `delivered`, `bounced` sau `deferred`;
+- datele vizitatorului se șterg imediat după livrarea confirmată, sau după „Zile fără confirmare” (tabul Retenție);
+- o reconciliere orară întreabă Postmark despre leadurile fără confirmare, pentru cazul în care un webhook s-a pierdut;
+- dacă webhookul pare oprit, administratorul primește o alertă.
+
+Dacă **Verify** din Postmark întoarce 401 deși credențialele sunt corecte, serverul elimină headerul `Authorization`. Pe Apache adaugă în `.htaccess`:
+
+```
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+```
+
 ## WP-CLI
 
 ```
@@ -79,6 +98,7 @@ wp llt queue run
 wp llt cleanup run [--dry-run]
 wp llt content delete <id>...
 wp llt stats [--since=…] [--until=…] [--by=object]
+wp llt reconcile run
 ```
 
 ## Testare
@@ -96,4 +116,5 @@ Notă: unele pluginuri de securitate blochează accesul vizitatorilor la `wp-adm
 
 ## Versiuni
 
+- **1.1.0 (v2)** — webhook Postmark (Delivery, Bounce) cu Basic Auth, stările `delivered` / `bounced` / `deferred`, ștergerea datelor la livrare, reconciliere orară, alerte pentru bounce și webhook oprit.
 - **1.0.0 (v1)** — trimitere prin Postmark, coadă cu retry, verificare anti-duplicat, pagină de setări cu secrete criptate, alerte, WP-CLI, GDPR, Turnstile, detectarea IP-ului real, retenție.

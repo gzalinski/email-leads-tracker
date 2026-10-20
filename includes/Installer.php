@@ -25,6 +25,7 @@ final class Installer {
 			'llt_health_check'         => 'hourly',
 			'llt_retention_cleanup'    => 'daily',
 			'llt_refresh_proxy_ranges' => 'weekly',
+			'llt_reconcile_delivery'   => 'hourly',
 		);
 	}
 
